@@ -1,7 +1,7 @@
 SRC = provenancelib.c
 OBJ = $(SRC:.c=.o)
 OUT = provenance.a
-INCLUDES = -I. -I../threadpool
+INCLUDES = -I../threadpool -I../include
 CCFLAGS = -g -O2 -fpic -std=c11
 CCC = gcc
 LDFLAGS = -g
