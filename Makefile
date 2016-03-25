@@ -15,4 +15,4 @@ prepare:
 	cd ./threadpool && $(MAKE) prepare
 
 install:
-	cd ./example && $(MAKE) install
+	cd ./example && sudo $(MAKE) install

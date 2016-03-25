@@ -1,5 +1,5 @@
 /*
-* Caffeine Linux Security Module
+* CamFlow userspace audit example
 *
 * Author: Thomas Pasquier <tfjmp2@cam.ac.uk>
 *
@@ -274,33 +274,6 @@ struct provenance_ops ops = {
   .log_file_name=log_file_name
 };
 
-void test(void){
-  int rc;
-
-  struct disc_node_struct node1, node2;
-  struct task_prov_struct self;
-  struct edge_struct edge;
-  if((rc = provenance_disclose_node(&node1))<0){
-    printf("Error disclose %d\n", rc);
-    return;
-  }
-  if((rc = provenance_disclose_node(&node2))<0){
-    printf("Error disclose %d\n", rc);
-    return;
-  }
-  edge.type = ED_DATA;
-  edge.allowed=FLOW_ALLOWED;
-  edge.snd_id=node1.node_id;
-  edge.rcv_id=node2.node_id;
-  provenance_disclose_edge(&edge);
-  provenance_self(&self);
-  edge.type = ED_DATA;
-  edge.allowed=FLOW_ALLOWED;
-  edge.snd_id=node1.node_id;
-  edge.rcv_id=self.node_id;
-  provenance_disclose_edge(&edge);
-}
-
 int main(void){
   int rc;
   hostid = gethostid();
@@ -312,7 +285,6 @@ int main(void){
     exit(rc);
   }
   sleep(2);
-  test();
   while(1) sleep(60);
   provenance_stop();
   return 0;
