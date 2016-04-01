@@ -254,7 +254,7 @@ void log_address(struct address_struct* address){
 }
 
 void log_file_name(struct file_name_struct* f_name){
-  write_to_log("%u-%u-%lu-\tfile_name[%lu:%s]{}",
+  write_to_log("%u-%u-%lu-\tfile_name[%lu:%s]",
     hostid, f_name->boot_id, f_name->event_id, f_name->inode_id, f_name->name);
 }
 
