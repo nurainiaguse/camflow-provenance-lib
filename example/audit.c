@@ -34,12 +34,12 @@
 
 static uint32_t hostid=0;
 
-void tagarr_to_str(const uint64_t* in, const size_t in_size, char* out, size_t out_size){
+void label_to_str(const uint64_t* in, const size_t in_size, char* out, size_t out_size){
   int i;
 	size_t rm = out_size,cx;
 	out[0]='\0';
   for(i = 0; i < in_size-1; i++){
-		cx = snprintf(out, rm, "%lu, ", in[i]);
+		cx = snprintf(out, rm, "%llu, ", in[i]);
 		if(cx<0){
 			out[0]='\0';
 			return;
@@ -47,7 +47,7 @@ void tagarr_to_str(const uint64_t* in, const size_t in_size, char* out, size_t o
 		out+=cx;
 		rm-=cx;
   }
-	cx = snprintf(out, rm, "%lu", in[i]);
+	cx = snprintf(out, rm, "%llu", in[i]);
 	if(cx<0){
 		out[0]='\0';
 		return;
@@ -206,29 +206,29 @@ static inline char* get_inode_type(mode_t mode){
 void log_inode(struct inode_prov_struct* inode){
   char sb_uuid[UUID_STR_SIZE];
   uuid_to_str(inode->sb_uuid, sb_uuid, UUID_STR_SIZE);
-  write_to_log("%u-%u-%lu-\tinode[%s:%lu:%s]{%u|%u|0X%04hhX}",
-    hostid, inode->boot_id, inode->event_id, get_inode_type(inode->mode), inode->node_id, sb_uuid, inode->uid, inode->gid, inode->mode);
+  write_to_log("%u-%u-%lu-\tinode[%s:%lu:%u:%s]{%u|%u|0X%04hhX}",
+    hostid, inode->boot_id, inode->event_id, get_inode_type(inode->mode), inode->node_id, inode->version, sb_uuid, inode->uid, inode->gid, inode->mode);
 }
 
 void log_disc(struct disc_node_struct* node){
-  write_to_log("%u-%u-%lu-\tdisclosed[%lu]",
-    hostid, node->boot_id, node->event_id, node->node_id);
+  write_to_log("%u-%u-%lu-\tdisclosed[%lu:%u]",
+    hostid, node->boot_id, node->event_id, node->node_id, node->version);
 }
 
 void log_msg(struct msg_msg_struct* msg){
-  write_to_log("%u-%u-%lu-\tmsg[%lu]{%ld}",
-    hostid, msg->boot_id, msg->event_id, msg->node_id, msg->type);
+  write_to_log("%u-%u-%lu-\tmsg[%lu:%u]{%ld}",
+    hostid, msg->boot_id, msg->event_id, msg->node_id, msg->version, msg->type);
 }
 
 void log_shm(struct shm_struct* shm){
-  write_to_log("%u-%u-%lu-\tshm[%lu]{0X%04hhX}",
-    hostid, shm->boot_id, shm->event_id, shm->node_id, shm->mode);
+  write_to_log("%u-%u-%lu-\tshm[%lu:%u]{0X%04hhX}",
+    hostid, shm->boot_id, shm->event_id, shm->node_id, shm->version, shm->mode);
 }
 
 
 void log_sock(struct sock_struct* sock){
   write_to_log("%u-%u-%lu-\tsock[%lu]{%u|%u|%u}",
-    hostid, sock->boot_id, sock->event_id, sock->node_id, sock->type, sock->family, sock->protocol);
+    hostid, sock->boot_id, sock->event_id, sock->node_id, sock->version, sock->type, sock->family, sock->protocol);
 }
 
 void log_address(struct address_struct* address){
@@ -258,6 +258,40 @@ void log_file_name(struct file_name_struct* f_name){
     hostid, f_name->boot_id, f_name->event_id, f_name->inode_id, f_name->name);
 }
 
+void log_ifc(struct ifc_context_struct* ifc){
+  char buffer[4096];
+  if(ifc->context.secrecy.size>0){
+    label_to_str(ifc->context.secrecy.array, ifc->context.secrecy.size, buffer, 4096);
+    write_to_log("%u-%u-%lu-\tsecrecy(%d)[%lu:%u]{%s}",
+      hostid, ifc->boot_id, ifc->event_id, ifc->context.secrecy.size, ifc->node_id, ifc->version, buffer);
+  }
+  if(ifc->context.integrity.size>0){
+    label_to_str(ifc->context.integrity.array, ifc->context.integrity.size, buffer, 4096);
+    write_to_log("%u-%u-%lu-\tintegrity(%d)[%lu:%u]{%s}",
+      hostid, ifc->boot_id, ifc->event_id, ifc->context.integrity.size, ifc->node_id, ifc->version, buffer);
+  }
+  if(ifc->context.secrecy_p.size>0){
+    label_to_str(ifc->context.secrecy_p.array, ifc->context.secrecy_p.size, buffer, 4096);
+    write_to_log("%u-%u-%lu-\tsecrecy_p(%d)[%lu:%u]{%s}",
+      hostid, ifc->boot_id, ifc->event_id, ifc->context.secrecy_p.size, ifc->node_id, ifc->version, buffer);
+  }
+  if(ifc->context.secrecy_n.size>0){
+    label_to_str(ifc->context.secrecy_n.array, ifc->context.secrecy_n.size, buffer, 4096);
+    write_to_log("%u-%u-%lu-\tsecrecy_n(%d)[%lu:%u]{%s}",
+      hostid, ifc->boot_id, ifc->event_id, ifc->context.secrecy_n.size, ifc->node_id, ifc->version, buffer);
+  }
+  if(ifc->context.integrity_p.size>0){
+    label_to_str(ifc->context.integrity_p.array, ifc->context.integrity_p.size, buffer, 4096);
+    write_to_log("%u-%u-%lu-\tintegrity_p(%d)[%lu:%u]{%s}",
+      hostid, ifc->boot_id, ifc->event_id, ifc->context.integrity_p.size, ifc->node_id, ifc->version, buffer);
+  }
+  if(ifc->context.integrity_n.size>0){
+    label_to_str(ifc->context.integrity_n.array, ifc->context.integrity_n.size, buffer, 4096);
+    write_to_log("%u-%u-%lu-\tintegrity_n(%d)[%lu:%u]{%s}",
+      hostid, ifc->boot_id, ifc->event_id, ifc->context.integrity_n.size, ifc->node_id, ifc->version, buffer);
+  }
+}
+
 struct provenance_ops ops = {
   .init=init,
   .log_edge=log_edge,
@@ -271,7 +305,8 @@ struct provenance_ops ops = {
   .log_shm=log_shm,
   .log_sock=log_sock,
   .log_address=log_address,
-  .log_file_name=log_file_name
+  .log_file_name=log_file_name,
+  .log_ifc=log_ifc
 };
 
 int main(void){

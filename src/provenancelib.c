@@ -28,13 +28,6 @@
 #define PROV_BASE_NAME        "/sys/kernel/debug/provenance"
 #define LONG_PROV_BASE_NAME   "/sys/kernel/debug/long_provenance"
 
-#define ENABLE_FILE           "/sys/kernel/security/provenance/enable"
-#define ALL_FILE              "/sys/kernel/security/provenance/all"
-#define OPAQUE_FILE           "/sys/kernel/security/provenance/opaque"
-#define NODE_FILE             "/sys/kernel/security/provenance/node"
-#define EDGE_FILE             "/sys/kernel/security/provenance/edge"
-#define SELF_FILE             "/sys/kernel/security/provenance/self"
-
 /* internal variables */
 static struct provenance_ops prov_ops;
 static uint8_t ncpus;
@@ -225,6 +218,10 @@ static void long_callback_job(void* data)
       if(prov_ops.log_address!=NULL)
         prov_ops.log_address(&(msg->address_info));
       break;
+    case MSG_IFC:
+      if(prov_ops.log_ifc!=NULL)
+        prov_ops.log_ifc(&(msg->ifc_info));
+      break;
     default:
       printf("Error: unknown message type %u\n", msg->msg_info.message_type);
       break;
@@ -320,7 +317,7 @@ static void long_reader_job(void *data)
 }
 
 int provenance_set_enable(bool value){
-  int fd = open(ENABLE_FILE, O_WRONLY);
+  int fd = open(PROV_ENABLE_FILE, O_WRONLY);
 
   if(fd<0)
   {
@@ -337,7 +334,7 @@ int provenance_set_enable(bool value){
 }
 
 int provenance_set_all(bool value){
-  int fd = open(ALL_FILE, O_WRONLY);
+  int fd = open(PROV_ALL_FILE, O_WRONLY);
 
   if(fd<0)
   {
@@ -354,7 +351,7 @@ int provenance_set_all(bool value){
 }
 
 int provenance_set_opaque(bool value){
-  int fd = open(OPAQUE_FILE, O_WRONLY);
+  int fd = open(PROV_OPAQUE_FILE, O_WRONLY);
 
   if(fd<0)
   {
@@ -372,7 +369,7 @@ int provenance_set_opaque(bool value){
 
 int provenance_disclose_node(struct disc_node_struct* node){
   int rc;
-  int fd = open(NODE_FILE, O_WRONLY);
+  int fd = open(PROV_NODE_FILE, O_WRONLY);
 
   if(fd<0)
   {
@@ -385,7 +382,7 @@ int provenance_disclose_node(struct disc_node_struct* node){
 
 int provenance_disclose_edge(struct edge_struct* edge){
   int rc;
-  int fd = open(EDGE_FILE, O_WRONLY);
+  int fd = open(PROV_EDGE_FILE, O_WRONLY);
 
   if(fd<0)
   {
@@ -398,7 +395,7 @@ int provenance_disclose_edge(struct edge_struct* edge){
 
 int provenance_self(struct task_prov_struct* self){
   int rc;
-  int fd = open(SELF_FILE, O_RDONLY);
+  int fd = open(PROV_SELF_FILE, O_RDONLY);
 
   if(fd<0)
   {
