@@ -413,12 +413,12 @@ int provenance_self(struct task_prov_struct* self){
 }
 
 char* msg_info_to_json(char* buffer, struct basic_msg_info* m){
-  sprintf(buffer, "{\"id\"=%llu, \"type\"=%u, \"machine_id\"=%u, \"boot_id\"=%u}", m->id, m->type, m->machine_id, m->boot_id);
+  sprintf(buffer, "{\"id\":%llu, \"type\":%u, \"machine_id\":%u, \"boot_id\":%u}", m->id, m->type, m->machine_id, m->boot_id);
   return buffer;
 }
 
 char* node_basic_to_json(char* buffer, struct basic_node_info* n){
-  sprintf(buffer, "{\"id\"=%llu, \"boot_id\"=%u, \"machine_id\"=%u, \"version\"=%u}", n->id, n->boot_id, n->machine_id, n->version);
+  sprintf(buffer, "{\"id\":%llu, \"boot_id\":%u, \"machine_id\":%u, \"version\":%u}", n->id, n->boot_id, n->machine_id, n->version);
   return buffer;
 }
 
@@ -428,7 +428,7 @@ char* edge_to_json(char* buffer, struct edge_struct* e){
   char msg_info[1024];
   char sender[1024];
   char receiver[1024];
-  sprintf(buffer, "{\"msg_info\"=%s, \"type\"=\"%s\", \"allowed\"=%s, sender=%s, receiver=%s}",
+  sprintf(buffer, "{\"msg_info\":%s, \"type\":\"%s\", \"allowed\":%s, \"sender\":%s, \"receiver\":%s}",
     msg_info_to_json(msg_info, &e->msg_info),
     edge_str[e->type],
     bool_str[e->allowed],
@@ -440,7 +440,7 @@ char* edge_to_json(char* buffer, struct edge_struct* e){
 char* disc_to_json(char* buffer, struct disc_node_struct* n){
   char msg_info[1024];
   char node_info[1024];
-  sprintf(buffer, "{\"msg_info\"=%s, \"node_info\"=\"%s\"}",
+  sprintf(buffer, "{\"msg_info\":%s, \"node_info\":%s}",
     msg_info_to_json(msg_info, &n->msg_info),
     node_basic_to_json(node_info, &n->node_info));
   return buffer;
@@ -449,7 +449,7 @@ char* disc_to_json(char* buffer, struct disc_node_struct* n){
 char* task_to_json(char* buffer, struct task_prov_struct* n){
   char msg_info[1024];
   char node_info[1024];
-  sprintf(buffer, "{\"msg_info\"=%s, \"node_info\"=\"%s\", \"user_id\"=%u, \"group_id\"=%u}",
+  sprintf(buffer, "{\"msg_info\":%s, \"node_info\":%s, \"user_id\":%u, \"group_id\":%u}",
     msg_info_to_json(msg_info, &n->msg_info),
     node_basic_to_json(node_info, &n->node_info),
     n->uid,
@@ -504,7 +504,7 @@ char* inode_to_json(char* buffer, struct inode_prov_struct* n){
   char msg_info[1024];
   char node_info[1024];
   char uuid[UUID_STR_SIZE];
-  sprintf(buffer, "{\"msg_info\"=%s, \"node_info\"=\"%s\", \"user_id\"=%u, \"group_id\"=%u, \"type\"=\"%s\", \"mode\"=\"0X%04hhX\", \"uuid\"=\"%s\"}",
+  sprintf(buffer, "{\"msg_info\":%s, \"node_info\":%s, \"user_id\":%u, \"group_id\":%u, \"type\":\"%s\", \"mode\":\"0X%04hhX\", \"uuid\":\"%s\"}",
     msg_info_to_json(msg_info, &n->msg_info),
     node_basic_to_json(node_info, &n->node_info),
     n->uid,
@@ -519,7 +519,7 @@ char* sb_to_json(char* buffer, struct sb_struct* n){
   char msg_info[1024];
   char node_info[1024];
   char uuid[UUID_STR_SIZE];
-  sprintf(buffer, "{\"msg_info\"=%s, \"node_info\"=\"%s\", \"uuid\"=\"%s\"}",
+  sprintf(buffer, "{\"msg_info\":%s, \"node_info\":%s, \"uuid\":\"%s\"}",
     msg_info_to_json(msg_info, &n->msg_info),
     node_basic_to_json(node_info, &n->node_info),
     uuid_to_str(n->uuid, uuid, UUID_STR_SIZE));
@@ -529,7 +529,7 @@ char* sb_to_json(char* buffer, struct sb_struct* n){
 char* msg_to_json(char* buffer, struct msg_msg_struct* n){
   char msg_info[1024];
   char node_info[1024];
-  sprintf(buffer, "{\"msg_info\"=%s, \"node_info\"=\"%s\", \"type\"=%ld}",
+  sprintf(buffer, "{\"msg_info\":%s, \"node_info\":%s, \"type\":%ld}",
     msg_info_to_json(msg_info, &n->msg_info),
     node_basic_to_json(node_info, &n->node_info),
     n->type);
@@ -539,7 +539,7 @@ char* msg_to_json(char* buffer, struct msg_msg_struct* n){
 char* shm_to_json(char* buffer, struct shm_struct* n){
   char msg_info[1024];
   char node_info[1024];
-  sprintf(buffer, "{\"msg_info\"=%s, \"node_info\"=\"%s\", \"mode\"=\"0X%04hhX\"}",
+  sprintf(buffer, "{\"msg_info\":%s, \"node_info\":%s, \"mode\":\"0X%04hhX\"}",
     msg_info_to_json(msg_info, &n->msg_info),
     node_basic_to_json(node_info, &n->node_info),
     n->mode);
@@ -549,7 +549,7 @@ char* shm_to_json(char* buffer, struct shm_struct* n){
 char* sock_to_json(char* buffer, struct sock_struct* n){
   char msg_info[1024];
   char node_info[1024];
-  sprintf(buffer, "{\"msg_info\"=%s, \"node_info\"=\"%s\", \"type\"=%u, \"family\"=%u, \"protocol\"=%u}",
+  sprintf(buffer, "{\"msg_info\":%s, \"node_info\":%s, \"type\":%u, \"family\":%u, \"protocol\":%u}",
     msg_info_to_json(msg_info, &n->msg_info),
     node_basic_to_json(node_info, &n->node_info),
     n->type,
@@ -560,7 +560,7 @@ char* sock_to_json(char* buffer, struct sock_struct* n){
 
 char* str_msg_to_json(char* buffer, struct str_struct* n){
   char msg_info[1024];
-  sprintf(buffer, "{\"msg_info\"=%s, \"msg\"=\"%s\"}",
+  sprintf(buffer, "{\"msg_info\":%s, \"msg\":\"%s\"}",
     msg_info_to_json(msg_info, &n->msg_info),
     n->str);
   return buffer;
@@ -572,14 +572,14 @@ char* sockaddr_to_json(char* buffer, struct sockaddr* addr, size_t length){
 
   if(addr->sa_family == AF_INET){
     getnameinfo(addr, length, host, NI_MAXHOST, serv, NI_MAXSERV, 0);
-    sprintf(buffer, "{\"type\"=\"AF_INET\", \"host\"=\"%s\", \"serv\"=\"%s\"}", host, serv);
+    sprintf(buffer, "{\"type\":\"AF_INET\", \"host\":\"%s\", \"serv\":\"%s\"}", host, serv);
   }else if(addr->sa_family == AF_INET6){
     getnameinfo(addr, length, host, NI_MAXHOST, serv, NI_MAXSERV, 0);
-    sprintf(buffer, "{\"type\"=\"AF_INET6\", \"host\"=\"%s\", \"serv\"=\"%s\"}", host, serv);
+    sprintf(buffer, "{\"type\":\"AF_INET6\", \"host\":\"%s\", \"serv\":\"%s\"}", host, serv);
   }else if(addr->sa_family == AF_UNIX){
-    sprintf(buffer, "{\"type\"=\"AF_UNIX\", \"path\"=\"%s\"}", ((struct sockaddr_un*)addr)->sun_path);
+    sprintf(buffer, "{\"type\":\"AF_UNIX\", \"path\":\"%s\"}", ((struct sockaddr_un*)addr)->sun_path);
   }else{
-    sprintf(buffer, "{\"type\"=\"OTHER\"}");
+    sprintf(buffer, "{\"type\":\"OTHER\"}");
   }
 
   return buffer;
@@ -589,7 +589,7 @@ char* addr_to_json(char* buffer, struct address_struct* n){
   char msg_info[1024];
   char node_info[1024];
   char addr_info[PATH_MAX+1024];
-  sprintf(buffer, "{\"msg_info\"=%s, \"node_info\"=%s, \"address\"=%s}",
+  sprintf(buffer, "{\"msg_info\":%s, \"node_info\":%s, \"address\":%s}",
     msg_info_to_json(msg_info, &n->msg_info),
     node_basic_to_json(node_info, &n->sock_info),
     sockaddr_to_json(addr_info, &n->addr, n->length));
@@ -601,7 +601,7 @@ char* link_to_json(char* buffer, struct link_struct* n){
   char dir_info[1024];
   char task_info[1024];
   char inode_info[1024];
-  sprintf(buffer, "{\"msg_info\"=%s, \"dir\"=%s, \"task\"=%s, \"inode\"=%s, \"name\"=\"%s\"}",
+  sprintf(buffer, "{\"msg_info\":%s, \"dir\":%s, \"task\":%s, \"inode\":%s, \"name\":\"%s\"}",
     msg_info_to_json(msg_info, &n->msg_info),
     node_basic_to_json(dir_info, &n->dir),
     node_basic_to_json(task_info, &n->task),
@@ -615,7 +615,7 @@ char* unlink_to_json(char* buffer, struct unlink_struct* n){
   char dir_info[1024];
   char task_info[1024];
   char inode_info[1024];
-  sprintf(buffer, "{\"msg_info\"=%s, \"dir\"=%s, \"task\"=%s, \"inode\"=%s, \"name\"=\"%s\"}",
+  sprintf(buffer, "{\"msg_info\":%s, \"dir\":%s, \"task\":%s, \"inode\":%s, \"name\":\"%s\"}",
     msg_info_to_json(msg_info, &n->msg_info),
     node_basic_to_json(dir_info, &n->dir),
     node_basic_to_json(task_info, &n->task),
@@ -629,7 +629,7 @@ char* pathname_to_json(char* buffer, struct file_name_struct* n){
   char dir_info[1024];
   char task_info[1024];
   char inode_info[1024];
-  sprintf(buffer, "{\"msg_info\"=%s, \"inode\"=%s, \"name\"=\"%s\"}",
+  sprintf(buffer, "{\"msg_info\":%s, \"inode\":%s, \"name\":\"%s\"}",
     msg_info_to_json(msg_info, &n->msg_info),
     node_basic_to_json(inode_info, &n->inode),
     n->name);
@@ -639,7 +639,7 @@ char* pathname_to_json(char* buffer, struct file_name_struct* n){
 char* ifc_to_json(char* buffer, struct ifc_context_struct* n){
   char msg_info[1024];
   char node_info[1024];
-  sprintf(buffer, "{\"msg_info\"=%s, \"node_info\"=%s, \"ifc\"=\"TODO\"}",
+  sprintf(buffer, "{\"msg_info\":%s, \"node_info\":%s, \"ifc\":\"TODO\"}",
     msg_info_to_json(msg_info, &n->msg_info),
     node_basic_to_json(node_info, &n->node_info));
   return buffer;
