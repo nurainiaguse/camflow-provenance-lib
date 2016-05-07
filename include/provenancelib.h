@@ -42,15 +42,63 @@ struct provenance_ops{
 };
 
 /* provenance usher functions */
+
+/*
+* @ops structure containing audit callbacks
+* start and register callback. Note that there is no concurrency guarantee made.
+* The application developper is expected to deal with concurrency issue.
+*/
 int provenance_register(struct provenance_ops* ops);
+
+/*
+* shutdown tightly the things that are running behind the scene.
+*/
 void provenance_stop(void);
 
 /* security file manipulation */
+
+/*
+* @v boolean value
+* enable or disable provenance data capture depending on the value of v. Will
+* fail if the current process is not root.
+*/
 int provenance_set_enable(bool v);
+
+/*
+* @v boolean value
+* activate provenance on all kernel objects. WARNING the computer may slow down
+* dramatically and the amount of data generated may be excessively large. Will
+* fail if current process is not root.
+*/
 int provenance_set_all(bool v);
+
+/*
+* @v boolean value
+* Hide the current process from provenance capture. Should be mostly used by the
+* provenance capture service itself. Will fail if the current process is not
+* root.
+*/
 int provenance_set_opaque(bool v);
+
+/*
+* @node node data structure to be recorded
+* API to dsiclose a provenance node. Some values should be left blank and Will
+* be updated by the kernel.
+*/
 int provenance_disclose_node(struct disc_node_struct* node);
+
+/*
+* @edge edge data structure to be recorded
+* API to dsiclose a provenance edge. Some values should be left blank and Will
+* be updated by the kernel.
+*/
 int provenance_disclose_edge(struct edge_struct* edge);
+
+/*
+* @self point to a node data structure
+* self if filled with the provenance information corresponding to the current
+* process.
+*/
 int provenance_self(struct task_prov_struct* self);
 
 /* struct to json functions */
