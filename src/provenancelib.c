@@ -412,8 +412,25 @@ int provenance_self(struct task_prov_struct* self){
   return rc;
 }
 
+#define MSG_STR           0
+#define MSG_EDGE          1
+#define MSG_TASK          2
+#define MSG_INODE         3
+#define MSG_LINK          4
+#define MSG_UNLINK        5
+#define MSG_DISC_NODE     6
+#define MSG_MSG           7
+#define MSG_SHM           8
+#define MSG_SOCK          9
+#define MSG_ADDR          10
+#define MSG_SB            11
+#define MSG_FILE_NAME     12
+#define MSG_IFC           13
+
+static char* msg_type[] = {"string", "flow", "task", "inode", "link", "unlink", "disclosed", "message", "shared memory", "socket", "address", "super block", "file name", "ifc"};
+
 char* msg_info_to_json(char* buffer, struct basic_msg_info* m){
-  sprintf(buffer, "{\"id\":%llu, \"type\":%u, \"machine_id\":%u, \"boot_id\":%u}", m->id, m->type, m->machine_id, m->boot_id);
+  sprintf(buffer, "{\"type\":\"%s\", \"id\":%llu, \"machine_id\":%u, \"boot_id\":%u}", msg_type[m->type], m->id , m->machine_id, m->boot_id);
   return buffer;
 }
 
