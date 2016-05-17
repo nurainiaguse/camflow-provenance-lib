@@ -25,7 +25,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <netdb.h>
-#include <unistd.h>
 
 #include "thpool.h"
 #include "provenancelib.h"
