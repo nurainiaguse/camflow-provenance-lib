@@ -1,11 +1,12 @@
 [Unit]
 Description=Provenance Relay Audit Usher
+Requires=camflow-config.service
+After=camflow-config.service
 
 [Service]
 Type=simple
 ExecStart=/usr/bin/relay-audit
 Restart=always
-
 
 [Install]
 WantedBy=multi-user.target
