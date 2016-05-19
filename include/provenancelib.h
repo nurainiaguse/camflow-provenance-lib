@@ -81,6 +81,19 @@ int provenance_set_all(bool v);
 int provenance_set_opaque(bool v);
 
 /*
+* @v uint32_t value
+* Assign an ID to the current machine. Will fail if the current process is not
+* root.
+*/
+int provenance_set_machine_id(uint32_t v);
+
+/*
+* @v pointer to uint32_t value
+* Read the machine ID corresponding to the current machine.
+*/
+int provenance_get_machine_id(uint32_t* v);
+
+/*
 * @node node data structure to be recorded
 * API to dsiclose a provenance node. Some values should be left blank and Will
 * be updated by the kernel.

@@ -372,6 +372,30 @@ int provenance_set_opaque(bool value){
   return 0;
 }
 
+int provenance_set_machine_id(uint32_t v){
+  int fd = open(PROV_MACHINE_ID_FILE, O_WRONLY);
+
+  if(fd<0)
+  {
+    return fd;
+  }
+  write(fd, &v, sizeof(uint32_t));
+  close(fd);
+  return 0;
+}
+
+int provenance_get_machine_id(uint32_t* v){
+  int fd = open(PROV_MACHINE_ID_FILE, O_WRONLY);
+
+  if(fd<0)
+  {
+    return fd;
+  }
+  read(fd, v, sizeof(uint32_t));
+  close(fd);
+  return 0;
+}
+
 int provenance_disclose_node(struct disc_node_struct* node){
   int rc;
   int fd = open(PROV_NODE_FILE, O_WRONLY);
