@@ -12,10 +12,10 @@ debug:
 	$(CCC) $(INCLUDES) audit.c $(LIB) -o audit.o $(CCFLAGS) -g
 
 install:
-	cp --force ./audit.o /usr/bin/relay-audit
+	cp --force ./audit.o /usr/bin/camflow-provenance
 	mkdir -p /var/relay
-	cp --force ./audit.service /etc/systemd/system/audit.service
-	systemctl enable audit.service
+	cp --force ./camflow-provenance.service /etc/systemd/system/camflow-provenance.service
+	systemctl enable camflow-provenance.service
 
 clean:
 	rm -f audit.o
