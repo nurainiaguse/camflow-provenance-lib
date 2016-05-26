@@ -11,7 +11,8 @@
 ### v0.1.2
 
 ```
-- Add function to serialize row kernel data to json.
+- Added a function to serialize row kernel data to json.
+- Added a function to verify the presence of the IFC module in the kernel.
 ```
 
 ### v0.1.1

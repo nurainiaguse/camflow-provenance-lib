@@ -684,3 +684,10 @@ char* ifc_to_json(char* buffer, struct ifc_context_struct* n){
     node_basic_to_json(node_info, &n->node_info));
   return buffer;
 }
+
+bool provenance_is_present(void){
+  if(access(PROV_ENABLE_FILE, F_OK)){ // return 0 if file exists.
+    return false;
+  }
+  return true;
+}

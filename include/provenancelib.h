@@ -41,6 +41,12 @@ struct provenance_ops{
   void (*log_ifc)(struct ifc_context_struct*);
 };
 
+/*
+* Function return boolean value corresponding to the presence or not of the
+* provenance module in the kernel.
+*/
+bool provenance_is_present(void);
+
 /* provenance usher functions */
 
 /*
