@@ -29,6 +29,7 @@
 
 #include "provenancelib.h"
 #include "provenancePovJSON.h"
+#include "provenanceutils.h"
 
 static pthread_mutex_t l_out =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_activity =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
@@ -37,7 +38,13 @@ static pthread_mutex_t l_entity =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
 bool writing_out = false;
 
-static inline bool append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* source){
+static void (*print_json)(char* json);
+
+void set_ProvJSON_callback( void (*fcn)(char* json) ){
+  print_json = fcn;
+}
+
+static inline bool __append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* source){
   if (strlen(source) + 2 > MAX_PROVJSON_BUFFER_LENGTH - strlen(destination)){ // not enough space
     return false;
   }
@@ -48,9 +55,9 @@ static inline bool append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* so
   return true;
 }
 
-char activity[MAX_PROVJSON_BUFFER_LENGTH];
-char agent[MAX_PROVJSON_BUFFER_LENGTH];
-char entity[MAX_PROVJSON_BUFFER_LENGTH];
+static char activity[MAX_PROVJSON_BUFFER_LENGTH];
+static char agent[MAX_PROVJSON_BUFFER_LENGTH];
+static char entity[MAX_PROVJSON_BUFFER_LENGTH];
 
 #define JSON_START "{\"prefix\":{"
 #define JSON_ACTIVITY "}, \"activity\":{"
@@ -90,14 +97,12 @@ static inline char* ready_to_print(){
   return json;
 }
 
-void (*print_json)(char* json);
-
 static inline void json_append(pthread_mutex_t* l, char destination[MAX_PROVJSON_BUFFER_LENGTH], char* source){
   char* json;
   bool is_tasked=false;
   pthread_mutex_lock(l);
   // we cannot append buffer is full, need to print json out
-  if(!append(destination, source)){
+  if(!__append(destination, source)){
     // we need to check that there is no one already printing the json
     pthread_mutex_lock(&l_out);
     if(!writing_out){
@@ -121,59 +126,33 @@ static inline void json_append(pthread_mutex_t* l, char destination[MAX_PROVJSON
   pthread_mutex_unlock(l);
 }
 
-static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-                                'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-                                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-                                'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
-                                'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-                                'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-                                'w', 'x', 'y', 'z', '0', '1', '2', '3',
-                                '4', '5', '6', '7', '8', '9', '+', '/'};
-
-static int mod_table[] = {0, 2, 1};
-
-char *base64_encode(const unsigned char *data,
-                    size_t input_length,
-                    size_t *output_length) {
-
-    *output_length = 4 * ((input_length + 2) / 3) + 1;
-
-    char *encoded_data = malloc(*output_length);
-    if (encoded_data == NULL) return NULL;
-
-    for (int i = 0, j = 0; i < input_length;) {
-
-        uint32_t octet_a = i < input_length ? (unsigned char)data[i++] : 0;
-        uint32_t octet_b = i < input_length ? (unsigned char)data[i++] : 0;
-        uint32_t octet_c = i < input_length ? (unsigned char)data[i++] : 0;
-
-        uint32_t triple = (octet_a << 0x10) + (octet_b << 0x08) + octet_c;
-
-        encoded_data[j++] = encoding_table[(triple >> 3 * 6) & 0x3F];
-        encoded_data[j++] = encoding_table[(triple >> 2 * 6) & 0x3F];
-        encoded_data[j++] = encoding_table[(triple >> 1 * 6) & 0x3F];
-        encoded_data[j++] = encoding_table[(triple >> 0 * 6) & 0x3F];
-    }
-
-    for (int i = 0; i < mod_table[input_length % 3]; i++)
-        encoded_data[*output_length - 2 - i] = '=';
-    encoded_data[(*output_length)-1]='\0';
-    return encoded_data;
+void append_activity(char* json_element){
+  json_append(&l_activity, activity, json_element);
 }
 
-char* node_info_to_json(char* buffer, struct node_identifier* n){
+void append_agent(char* json_element){
+  json_append(&l_agent, agent, json_element);
+}
+
+void append_entity(char* json_element){
+  json_append(&l_entity, entity, json_element);
+}
+
+static __thread char buffer[MAX_PROVJSON_BUFFER_LENGTH];
+
+char* node_info_to_json(char* buf, struct node_identifier* n){
   sprintf(buffer, "{\"cf:type\": %u, \"cf:id\":%llu, \"cf:boot_id\":%u, \"cf:machine_id\":%u, \"cf:version\":%u}", n->type, n->id, n->boot_id, n->machine_id, n->version);
   return buffer;
 }
 
-char* edge_info_to_json(char* buffer, struct edge_identifier* e){
+char* edge_info_to_json(char* buf, struct edge_identifier* e){
   sprintf(buffer, "{\"cf:type\": %u, \"cf:id\":%llu, \"cf:boot_id\":%u, \"cf:machine_id\":%u}", e->type, e->id, e->boot_id, e->machine_id);
   return buffer;
 }
 
 static char* bool_str[] = {"false", "true"};
 
-char* edge_to_json(char* buffer, struct edge_struct* e){
+char* edge_to_json(struct edge_struct* e){
   char edge_info[1024];
   size_t length;
   char* id = base64_encode(e->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, &length);
@@ -192,7 +171,7 @@ char* edge_to_json(char* buffer, struct edge_struct* e){
   return buffer;
 }
 
-char* disc_to_json(char* buffer, struct disc_node_struct* n){
+char* disc_to_json(struct disc_node_struct* n){
   char node_info[1024];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, &length);
@@ -203,7 +182,7 @@ char* disc_to_json(char* buffer, struct disc_node_struct* n){
   return buffer;
 }
 
-char* task_to_json(char* buffer, struct task_prov_struct* n){
+char* task_to_json(struct task_prov_struct* n){
   char node_info[1024];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, &length);
@@ -259,14 +238,14 @@ static inline char* get_inode_type(mode_t mode){
   return type;
 }
 
-char* inode_to_json(char* buffer, struct inode_prov_struct* n){
+char* inode_to_json(struct inode_prov_struct* n){
 
   char msg_info[1024];
   char node_info[1024];
   char uuid[UUID_STR_SIZE];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, &length);
-  sprintf(buffer, "\"cf:%s\" : { \"cf:node_info\": %s, \"cf:user_id\":%u, \"cf:group_id\":%u, \"cf:type\":\"%s\", \"cf:mode\":\"0X%04hhX\", \"cf:uuid\":\"%s\"}",
+  sprintf(buffer, "\"cf:%s\" : { \"cf:node_info\": %s, \"cf:user_id\":%u, \"cf:group_id\":%u, \"prov:type\":\"cf:%s\", \"cf:mode\":\"0X%04hhX\", \"cf:uuid\":\"%s\"}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     n->uid,
@@ -278,7 +257,7 @@ char* inode_to_json(char* buffer, struct inode_prov_struct* n){
   return buffer;
 }
 
-char* sb_to_json(char* buffer, struct sb_struct* n){
+char* sb_to_json(struct sb_struct* n){
   char node_info[1024];
   char uuid[UUID_STR_SIZE];
   size_t length;
@@ -291,7 +270,7 @@ char* sb_to_json(char* buffer, struct sb_struct* n){
   return buffer;
 }
 
-char* msg_to_json(char* buffer, struct msg_msg_struct* n){
+char* msg_to_json(struct msg_msg_struct* n){
   char node_info[1024];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, &length);
@@ -303,7 +282,7 @@ char* msg_to_json(char* buffer, struct msg_msg_struct* n){
   return buffer;
 }
 
-char* shm_to_json(char* buffer, struct shm_struct* n){
+char* shm_to_json(struct shm_struct* n){
   char node_info[1024];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, &length);
@@ -315,7 +294,7 @@ char* shm_to_json(char* buffer, struct shm_struct* n){
   return buffer;
 }
 
-char* sock_to_json(char* buffer, struct sock_struct* n){
+char* sock_to_json(struct sock_struct* n){
   char node_info[1024];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, &length);
@@ -329,7 +308,7 @@ char* sock_to_json(char* buffer, struct sock_struct* n){
   return buffer;
 }
 
-char* str_msg_to_json(char* buffer, struct str_struct* n){
+char* str_msg_to_json(struct str_struct* n){
   size_t length;
   char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, &length);
   sprintf(buffer, "\"cf:%s\" : {\"cf:msg\":\"%s\"}",
@@ -339,7 +318,7 @@ char* str_msg_to_json(char* buffer, struct str_struct* n){
   return buffer;
 }
 
-char* sockaddr_to_json(char* buffer, struct sockaddr* addr, size_t length){
+char* sockaddr_to_json(char* buf, struct sockaddr* addr, size_t length){
   char host[NI_MAXHOST];
   char serv[NI_MAXSERV];
 
@@ -358,7 +337,7 @@ char* sockaddr_to_json(char* buffer, struct sockaddr* addr, size_t length){
   return buffer;
 }
 
-char* addr_to_json(char* buffer, struct address_struct* n){
+char* addr_to_json(struct address_struct* n){
   char node_info[1024];
   char addr_info[PATH_MAX+1024];
   size_t length;
@@ -371,11 +350,11 @@ char* addr_to_json(char* buffer, struct address_struct* n){
   return buffer;
 }
 
-char* pathname_to_json(char* buffer, struct file_name_struct* n){
+char* pathname_to_json(struct file_name_struct* n){
   char node_info[1024];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, &length);
-  sprintf(buffer, "\"cf:%s\" : {\"cf:node_info\":%s, \"name\":\"%s\"}",
+  sprintf(buffer, "\"cf:%s\" : {\"cf:node_info\":%s, \"cf:pathname\":\"%s\"}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     n->name);
@@ -383,11 +362,11 @@ char* pathname_to_json(char* buffer, struct file_name_struct* n){
   return buffer;
 }
 
-char* ifc_to_json(char* buffer, struct ifc_context_struct* n){
+char* ifc_to_json(struct ifc_context_struct* n){
   char node_info[1024];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, &length);
-  sprintf(buffer, "\"cf:%s\" : {\"node_info\":%s, \"ifc\":\"TODO\"}",
+  sprintf(buffer, "\"cf:%s\" : {\"cf:node_info\":%s, \"cf:ifc\":\"TODO\"}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id));
   free(id);

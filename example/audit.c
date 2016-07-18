@@ -38,8 +38,6 @@ void _init_logs( void ){
   simplog.setLogDebugLevel(SIMPLOG_VERBOSE);
 }
 
-static __thread char buffer[MAX_PROVJSON_BUFFER_LENGTH]; // unlikely to be larger than twice PATH_MAX
-
 void init( void ){
   pid_t tid = gettid();
   simplog.writeLog(SIMPLOG_INFO, "audit writer thread, tid:%ld", tid);
@@ -47,48 +45,48 @@ void init( void ){
 
 
 void log_str(struct str_struct* data){
-  simplog.writeLog(SIMPLOG_INFO, str_msg_to_json(buffer, data));
+  append_entity(str_msg_to_json(data));
 }
 
 void log_edge(struct edge_struct* edge){
-  simplog.writeLog(SIMPLOG_INFO, edge_to_json(buffer, edge));
+  simplog.writeLog(SIMPLOG_INFO, edge_to_json(edge));
 }
 
 void log_task(struct task_prov_struct* task){
-  simplog.writeLog(SIMPLOG_INFO, task_to_json(buffer, task));
+  append_activity(task_to_json(task));
 }
 
 void log_inode(struct inode_prov_struct* inode){
-  simplog.writeLog(SIMPLOG_INFO, inode_to_json(buffer, inode));
+  append_entity(inode_to_json(inode));
 }
 
 void log_disc(struct disc_node_struct* node){
-  simplog.writeLog(SIMPLOG_INFO, disc_to_json(buffer, node));
+  append_entity(disc_to_json(node));
 }
 
 void log_msg(struct msg_msg_struct* msg){
-  simplog.writeLog(SIMPLOG_INFO, msg_to_json(buffer, msg));
+  append_entity(msg_to_json(msg));
 }
 
 void log_shm(struct shm_struct* shm){
-  simplog.writeLog(SIMPLOG_INFO, shm_to_json(buffer, shm));
+  append_entity(shm_to_json(shm));
 }
 
 
 void log_sock(struct sock_struct* sock){
-  simplog.writeLog(SIMPLOG_INFO, sock_to_json(buffer, sock));
+  append_entity(sock_to_json(sock));
 }
 
 void log_address(struct address_struct* address){
-  simplog.writeLog(SIMPLOG_INFO, addr_to_json(buffer, address));
+  append_entity(addr_to_json(address));
 }
 
 void log_file_name(struct file_name_struct* f_name){
-  simplog.writeLog(SIMPLOG_INFO, pathname_to_json(buffer, f_name));
+  append_entity(pathname_to_json(f_name));
 }
 
 void log_ifc(struct ifc_context_struct* ifc){
-  simplog.writeLog(SIMPLOG_INFO, ifc_to_json(buffer, ifc));
+  append_entity(ifc_to_json(ifc));
 }
 
 struct provenance_ops ops = {
@@ -106,6 +104,10 @@ struct provenance_ops ops = {
   .log_ifc=log_ifc
 };
 
+void print_json(char* json){
+  simplog.writeLog(SIMPLOG_INFO,  json);
+}
+
 int main(void){
   int rc;
   //hostid = gethostid();
@@ -116,7 +118,7 @@ int main(void){
     simplog.writeLog(SIMPLOG_ERROR, "Failed registering audit operation.");
     exit(rc);
   }
-  sleep(2);
+  set_ProvJSON_callback(print_json);
   while(1) sleep(60);
   provenance_stop();
   return 0;
