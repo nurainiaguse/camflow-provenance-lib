@@ -23,6 +23,7 @@
 
 
 static char* edge_str[]={"data", "create", "pass", "change", "mmap", "attach", "associate", "bind", "connect", "listen", "accept", "open", "parent", "version", "link", "named", "unknown"};
+static char* msg_type[] = {"string", "flow", "task", "inode", "link", "unlink", "disclosed", "message", "shared memory", "socket", "address", "super block", "file name", "ifc"};
 
 struct provenance_ops{
   void (*init)(void);
@@ -30,8 +31,6 @@ struct provenance_ops{
   void (*log_task)(struct task_prov_struct*);
   void (*log_inode)(struct inode_prov_struct*);
   void (*log_str)(struct str_struct*);
-  void (*log_link)(struct link_struct*);
-  void (*log_unlink)(struct unlink_struct*);
   void (*log_disc)(struct disc_node_struct*);
   void (*log_msg)(struct msg_msg_struct*);
   void (*log_shm)(struct shm_struct*);
@@ -132,8 +131,6 @@ char* shm_to_json(char* buffer, struct shm_struct* n);
 char* sock_to_json(char* buffer, struct sock_struct* n);
 char* str_msg_to_json(char* buffer, struct str_struct* n);
 char* addr_to_json(char* buffer, struct address_struct* n);
-char* link_to_json(char* buffer, struct link_struct* n);
-char* unlink_to_json(char* buffer, struct unlink_struct* n);
 char* pathname_to_json(char* buffer, struct file_name_struct* n);
 char* ifc_to_json(char* buffer, struct ifc_context_struct* n);
 

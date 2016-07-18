@@ -53,14 +53,6 @@ void log_str(struct str_struct* data){
   simplog.writeLog(SIMPLOG_INFO, str_msg_to_json(buffer, data));
 }
 
-void log_link(struct link_struct* link){
-  simplog.writeLog(SIMPLOG_INFO, link_to_json(buffer, link));
-}
-
-void log_unlink(struct unlink_struct* unlink){
-  simplog.writeLog(SIMPLOG_INFO, unlink_to_json(buffer, unlink));
-}
-
 void log_edge(struct edge_struct* edge){
   simplog.writeLog(SIMPLOG_INFO, edge_to_json(buffer, edge));
 }
@@ -108,8 +100,6 @@ struct provenance_ops ops = {
   .log_task=log_task,
   .log_inode=log_inode,
   .log_str=log_str,
-  .log_link=log_link,
-  .log_unlink=log_unlink,
   .log_disc=log_disc,
   .log_msg=log_msg,
   .log_shm=log_shm,
