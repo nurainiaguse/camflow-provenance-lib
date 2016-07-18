@@ -16,7 +16,6 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <stdarg.h>
 #include <sys/types.h>
 #include <sys/syscall.h>
@@ -24,10 +23,10 @@
 #include <sys/un.h>
 #include <sys/stat.h>
 #include <netdb.h>
-#include <unistd.h>
 
 #include "simplog.h"
 #include "provenancelib.h"
+#include "provenancePovJSON.h"
 
 #define	LOG_FILE "/tmp/audit.log"
 #define gettid() syscall(SYS_gettid)
@@ -39,9 +38,7 @@ void _init_logs( void ){
   simplog.setLogDebugLevel(SIMPLOG_VERBOSE);
 }
 
-pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
-
-static __thread char buffer[10192]; // check the size
+static __thread char buffer[MAX_PROVJSON_BUFFER_LENGTH]; // unlikely to be larger than twice PATH_MAX
 
 void init( void ){
   pid_t tid = gettid();
