@@ -145,7 +145,7 @@ static __thread char buffer[MAX_PROVJSON_BUFFER_LENGTH];
 
 char* node_info_to_json(char* buf, struct node_identifier* n){
   sprintf(buf, "{\"cf:type\": %u, \"cf:id\":%llu, \"cf:boot_id\":%u, \"cf:machine_id\":%u, \"cf:version\":%u}", n->type, n->id, n->boot_id, n->machine_id, n->version);
-  return buffer;
+  return buf;
 }
 
 char* edge_info_to_json(char* buf, struct edge_identifier* e){
@@ -171,7 +171,7 @@ char* edge_to_json(struct edge_struct* e){
   free(id);
   free(sender);
   free(receiver);
-  return buf;
+  return buffer;
 }
 
 char* disc_to_json(struct disc_node_struct* n){
