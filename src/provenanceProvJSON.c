@@ -86,10 +86,13 @@ static inline char* ready_to_print(){
   strcat(json, prefix_json());
   strcat(json, JSON_ACTIVITY);
   strcat(json, activity);
+  memset(activity, '\0', MAX_PROVJSON_BUFFER_LENGTH);
   strcat(json, JSON_AGENT);
   strcat(json, agent);
+  memset(agent, '\0', MAX_PROVJSON_BUFFER_LENGTH);
   strcat(json, JSON_ENTITY);
   strcat(json, entity);
+  memset(entity, '\0', MAX_PROVJSON_BUFFER_LENGTH);
   strcat(json, JSON_END);
   pthread_mutex_unlock(&l_entity);
   pthread_mutex_unlock(&l_agent);
@@ -141,13 +144,13 @@ void append_entity(char* json_element){
 static __thread char buffer[MAX_PROVJSON_BUFFER_LENGTH];
 
 char* node_info_to_json(char* buf, struct node_identifier* n){
-  sprintf(buffer, "{\"cf:type\": %u, \"cf:id\":%llu, \"cf:boot_id\":%u, \"cf:machine_id\":%u, \"cf:version\":%u}", n->type, n->id, n->boot_id, n->machine_id, n->version);
+  sprintf(buf, "{\"cf:type\": %u, \"cf:id\":%llu, \"cf:boot_id\":%u, \"cf:machine_id\":%u, \"cf:version\":%u}", n->type, n->id, n->boot_id, n->machine_id, n->version);
   return buffer;
 }
 
 char* edge_info_to_json(char* buf, struct edge_identifier* e){
-  sprintf(buffer, "{\"cf:type\": %u, \"cf:id\":%llu, \"cf:boot_id\":%u, \"cf:machine_id\":%u}", e->type, e->id, e->boot_id, e->machine_id);
-  return buffer;
+  sprintf(buf, "{\"cf:type\": %u, \"cf:id\":%llu, \"cf:boot_id\":%u, \"cf:machine_id\":%u}", e->type, e->id, e->boot_id, e->machine_id);
+  return buf;
 }
 
 static char* bool_str[] = {"false", "true"};
@@ -168,7 +171,7 @@ char* edge_to_json(struct edge_struct* e){
   free(id);
   free(sender);
   free(receiver);
-  return buffer;
+  return buf;
 }
 
 char* disc_to_json(struct disc_node_struct* n){
@@ -324,17 +327,17 @@ char* sockaddr_to_json(char* buf, struct sockaddr* addr, size_t length){
 
   if(addr->sa_family == AF_INET){
     getnameinfo(addr, length, host, NI_MAXHOST, serv, NI_MAXSERV, 0);
-    sprintf(buffer, "{\"type\":\"AF_INET\", \"host\":\"%s\", \"serv\":\"%s\"}", host, serv);
+    sprintf(buf, "{\"type\":\"AF_INET\", \"host\":\"%s\", \"serv\":\"%s\"}", host, serv);
   }else if(addr->sa_family == AF_INET6){
     getnameinfo(addr, length, host, NI_MAXHOST, serv, NI_MAXSERV, 0);
-    sprintf(buffer, "{\"type\":\"AF_INET6\", \"host\":\"%s\", \"serv\":\"%s\"}", host, serv);
+    sprintf(buf, "{\"type\":\"AF_INET6\", \"host\":\"%s\", \"serv\":\"%s\"}", host, serv);
   }else if(addr->sa_family == AF_UNIX){
-    sprintf(buffer, "{\"type\":\"AF_UNIX\", \"path\":\"%s\"}", ((struct sockaddr_un*)addr)->sun_path);
+    sprintf(buf, "{\"type\":\"AF_UNIX\", \"path\":\"%s\"}", ((struct sockaddr_un*)addr)->sun_path);
   }else{
-    sprintf(buffer, "{\"type\":\"OTHER\"}");
+    sprintf(buf, "{\"type\":\"OTHER\"}");
   }
 
-  return buffer;
+  return buf;
 }
 
 char* addr_to_json(struct address_struct* n){
