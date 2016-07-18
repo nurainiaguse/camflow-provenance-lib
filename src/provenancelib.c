@@ -155,7 +155,7 @@ static void callback_job(void* data)
     initialised=1;
   }
 
-  switch(msg->msg_info.msg_type){
+  switch(prov_type(msg)){
     case MSG_EDGE:
       if(prov_ops.log_edge!=NULL)
         prov_ops.log_edge(&(msg->edge_info));
@@ -185,7 +185,7 @@ static void callback_job(void* data)
         prov_ops.log_sock(&(msg->sock_info));
       break;
     default:
-      printf("Error: unknown message type %u\n", msg->msg_info.msg_type);
+      printf("Error: unknown message type %u\n", prov_type(msg));
       break;
   }
   free(data); /* free the memory allocated in the reader */
@@ -202,7 +202,7 @@ static void long_callback_job(void* data)
     initialised=1;
   }
 
-  switch(msg->msg_info.msg_type){
+  switch(prov_type(msg)){
     case MSG_STR:
       if(prov_ops.log_str!=NULL)
         prov_ops.log_str(&(msg->str_info));
@@ -220,7 +220,7 @@ static void long_callback_job(void* data)
         prov_ops.log_ifc(&(msg->ifc_info));
       break;
     default:
-      printf("Error: unknown message type %u\n", msg->msg_info.msg_type);
+      printf("Error: unknown message type %u\n", prov_type(msg));
       break;
   }
   free(data); /* free the memory allocated in the reader */
@@ -485,7 +485,7 @@ char* edge_to_json(char* buffer, struct edge_struct* e){
   char* id = base64_encode(e->identifier.buffer, 20, &length);
   char* sender = base64_encode(e->snd.buffer, 20, &length);;
   char* receiver = base64_encode(e->rcv.buffer, 20, &length);;
-  sprintf(buffer, "\"cfe:%s\":{\"cfe:edge_info\":%s, \"cfe:type\":\"%s\", \"cfe:type\":%s, \"sender\":%s, \"receiver\":%s}",
+  sprintf(buffer, "\"cf:%s\":{\"cf:edge_info\":%s, \"cf:type\":\"%s\", \"cf:type\":%s, \"cf:sender\":\"cf:%s\", \"cf:receiver\":\"cf:%s\"}",
     id,
     edge_info_to_json(edge_info, &e->identifier.edge_id),
     edge_str[e->type],
@@ -502,7 +502,7 @@ char* disc_to_json(char* buffer, struct disc_node_struct* n){
   char node_info[1024];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, 20, &length);
-  sprintf(buffer, "\"cfn:%s\" : { \"cf:node_info\": %s}",
+  sprintf(buffer, "\"cf:%s\" : { \"cf:node_info\": %s}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id));
   free(id);
@@ -513,7 +513,7 @@ char* task_to_json(char* buffer, struct task_prov_struct* n){
   char node_info[1024];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, 20, &length);
-  sprintf(buffer, "\"cfac:%s\" : {\"node_info\":%s, \"user_id\":%u, \"group_id\":%u}",
+  sprintf(buffer, "\"cf:%s\" : {\"node_info\":%s, \"user_id\":%u, \"group_id\":%u}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     n->uid,
@@ -572,7 +572,7 @@ char* inode_to_json(char* buffer, struct inode_prov_struct* n){
   char uuid[UUID_STR_SIZE];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, 20, &length);
-  sprintf(buffer, "\"cfen:%s\" : { \"cf:node_info\": %s, \"cf:user_id\":%u, \"cf:group_id\":%u, \"cf:type\":\"%s\", \"cf:mode\":\"0X%04hhX\", \"cf:uuid\":\"%s\"}",
+  sprintf(buffer, "\"cf:%s\" : { \"cf:node_info\": %s, \"cf:user_id\":%u, \"cf:group_id\":%u, \"cf:type\":\"%s\", \"cf:mode\":\"0X%04hhX\", \"cf:uuid\":\"%s\"}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     n->uid,
@@ -589,7 +589,7 @@ char* sb_to_json(char* buffer, struct sb_struct* n){
   char uuid[UUID_STR_SIZE];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, 20, &length);
-  sprintf(buffer, "\"cfen:%s\" : {\"cf:node_info\":%s, \"cf:uuid\":\"%s\"}",
+  sprintf(buffer, "\"cf:%s\" : {\"cf:node_info\":%s, \"cf:uuid\":\"%s\"}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     uuid_to_str(n->uuid, uuid, UUID_STR_SIZE));
@@ -601,7 +601,7 @@ char* msg_to_json(char* buffer, struct msg_msg_struct* n){
   char node_info[1024];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, 20, &length);
-  sprintf(buffer, "\"cfen:%s\" : {\"cf:node_info\":%s, \"cf:type\":%ld}",
+  sprintf(buffer, "\"cf:%s\" : {\"cf:node_info\":%s, \"cf:type\":%ld}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     n->type);
@@ -613,7 +613,7 @@ char* shm_to_json(char* buffer, struct shm_struct* n){
   char node_info[1024];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, 20, &length);
-  sprintf(buffer, "\"cfen:%s\" : {\"cf:node_info\":%s, \"cf:mode\":\"0X%04hhX\"}",
+  sprintf(buffer, "\"cf:%s\" : {\"cf:node_info\":%s, \"cf:mode\":\"0X%04hhX\"}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     n->mode);
@@ -625,7 +625,7 @@ char* sock_to_json(char* buffer, struct sock_struct* n){
   char node_info[1024];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, 20, &length);
-  sprintf(buffer, "\"cfen:%s\" : {\"cf:node_info\":%s, \"cf:type\":%u, \"cf:family\":%u, \"cf:protocol\":%u}",
+  sprintf(buffer, "\"cf:%s\" : {\"cf:node_info\":%s, \"cf:type\":%u, \"cf:family\":%u, \"cf:protocol\":%u}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     n->type,
@@ -638,7 +638,7 @@ char* sock_to_json(char* buffer, struct sock_struct* n){
 char* str_msg_to_json(char* buffer, struct str_struct* n){
   size_t length;
   char* id = base64_encode(n->identifier.buffer, 20, &length);
-  sprintf(buffer, "\"cfen:%s\" : {\"cf:msg\":\"%s\"}",
+  sprintf(buffer, "\"cf:%s\" : {\"cf:msg\":\"%s\"}",
     id,
     n->str);
   free(id);
@@ -669,7 +669,7 @@ char* addr_to_json(char* buffer, struct address_struct* n){
   char addr_info[PATH_MAX+1024];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, 20, &length);
-  sprintf(buffer, "\"cfen:%s\" : {\"cf:node_info\":%s, \"cf:address\":%s}",
+  sprintf(buffer, "\"cf:%s\" : {\"cf:node_info\":%s, \"cf:address\":%s}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     sockaddr_to_json(addr_info, &n->addr, n->length));
@@ -681,7 +681,7 @@ char* pathname_to_json(char* buffer, struct file_name_struct* n){
   char node_info[1024];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, 20, &length);
-  sprintf(buffer, "\"cfen:%s\" : {\"cf:node_info\":%s, \"name\":\"%s\"}",
+  sprintf(buffer, "\"cf:%s\" : {\"cf:node_info\":%s, \"name\":\"%s\"}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     n->name);
@@ -693,11 +693,15 @@ char* ifc_to_json(char* buffer, struct ifc_context_struct* n){
   char node_info[1024];
   size_t length;
   char* id = base64_encode(n->identifier.buffer, 20, &length);
-  sprintf(buffer, "\"cfen:%s\" : {\"node_info\":%s, \"ifc\":\"TODO\"}",
+  sprintf(buffer, "\"cf:%s\" : {\"node_info\":%s, \"ifc\":\"TODO\"}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id));
   free(id);
   return buffer;
+}
+
+char* prefix_json(){
+  return "\"prov\" : \"http://www.w3.org/ns/prov\", \"cf\":\"http://www.camflow.org\"";
 }
 
 bool provenance_is_present(void){
