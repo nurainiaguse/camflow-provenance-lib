@@ -22,8 +22,40 @@
 #include <linux/provenance.h>
 
 
-static char* edge_str[]={"data", "create", "pass", "change", "mmap", "attach", "associate", "bind", "connect", "listen", "accept", "open", "parent", "version", "link", "named", "unknown"};
-static char* msg_type[] = {"string", "flow", "task", "inode", "link", "unlink", "disclosed", "message", "shared memory", "socket", "address", "super block", "file name", "ifc"};
+static char* edge_str[]={"data",
+                          "create",
+                          "pass",
+                          "change",
+                          "mmap",
+                          "attach",
+                          "associate",
+                          "bind",
+                          "connect",
+                          "listen",
+                          "accept",
+                          "open",
+                          "parent",
+                          "version",
+                          "link",
+                          "named",
+                          "ifc",
+                          "exec",
+                          "fork",
+                          "unknown"};
+static char* msg_type[] = {"string",
+                            "flow",
+                            "task",
+                            "inode",
+                            "link",
+                            "unlink",
+                            "disclosed",
+                            "message",
+                            "shared memory",
+                            "socket",
+                            "address",
+                            "super block",
+                            "file name",
+                            "ifc"};
 
 struct provenance_ops{
   void (*init)(void);
