@@ -43,7 +43,7 @@ static char* edge_str[]={"read",
                           "exec",
                           "fork",
                           "unknown"};
-                          
+
 static char* msg_type[] = {"string",
                             "flow",
                             "task",
@@ -118,6 +118,13 @@ int provenance_set_all(bool v);
 * root.
 */
 int provenance_set_opaque(bool v);
+
+/*
+* @v boolean value
+* Request the current process to be part of the provenance record (even if 'all'
+* is not set).
+*/
+int provenance_set_tracked(bool v);
 
 /*
 * @v uint32_t value

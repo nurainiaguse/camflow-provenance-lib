@@ -364,6 +364,23 @@ int provenance_set_opaque(bool value){
   return 0;
 }
 
+int provenance_set_tracked(bool value){
+  int fd = open(PROV_TRACKED_FILE, O_WRONLY);
+
+  if(fd<0)
+  {
+    return fd;
+  }
+  if(value)
+  {
+    write(fd, "1", sizeof(char));
+  }else{
+    write(fd, "0", sizeof(char));
+  }
+  close(fd);
+  return 0;
+}
+
 int provenance_set_machine_id(uint32_t v){
   int fd = open(PROV_MACHINE_ID_FILE, O_WRONLY);
 
