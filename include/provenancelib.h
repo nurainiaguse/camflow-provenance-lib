@@ -22,7 +22,8 @@
 #include <linux/provenance.h>
 
 
-static char* edge_str[]={"data",
+static char* edge_str[]={"read",
+                          "write",
                           "create",
                           "pass",
                           "change",

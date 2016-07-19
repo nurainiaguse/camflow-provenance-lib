@@ -38,11 +38,19 @@ static pthread_mutex_t l_activity =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_agent =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_entity =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_edge =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+static pthread_mutex_t l_used =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+static pthread_mutex_t l_generated =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+static pthread_mutex_t l_informed =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+static pthread_mutex_t l_derived =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
 static char activity[MAX_PROVJSON_BUFFER_LENGTH];
 static char agent[MAX_PROVJSON_BUFFER_LENGTH];
 static char entity[MAX_PROVJSON_BUFFER_LENGTH];
 static char edge[MAX_PROVJSON_BUFFER_LENGTH];
+static char used[MAX_PROVJSON_BUFFER_LENGTH];
+static char generated[MAX_PROVJSON_BUFFER_LENGTH];
+static char informed[MAX_PROVJSON_BUFFER_LENGTH];
+static char derived[MAX_PROVJSON_BUFFER_LENGTH];
 
 bool writing_out = false;
 
@@ -68,6 +76,10 @@ static inline bool __append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* 
 #define JSON_AGENT "}, \"agent\":{"
 #define JSON_ENTITY "}, \"entity\":{"
 #define JSON_EDGE "}, \"edge\":{"
+#define JSON_USED "}, \"used\":{"
+#define JSON_GENERATED "}, \"wasGeneratedBy\":{"
+#define JSON_INFORMED "}, \"wasInformedBy\":{"
+#define JSON_DERIVED "}, \"wasDerivedFrom\":{"
 #define JSON_END "}}"
 
 #define JSON_LENGTH (strlen(JSON_START)\
@@ -75,21 +87,33 @@ static inline bool __append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* 
                       +strlen(JSON_AGENT)\
                       +strlen(JSON_ENTITY)\
                       +strlen(JSON_EDGE)\
+                      +strlen(JSON_USED)\
+                      +strlen(JSON_GENERATED)\
+                      +strlen(JSON_INFORMED)\
+                      +strlen(JSON_DERIVED)\
                       +strlen(JSON_END)\
                       +strlen(prefix_json())\
                       +strlen(activity)\
                       +strlen(agent)\
                       +strlen(entity)\
                       +strlen(edge)\
+                      +strlen(used)\
+                      +strlen(generated)\
+                      +strlen(derived)\
+                      +strlen(informed)\
                       +1)
 
 #define str_is_empty(str) (str[0]=='\0')
 // we create the JSON string to be sent to the call back
 static inline char* ready_to_print(){
-  pthread_mutex_lock(&l_edge);
   pthread_mutex_lock(&l_activity);
   pthread_mutex_lock(&l_agent);
   pthread_mutex_lock(&l_entity);
+  pthread_mutex_lock(&l_edge);
+  pthread_mutex_lock(&l_used);
+  pthread_mutex_lock(&l_generated);
+  pthread_mutex_lock(&l_informed);
+  pthread_mutex_lock(&l_derived);
 
   /* allocate memory */
   char* json = (char*)malloc(JSON_LENGTH * sizeof(char));
@@ -126,12 +150,40 @@ static inline char* ready_to_print(){
     memset(edge, '\0', MAX_PROVJSON_BUFFER_LENGTH);
   }
 
+  if(!str_is_empty(used)){
+    strcat(json, JSON_USED);
+    strcat(json, used);
+    memset(used, '\0', MAX_PROVJSON_BUFFER_LENGTH);
+  }
+
+  if(!str_is_empty(generated)){
+    strcat(json, JSON_GENERATED);
+    strcat(json, generated);
+    memset(generated, '\0', MAX_PROVJSON_BUFFER_LENGTH);
+  }
+
+  if(!str_is_empty(informed)){
+    strcat(json, JSON_INFORMED);
+    strcat(json, informed);
+    memset(informed, '\0', MAX_PROVJSON_BUFFER_LENGTH);
+  }
+
+  if(!str_is_empty(derived)){
+    strcat(json, JSON_DERIVED);
+    strcat(json, derived);
+    memset(derived, '\0', MAX_PROVJSON_BUFFER_LENGTH);
+  }
+
   strcat(json, JSON_END);
 
+  pthread_mutex_unlock(&l_derived);
+  pthread_mutex_unlock(&l_informed);
+  pthread_mutex_unlock(&l_generated);
+  pthread_mutex_unlock(&l_used);
+  pthread_mutex_unlock(&l_edge);
   pthread_mutex_unlock(&l_entity);
   pthread_mutex_unlock(&l_agent);
   pthread_mutex_unlock(&l_activity);
-  pthread_mutex_unlock(&l_edge);
   return json;
 }
 
@@ -183,6 +235,22 @@ void append_edge(char* json_element){
   json_append(&l_edge, edge, json_element);
 }
 
+void append_used(char* json_element){
+  json_append(&l_used, used, json_element);
+}
+
+void append_generated(char* json_element){
+  json_append(&l_generated, generated, json_element);
+}
+
+void append_informed(char* json_element){
+  json_append(&l_informed, informed, json_element);
+}
+
+void append_derived(char* json_element){
+  json_append(&l_derived, derived, json_element);
+}
+
 static __thread char buffer[MAX_PROVJSON_BUFFER_LENGTH];
 
 char* node_info_to_json(char* buf, struct node_identifier* n){
@@ -203,6 +271,78 @@ char* edge_to_json(struct edge_struct* e){
   char* sender = base64_encode(e->snd.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
   char* receiver = base64_encode(e->rcv.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
   sprintf(buffer, "\"cf:%s\":{\"cf:edge_info\":%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"cf:sender\":\"cf:%s\", \"cf:receiver\":\"cf:%s\"}",
+    id,
+    edge_info_to_json(edge_info, &e->identifier.edge_id),
+    edge_str[e->type],
+    bool_str[e->allowed],
+    sender,
+    receiver);
+  free(id);
+  free(sender);
+  free(receiver);
+  return buffer;
+}
+
+char* used_to_json(struct edge_struct* e){
+  char edge_info[1024];
+  char* id = base64_encode(e->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  char* sender = base64_encode(e->snd.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  char* receiver = base64_encode(e->rcv.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  sprintf(buffer, "\"cf:%s\":{\"cf:edge_info\":%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:entity\":\"cf:%s\", \"prov:activity\":\"cf:%s\"}",
+    id,
+    edge_info_to_json(edge_info, &e->identifier.edge_id),
+    edge_str[e->type],
+    bool_str[e->allowed],
+    sender,
+    receiver);
+  free(id);
+  free(sender);
+  free(receiver);
+  return buffer;
+}
+
+char* generated_to_json(struct edge_struct* e){
+  char edge_info[1024];
+  char* id = base64_encode(e->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  char* sender = base64_encode(e->snd.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  char* receiver = base64_encode(e->rcv.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  sprintf(buffer, "\"cf:%s\":{\"cf:edge_info\":%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:activity\":\"cf:%s\", \"prov:entity\":\"cf:%s\"}",
+    id,
+    edge_info_to_json(edge_info, &e->identifier.edge_id),
+    edge_str[e->type],
+    bool_str[e->allowed],
+    sender,
+    receiver);
+  free(id);
+  free(sender);
+  free(receiver);
+  return buffer;
+}
+
+char* informed_to_json(struct edge_struct* e){
+  char edge_info[1024];
+  char* id = base64_encode(e->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  char* sender = base64_encode(e->snd.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  char* receiver = base64_encode(e->rcv.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  sprintf(buffer, "\"cf:%s\":{\"cf:edge_info\":%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:informant\":\"cf:%s\", \"prov:informed\":\"cf:%s\"}",
+    id,
+    edge_info_to_json(edge_info, &e->identifier.edge_id),
+    edge_str[e->type],
+    bool_str[e->allowed],
+    sender,
+    receiver);
+  free(id);
+  free(sender);
+  free(receiver);
+  return buffer;
+}
+
+char* derived_to_json(struct edge_struct* e){
+  char edge_info[1024];
+  char* id = base64_encode(e->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  char* sender = base64_encode(e->snd.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  char* receiver = base64_encode(e->rcv.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  sprintf(buffer, "\"cf:%s\":{\"cf:edge_info\":%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:usedEntity\":\"cf:%s\", \"prov:generatedEntity\":\"cf:%s\"}",
     id,
     edge_info_to_json(edge_info, &e->identifier.edge_id),
     edge_str[e->type],

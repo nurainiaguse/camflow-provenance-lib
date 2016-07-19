@@ -21,10 +21,18 @@ void append_activity(char* json_element);
 void append_agent(char* json_element);
 void append_entity(char* json_element);
 void append_edge(char* json_element);
+void append_used(char* json_element);
+void append_generated(char* json_element);
+void append_informed(char* json_element);
+void append_derived(char* json_element);
 
 /* struct to json functions */
 /* TODO provide clean implementation? right now probably highly inneficient */
 char* edge_to_json(struct edge_struct* e);
+char* used_to_json(struct edge_struct* e);
+char* generated_to_json(struct edge_struct* e);
+char* informed_to_json(struct edge_struct* e);
+char* derived_to_json(struct edge_struct* e);
 char* disc_to_json(struct disc_node_struct* n);
 char* task_to_json(struct task_prov_struct* n);
 char* inode_to_json(struct inode_prov_struct* n);
