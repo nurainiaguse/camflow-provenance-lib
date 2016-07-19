@@ -15,12 +15,11 @@
 #ifndef __PROVENANCEPROVJSON_H
 #define __PROVENANCEPROVJSON_H
 
-#define MAX_PROVJSON_BUFFER_LENGTH PATH_MAX*2
-
 void set_ProvJSON_callback( void (*fcn)(char* json) );
 void append_activity(char* json_element);
 void append_agent(char* json_element);
 void append_entity(char* json_element);
+void append_edge(char* json_element);
 
 /* struct to json functions */
 /* TODO provide clean implementation? right now probably highly inneficient */

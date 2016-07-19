@@ -49,7 +49,7 @@ void log_str(struct str_struct* data){
 }
 
 void log_edge(struct edge_struct* edge){
-  simplog.writeLog(SIMPLOG_INFO, edge_to_json(edge));
+  append_edge(edge_to_json(edge));
 }
 
 void log_task(struct task_prov_struct* task){

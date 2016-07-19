@@ -31,10 +31,18 @@
 #include "provenancePovJSON.h"
 #include "provenanceutils.h"
 
+#define MAX_PROVJSON_BUFFER_LENGTH PATH_MAX*2
+
 static pthread_mutex_t l_out =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_activity =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_agent =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_entity =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+static pthread_mutex_t l_edge =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+
+static char activity[MAX_PROVJSON_BUFFER_LENGTH];
+static char agent[MAX_PROVJSON_BUFFER_LENGTH];
+static char entity[MAX_PROVJSON_BUFFER_LENGTH];
+static char edge[MAX_PROVJSON_BUFFER_LENGTH];
 
 bool writing_out = false;
 
@@ -55,45 +63,72 @@ static inline bool __append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* 
   return true;
 }
 
-static char activity[MAX_PROVJSON_BUFFER_LENGTH];
-static char agent[MAX_PROVJSON_BUFFER_LENGTH];
-static char entity[MAX_PROVJSON_BUFFER_LENGTH];
-
 #define JSON_START "{\"prefix\":{"
 #define JSON_ACTIVITY "}, \"activity\":{"
 #define JSON_AGENT "}, \"agent\":{"
 #define JSON_ENTITY "}, \"entity\":{"
+#define JSON_EDGE "}, \"edge\":{"
 #define JSON_END "}}"
 
 #define JSON_LENGTH (strlen(JSON_START)\
                       +strlen(JSON_ACTIVITY)\
                       +strlen(JSON_AGENT)\
                       +strlen(JSON_ENTITY)\
+                      +strlen(JSON_EDGE)\
                       +strlen(JSON_END)\
                       +strlen(prefix_json())\
                       +strlen(activity)\
                       +strlen(agent)\
                       +strlen(entity)\
+                      +strlen(edge)\
                       +1)
+
+#define str_is_empty(str) (str[0]=='\0')
 // we create the JSON string to be sent to the call back
 static inline char* ready_to_print(){
-  char* json = (char*)malloc(JSON_LENGTH * sizeof(char));
-  json[0]='\0';
   pthread_mutex_lock(&l_activity);
   pthread_mutex_lock(&l_agent);
   pthread_mutex_lock(&l_entity);
+  pthread_mutex_lock(&l_edge);
+
+  /* allocate memory */
+  char* json = (char*)malloc(JSON_LENGTH * sizeof(char));
+  json[0]='\0';
+
   strcat(json, JSON_START);
   strcat(json, prefix_json());
-  strcat(json, JSON_ACTIVITY);
-  strcat(json, activity);
-  memset(activity, '\0', MAX_PROVJSON_BUFFER_LENGTH);
-  strcat(json, JSON_AGENT);
-  strcat(json, agent);
-  memset(agent, '\0', MAX_PROVJSON_BUFFER_LENGTH);
-  strcat(json, JSON_ENTITY);
-  strcat(json, entity);
-  memset(entity, '\0', MAX_PROVJSON_BUFFER_LENGTH);
+
+  /* recording activities */
+  if(!str_is_empty(activity)){
+    strcat(json, JSON_ACTIVITY);
+    strcat(json, activity);
+    memset(activity, '\0', MAX_PROVJSON_BUFFER_LENGTH);
+  }
+
+  /* recording agents */
+  if(!str_is_empty(agent)){
+    strcat(json, JSON_AGENT);
+    strcat(json, agent);
+    memset(agent, '\0', MAX_PROVJSON_BUFFER_LENGTH);
+  }
+
+  /* recording entities */
+  if(!str_is_empty(entity)){
+    strcat(json, JSON_ENTITY);
+    strcat(json, entity);
+    memset(entity, '\0', MAX_PROVJSON_BUFFER_LENGTH);
+  }
+
+  /* recording edges */
+  if(!str_is_empty(edge)){
+    strcat(json, JSON_EDGE);
+    strcat(json, edge);
+    memset(edge, '\0', MAX_PROVJSON_BUFFER_LENGTH);
+  }
+
   strcat(json, JSON_END);
+
+  pthread_mutex_unlock(&l_edge);
   pthread_mutex_unlock(&l_entity);
   pthread_mutex_unlock(&l_agent);
   pthread_mutex_unlock(&l_activity);
@@ -141,6 +176,10 @@ void append_entity(char* json_element){
   json_append(&l_entity, entity, json_element);
 }
 
+void append_edge(char* json_element){
+  json_append(&l_edge, edge, json_element);
+}
+
 static __thread char buffer[MAX_PROVJSON_BUFFER_LENGTH];
 
 char* node_info_to_json(char* buf, struct node_identifier* n){
@@ -160,7 +199,7 @@ char* edge_to_json(struct edge_struct* e){
   char* id = base64_encode(e->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
   char* sender = base64_encode(e->snd.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
   char* receiver = base64_encode(e->rcv.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
-  sprintf(buffer, "\"cf:%s\":{\"cf:edge_info\":%s, \"cf:type\":\"%s\", \"cf:type\":%s, \"cf:sender\":\"cf:%s\", \"cf:receiver\":\"cf:%s\"}",
+  sprintf(buffer, "\"cf:%s\":{\"cf:edge_info\":%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"cf:sender\":\"cf:%s\", \"cf:receiver\":\"cf:%s\"}",
     id,
     edge_info_to_json(edge_info, &e->identifier.edge_id),
     edge_str[e->type],
