@@ -45,7 +45,7 @@ void init( void ){
 
 
 void log_str(struct str_struct* data){
-  append_entity(str_msg_to_json(data));
+  //append_entity(str_msg_to_json(data));
 }
 
 void log_edge(struct edge_struct* edge){
@@ -119,7 +119,10 @@ int main(void){
     exit(rc);
   }
   set_ProvJSON_callback(print_json);
-  while(1) sleep(60);
+  while(1){
+    sleep(5);
+    flush_json();
+  }
   provenance_stop();
   return 0;
 }

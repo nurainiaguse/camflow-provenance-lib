@@ -16,6 +16,7 @@
 #define __PROVENANCEPROVJSON_H
 
 void set_ProvJSON_callback( void (*fcn)(char* json) );
+void flush_json( void );
 void append_activity(char* json_element);
 void append_agent(char* json_element);
 void append_entity(char* json_element);

@@ -33,7 +33,7 @@
 
 #define MAX_PROVJSON_BUFFER_LENGTH PATH_MAX*2
 
-static pthread_mutex_t l_out =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+static pthread_mutex_t l_flush =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_activity =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_agent =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_entity =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
@@ -135,28 +135,31 @@ static inline char* ready_to_print(){
   return json;
 }
 
-static inline void json_append(pthread_mutex_t* l, char destination[MAX_PROVJSON_BUFFER_LENGTH], char* source){
+void flush_json(){
+  bool should_flush=false;
   char* json;
-  bool is_tasked=false;
+
+  pthread_mutex_lock(&l_flush);
+  if(!writing_out){
+    writing_out = true;
+    should_flush = true;
+  }
+  pthread_mutex_unlock(&l_flush);
+
+  if(should_flush){
+    json = ready_to_print();
+    print_json(json);
+    pthread_mutex_lock(&l_flush);
+    writing_out = false;
+    pthread_mutex_unlock(&l_flush);
+  }
+}
+
+static inline void json_append(pthread_mutex_t* l, char destination[MAX_PROVJSON_BUFFER_LENGTH], char* source){
   pthread_mutex_lock(l);
   // we cannot append buffer is full, need to print json out
   if(!__append(destination, source)){
-    // we need to check that there is no one already printing the json
-    pthread_mutex_lock(&l_out);
-    if(!writing_out){
-      writing_out = true;
-      is_tasked = true;
-    }
-    pthread_mutex_unlock(&l_out);
-
-    // we are tasked to print the json
-    if(is_tasked){
-      json = ready_to_print();
-      print_json(json);
-      pthread_mutex_lock(&l_out);
-      writing_out = false;
-      pthread_mutex_unlock(&l_out);
-    }
+    flush_json();
     pthread_mutex_unlock(l);
     json_append(l, destination, source);
     return;
