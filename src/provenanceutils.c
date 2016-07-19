@@ -15,45 +15,92 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <string.h>
 
 #include "provenanceutils.h"
 
-static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-                                'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-                                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-                                'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
-                                'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-                                'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-                                'w', 'x', 'y', 'z', '0', '1', '2', '3',
-                                '4', '5', '6', '7', '8', '9', '+', '/'};
+static const char base64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-static int mod_table[] = {0, 2, 1};
+// from https://en.wikibooks.org/wiki/Algorithm_Implementation/Miscellaneous/Base64#C
+static inline int base64encode(const void* data_buf, size_t dataLength, char* result, size_t resultSize){
+   const uint8_t *data = (const uint8_t *)data_buf;
+   size_t resultIndex = 0;
+   size_t x;
+   uint32_t n = 0;
+   int padCount = dataLength % 3;
+   uint8_t n0, n1, n2, n3;
 
-char *base64_encode(const unsigned char *data,
-                    size_t input_length,
-                    size_t *output_length) {
+   /* increment over the length of the string, three characters at a time */
+   for (x = 0; x < dataLength; x += 3)
+   {
+      /* these three 8-bit (ASCII) characters become one 24-bit number */
+      n = ((uint32_t)data[x]) << 16; //parenthesis needed, compiler depending on flags can do the shifting before conversion to uint32_t, resulting to 0
 
-    *output_length = 4 * ((input_length + 2) / 3) + 1;
+      if((x+1) < dataLength)
+         n += ((uint32_t)data[x+1]) << 8;//parenthesis needed, compiler depending on flags can do the shifting before conversion to uint32_t, resulting to 0
 
-    char *encoded_data = malloc(*output_length);
-    if (encoded_data == NULL) return NULL;
+      if((x+2) < dataLength)
+         n += data[x+2];
 
-    for (int i = 0, j = 0; i < input_length;) {
+      /* this 24-bit number gets separated into four 6-bit numbers */
+      n0 = (uint8_t)(n >> 18) & 63;
+      n1 = (uint8_t)(n >> 12) & 63;
+      n2 = (uint8_t)(n >> 6) & 63;
+      n3 = (uint8_t)n & 63;
 
-        uint32_t octet_a = i < input_length ? (unsigned char)data[i++] : 0;
-        uint32_t octet_b = i < input_length ? (unsigned char)data[i++] : 0;
-        uint32_t octet_c = i < input_length ? (unsigned char)data[i++] : 0;
+      /*
+       * if we have one byte available, then its encoding is spread
+       * out over two characters
+       */
+      if(resultIndex >= resultSize) return 1;   /* indicate failure: buffer too small */
+      result[resultIndex++] = base64chars[n0];
+      if(resultIndex >= resultSize) return 1;   /* indicate failure: buffer too small */
+      result[resultIndex++] = base64chars[n1];
 
-        uint32_t triple = (octet_a << 0x10) + (octet_b << 0x08) + octet_c;
+      /*
+       * if we have only two bytes available, then their encoding is
+       * spread out over three chars
+       */
+      if((x+1) < dataLength)
+      {
+         if(resultIndex >= resultSize) return 1;   /* indicate failure: buffer too small */
+         result[resultIndex++] = base64chars[n2];
+      }
 
-        encoded_data[j++] = encoding_table[(triple >> 3 * 6) & 0x3F];
-        encoded_data[j++] = encoding_table[(triple >> 2 * 6) & 0x3F];
-        encoded_data[j++] = encoding_table[(triple >> 1 * 6) & 0x3F];
-        encoded_data[j++] = encoding_table[(triple >> 0 * 6) & 0x3F];
-    }
+      /*
+       * if we have all three bytes available, then their encoding is spread
+       * out over four characters
+       */
+      if((x+2) < dataLength)
+      {
+         if(resultIndex >= resultSize) return 1;   /* indicate failure: buffer too small */
+         result[resultIndex++] = base64chars[n3];
+      }
+   }
 
-    for (int i = 0; i < mod_table[input_length % 3]; i++)
-        encoded_data[*output_length - 2 - i] = '=';
-    encoded_data[(*output_length)-1]='\0';
-    return encoded_data;
+   /*
+    * create and add padding that is required if we did not have a multiple of 3
+    * number of characters available
+    */
+   if (padCount > 0)
+   {
+      for (; padCount < 3; padCount++)
+      {
+         if(resultIndex >= resultSize) return 1;   /* indicate failure: buffer too small */
+         result[resultIndex++] = '=';
+      }
+   }
+   if(resultIndex >= resultSize) return 1;   /* indicate failure: buffer too small */
+   result[resultIndex] = 0;
+   return 0;   /* indicate success */
+}
+
+#define IDENTIFIER_ENCODE64_LENGTH(lenght) (4 * ((input_length + 2) / 3) + 1)
+
+char* base64_encode(const unsigned char *data, size_t input_length){
+  char* result = malloc(IDENTIFIER_ENCODE64_LENGTH(input_length)*sizeof(char));
+  if(base64encode(data, input_length, result, IDENTIFIER_ENCODE64_LENGTH(input_length))!=0){
+    strcpy(result, "error");
+  }
+  return result;
 }
