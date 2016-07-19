@@ -86,10 +86,10 @@ static inline bool __append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* 
 #define str_is_empty(str) (str[0]=='\0')
 // we create the JSON string to be sent to the call back
 static inline char* ready_to_print(){
+  pthread_mutex_lock(&l_edge);
   pthread_mutex_lock(&l_activity);
   pthread_mutex_lock(&l_agent);
   pthread_mutex_lock(&l_entity);
-  pthread_mutex_lock(&l_edge);
 
   /* allocate memory */
   char* json = (char*)malloc(JSON_LENGTH * sizeof(char));
@@ -128,10 +128,10 @@ static inline char* ready_to_print(){
 
   strcat(json, JSON_END);
 
-  pthread_mutex_unlock(&l_edge);
   pthread_mutex_unlock(&l_entity);
   pthread_mutex_unlock(&l_agent);
   pthread_mutex_unlock(&l_activity);
+  pthread_mutex_unlock(&l_edge);
   return json;
 }
 
