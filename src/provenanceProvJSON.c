@@ -368,7 +368,7 @@ char* disc_to_json(struct disc_node_struct* n){
 char* task_to_json(struct task_prov_struct* n){
   char node_info[1024];
   char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
-  sprintf(buffer, "\"cf:%s\" : {\"node_info\":%s, \"user_id\":%u, \"group_id\":%u}",
+  sprintf(buffer, "\"cf:%s\" : {\"cf:node_info\":%s, \"user_id\":%u, \"group_id\":%u}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     n->uid,
