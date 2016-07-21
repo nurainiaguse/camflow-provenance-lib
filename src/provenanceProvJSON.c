@@ -56,6 +56,30 @@ bool writing_out = false;
 
 static void (*print_json)(char* json);
 
+int disclose_node_ProvJSON(uint8_t type, const char* content, prov_identifier_t* identifier){
+  int err;
+  struct disc_node_struct node;
+
+  strncpy(node.content, content, PATH_MAX);
+  node.length=strnlen(content, PATH_MAX);
+  node.identifier.node_id.type=type;
+
+  if(err = provenance_disclose_node(&node)<0){
+    return err;
+  }
+  memcpy(identifier, &node.identifier, sizeof(prov_identifier_t));
+  return err;
+}
+
+int disclose_edge_ProvJSON(uint8_t type, prov_identifier_t* sender, prov_identifier_t* receiver){
+  struct edge_struct edge;
+  edge.type=type;
+  edge.allowed=true;
+  memcpy(&edge.snd, sender, sizeof(prov_identifier_t));
+  memcpy(&edge.rcv, receiver, sizeof(prov_identifier_t));
+  return provenance_disclose_edge(&edge);
+}
+
 void set_ProvJSON_callback( void (*fcn)(char* json) ){
   print_json = fcn;
 }
@@ -358,9 +382,16 @@ char* derived_to_json(struct edge_struct* e){
 char* disc_to_json(struct disc_node_struct* n){
   char node_info[1024];
   char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
-  sprintf(buffer, "\"cf:%s\" : { \"cf:node_info\": %s}",
-    id,
-    node_info_to_json(node_info, &n->identifier.node_id));
+  if(n->length > 0){
+    sprintf(buffer, "\"cf:%s\" : { \"cf:node_info\": %s, %s}",
+      id,
+      node_info_to_json(node_info, &n->identifier.node_id),
+      n->content);
+    }else{
+      sprintf(buffer, "\"cf:%s\" : { \"cf:node_info\": %s}",
+        id,
+        node_info_to_json(node_info, &n->identifier.node_id));
+    }
   free(id);
   return buffer;
 }

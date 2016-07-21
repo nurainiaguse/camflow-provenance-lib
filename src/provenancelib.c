@@ -168,10 +168,6 @@ static void callback_job(void* data)
       if(prov_ops.log_inode!=NULL)
         prov_ops.log_inode(&(msg->inode_info));
       break;
-    case MSG_DISC_NODE:
-      if(prov_ops.log_disc!=NULL)
-        prov_ops.log_disc(&(msg->disc_node_info));
-      break;
     case MSG_MSG:
       if(prov_ops.log_msg!=NULL)
         prov_ops.log_msg(&(msg->msg_msg_info));
@@ -218,6 +214,13 @@ static void long_callback_job(void* data)
     case MSG_IFC:
       if(prov_ops.log_ifc!=NULL)
         prov_ops.log_ifc(&(msg->ifc_info));
+      break;      
+    case MSG_DISC_ENTITY:
+    case MSG_DISC_ACTIVITY:
+    case MSG_DISC_AGENT:
+    case MSG_DISC_NODE:
+      if(prov_ops.log_disc!=NULL)
+        prov_ops.log_disc(&(msg->disc_node_info));
       break;
     default:
       printf("Error: unknown message type %u\n", prov_type(msg));

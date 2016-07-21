@@ -48,16 +48,17 @@ static char* msg_type[] = {"string",
                             "flow",
                             "task",
                             "inode",
-                            "link",
-                            "unlink",
-                            "disclosed",
                             "message",
                             "shared memory",
                             "socket",
                             "address",
                             "super block",
                             "file name",
-                            "ifc"};
+                            "ifc",
+                            "disclosed entity",
+                            "disclosed activity",
+                            "disclosed agent",
+                            "disclosed node"};
 
 struct provenance_ops{
   void (*init)(void);
