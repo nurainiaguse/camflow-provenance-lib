@@ -382,17 +382,21 @@ char* derived_to_json(struct edge_struct* e){
 char* disc_to_json(struct disc_node_struct* n){
   char node_info[1024];
   char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  char* parent_id = base64_encode(n->parent.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
   if(n->length > 0){
-    sprintf(buffer, "\"cf:%s\" : { \"cf:node_info\": %s, %s}",
+    sprintf(buffer, "\"cf:%s\" : { \"cf:node_info\": %s, \"cf:parent_id\":\"cf:%s\", %s}",
       id,
       node_info_to_json(node_info, &n->identifier.node_id),
+      parent_id,
       n->content);
     }else{
-      sprintf(buffer, "\"cf:%s\" : { \"cf:node_info\": %s}",
+      sprintf(buffer, "\"cf:%s\" : { \"cf:node_info\": %s}, \"cf:parent_id\":\"cf:%s\"",
         id,
-        node_info_to_json(node_info, &n->identifier.node_id));
+        node_info_to_json(node_info, &n->identifier.node_id),
+        parent_id);
     }
   free(id);
+  free(parent_id);
   return buffer;
 }
 
