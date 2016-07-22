@@ -27,9 +27,9 @@ void append_informed(char* json_element);
 void append_derived(char* json_element);
 
 /* disclosing nodes and edges for provjson */
-#define disclose_entity_ProvJSON(content, identifier) provenance_disclose_json(MSG_DISC_ENTITY, content, identifier)
-#define disclose_activity_ProvJSON(content, identifier) provenance_disclose_json(MSG_DISC_ACTIVITY, content, identifier)
-#define disclose_agent_ProvJSON(content, identifier) provenance_disclose_json(MSG_DISC_AGENT, content, identifier)
+#define disclose_entity_ProvJSON(content, identifier) disclose_node_ProvJSON(MSG_DISC_ENTITY, content, identifier)
+#define disclose_activity_ProvJSON(content, identifier) disclose_node_ProvJSON(MSG_DISC_ACTIVITY, content, identifier)
+#define disclose_agent_ProvJSON(content, identifier) disclose_node_ProvJSON(MSG_DISC_AGENT, content, identifier)
 
 int disclose_node_ProvJSON(uint8_t type, const char* content, prov_identifier_t* identifier);
 int disclose_edge_ProvJSON(uint8_t type, prov_identifier_t* sender, prov_identifier_t* receiver);

@@ -390,12 +390,12 @@ char* disc_to_json(struct disc_node_struct* n){
       node_info_to_json(node_info, &n->identifier.node_id),
       parent_id,
       n->content);
-    }else{
-      sprintf(buffer, "\"cf:%s\" : { \"cf:node_info\": %s}, \"cf:parent_id\":\"cf:%s\"",
-        id,
-        node_info_to_json(node_info, &n->identifier.node_id),
-        parent_id);
-    }
+  }else{
+    sprintf(buffer, "\"cf:%s\" : { \"cf:node_info\": %s}, \"cf:parent_id\":\"cf:%s\"",
+      id,
+      node_info_to_json(node_info, &n->identifier.node_id),
+      parent_id);
+  }
   free(id);
   free(parent_id);
   return buffer;
