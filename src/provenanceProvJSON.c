@@ -225,6 +225,7 @@ void flush_json(){
   if(should_flush){
     json = ready_to_print();
     print_json(json);
+    free(json);
     pthread_mutex_lock(&l_flush);
     writing_out = false;
     pthread_mutex_unlock(&l_flush);
