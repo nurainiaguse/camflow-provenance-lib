@@ -130,14 +130,14 @@ static inline bool __append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* 
 #define str_is_empty(str) (str[0]=='\0')
 // we create the JSON string to be sent to the call back
 static inline char* ready_to_print(){
-  pthread_mutex_lock(&l_activity);
-  pthread_mutex_lock(&l_agent);
-  pthread_mutex_lock(&l_entity);
-  pthread_mutex_lock(&l_edge);
-  pthread_mutex_lock(&l_used);
-  pthread_mutex_lock(&l_generated);
-  pthread_mutex_lock(&l_informed);
   pthread_mutex_lock(&l_derived);
+  pthread_mutex_lock(&l_informed);
+  pthread_mutex_lock(&l_generated);
+  pthread_mutex_lock(&l_used);
+  pthread_mutex_lock(&l_edge);
+  pthread_mutex_lock(&l_entity);
+  pthread_mutex_lock(&l_agent);
+  pthread_mutex_lock(&l_activity);
 
   /* allocate memory */
   char* json = (char*)malloc(JSON_LENGTH * sizeof(char));
@@ -152,6 +152,7 @@ static inline char* ready_to_print(){
     strcat(json, activity);
     memset(activity, '\0', MAX_PROVJSON_BUFFER_LENGTH);
   }
+  pthread_mutex_unlock(&l_activity);
 
   /* recording agents */
   if(!str_is_empty(agent)){
@@ -159,6 +160,7 @@ static inline char* ready_to_print(){
     strcat(json, agent);
     memset(agent, '\0', MAX_PROVJSON_BUFFER_LENGTH);
   }
+  pthread_mutex_unlock(&l_agent);
 
   /* recording entities */
   if(!str_is_empty(entity)){
@@ -166,6 +168,7 @@ static inline char* ready_to_print(){
     strcat(json, entity);
     memset(entity, '\0', MAX_PROVJSON_BUFFER_LENGTH);
   }
+  pthread_mutex_unlock(&l_entity);
 
   /* recording edges */
   if(!str_is_empty(edge)){
@@ -173,41 +176,37 @@ static inline char* ready_to_print(){
     strcat(json, edge);
     memset(edge, '\0', MAX_PROVJSON_BUFFER_LENGTH);
   }
+  pthread_mutex_unlock(&l_edge);
 
   if(!str_is_empty(used)){
     strcat(json, JSON_USED);
     strcat(json, used);
     memset(used, '\0', MAX_PROVJSON_BUFFER_LENGTH);
   }
+  pthread_mutex_unlock(&l_used);
 
   if(!str_is_empty(generated)){
     strcat(json, JSON_GENERATED);
     strcat(json, generated);
     memset(generated, '\0', MAX_PROVJSON_BUFFER_LENGTH);
   }
+  pthread_mutex_unlock(&l_generated);
 
   if(!str_is_empty(informed)){
     strcat(json, JSON_INFORMED);
     strcat(json, informed);
     memset(informed, '\0', MAX_PROVJSON_BUFFER_LENGTH);
   }
+  pthread_mutex_unlock(&l_informed);
 
   if(!str_is_empty(derived)){
     strcat(json, JSON_DERIVED);
     strcat(json, derived);
     memset(derived, '\0', MAX_PROVJSON_BUFFER_LENGTH);
   }
+  pthread_mutex_unlock(&l_derived);
 
   strcat(json, JSON_END);
-
-  pthread_mutex_unlock(&l_derived);
-  pthread_mutex_unlock(&l_informed);
-  pthread_mutex_unlock(&l_generated);
-  pthread_mutex_unlock(&l_used);
-  pthread_mutex_unlock(&l_edge);
-  pthread_mutex_unlock(&l_entity);
-  pthread_mutex_unlock(&l_agent);
-  pthread_mutex_unlock(&l_activity);
   return json;
 }
 
