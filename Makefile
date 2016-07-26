@@ -18,4 +18,4 @@ prepare:
 
 install:
 	cd ./example && sudo $(MAKE) install
-	cd ./tool && $(MAKE) install
+	cd ./tool && sudo $(MAKE) install
