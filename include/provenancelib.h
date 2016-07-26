@@ -43,7 +43,8 @@ static char* edge_str[]={"read",
                           "exec",
                           "fork",
                           "unknown",
-                          "version"};
+                          "version",
+                          "search"};
 
 static char* msg_type[] = {"string",
                             "flow",
