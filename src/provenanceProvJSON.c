@@ -283,7 +283,7 @@ char* node_info_to_json(char* buf, struct node_identifier* n){
 }
 
 char* edge_info_to_json(char* buf, struct edge_identifier* e){
-  sprintf(buf, "\"cf:type\": %u, \"cf:id\":%llu, \"cf:boot_id\":%u, \"cf:machine_id\":%u", e->type, e->id, e->boot_id, e->machine_id);
+  sprintf(buf, "\"cf:id\":%llu, \"cf:boot_id\":%u, \"cf:machine_id\":%u", e->id, e->boot_id, e->machine_id);
   return buf;
 }
 
