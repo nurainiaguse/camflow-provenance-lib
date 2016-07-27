@@ -363,6 +363,49 @@ int provenance_set_all(bool value){
   return 0;
 }
 
+bool provenance_get_all( void ){
+  int fd = open(PROV_ALL_FILE, O_RDONLY);
+  char c;
+  if(fd<0)
+  {
+    return false;
+  }
+
+  read(fd, &c, sizeof(char));
+  close(fd);
+  return c!='0';
+}
+
+int provenance_set_track_dir(bool value){
+  int fd = open(PROV_TRACK_DIR, O_WRONLY);
+
+  if(fd<0)
+  {
+    return fd;
+  }
+  if(value)
+  {
+    write(fd, "1", sizeof(char));
+  }else{
+    write(fd, "0", sizeof(char));
+  }
+  close(fd);
+  return 0;
+}
+
+bool provenance_get_track_dir( void ){
+  int fd = open(PROV_TRACK_DIR, O_RDONLY);
+  char c;
+  if(fd<0)
+  {
+    return false;
+  }
+
+  read(fd, &c, sizeof(char));
+  close(fd);
+  return c!='0';
+}
+
 int provenance_set_opaque(bool value){
   int fd = open(PROV_OPAQUE_FILE, O_WRONLY);
 

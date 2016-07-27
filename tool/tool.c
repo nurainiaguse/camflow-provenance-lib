@@ -27,6 +27,8 @@ void usage( void ){
   printf("-h usage.\n");
   printf("-s print provenance capture state.\n");
   printf("-e <bool> enable/disable provenance capture.\n");
+  printf("-a <bool> activate/deactivate whole-system provenance capture.\n");
+  printf("-d <bool> activate/deactivate directories provenance capture.\n");
 }
 
 #define is_str_true(str) ( strcmp (str, "true") == 0)
@@ -39,15 +41,45 @@ void enable( const char* str ){
   }
 
   if(provenance_set_enable(is_str_true(str))<0)
-    perror("Could not enable provenance capture");
+    perror("Could not enable/disable provenance capture");
+}
+
+void all( const char* str ){
+  if(!is_str_true(str) && !is_str_false(str)){
+    printf("Excepted a boolean, got %s.\n", str);
+    return;
+  }
+
+  if(provenance_set_all(is_str_true(str))<0)
+    perror("Could not activate/deactivate whole-system provenance capture");
+}
+
+void dir( const char* str ){
+  if(!is_str_true(str) && !is_str_false(str)){
+    printf("Excepted a boolean, got %s.\n", str);
+    return;
+  }
+
+  if(provenance_set_track_dir(is_str_true(str))<0)
+    perror("Could not activate/deactivate directories provenance capture");
 }
 
 void state( void ){
   printf("Provenance capture:\n");
   if(provenance_get_enable()){
-    printf("- enabled;\n");
+    printf("- capture enabled;\n");
   }else{
-    printf("- disabled;\n");
+    printf("- capture disabled;\n");
+  }
+  if( provenance_get_all() ){
+    printf("- all enabled;\n");
+  }else{
+    printf("- all disabled;\n");
+  }
+  if( provenance_get_track_dir() ){
+    printf("- directories provenance captured;\n");
+  }else{
+    printf("- directories provenance not captured;\n");
   }
 }
 
@@ -69,6 +101,12 @@ int main(int argc, char *argv[]){
       break;
     case 'e':
       enable(argv[2]);
+      break;
+    case 'a':
+      all(argv[2]);
+      break;
+    case 'd':
+      dir(argv[2]);
       break;
     default:
       usage();

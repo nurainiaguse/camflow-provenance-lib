@@ -120,6 +120,22 @@ bool provenance_get_enable( void );
 int provenance_set_all(bool v);
 
 /*
+* return either or not provenance on all kernel object is active.
+*/
+bool provenance_get_all( void );
+
+/*
+* @v boolean value
+* activate/discativate the capture of directories provenance.
+*/
+int provenance_set_track_dir(bool v);
+
+/*
+* return either or not directories provenance is captured.
+*/
+bool provenance_get_track_dir( void );
+
+/*
 * @v boolean value
 * Hide the current process from provenance capture. Should be mostly used by the
 * provenance capture service itself. Will fail if the current process is not
