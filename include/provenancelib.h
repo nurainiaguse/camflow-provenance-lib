@@ -107,6 +107,11 @@ void provenance_stop(void);
 int provenance_set_enable(bool v);
 
 /*
+* return either or not the provenance capture is active.
+*/
+bool provenance_get_enable( void );
+
+/*
 * @v boolean value
 * activate provenance on all kernel objects. WARNING the computer may slow down
 * dramatically and the amount of data generated may be excessively large. Will

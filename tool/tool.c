@@ -23,8 +23,35 @@
 
 #include "provenancelib.h"
 
-void usage(){
+void usage( void ){
   printf("-h usage.\n");
+  printf("-s print provenance capture state.\n");
+  printf("-e enable provenance capture.\n");
+  printf("-d disable provenance capture.\n");
+}
+
+void enable( void ){
+  if(!provenance_get_enable()){
+    provenance_set_enable(true);
+  }
+}
+
+void disable( void ){
+  if(provenance_get_enable()){
+    if( provenance_set_enable(false)<0 ){
+      perror("Error disabling provenance capture.");
+      exit(-1);
+    }
+  }
+}
+
+void state( void ){
+  printf("Provenance capture:\n");
+  if(provenance_get_enable()){
+    printf("- enabled;\n");
+  }else{
+    printf("- disabled;\n");
+  }
 }
 
 int main(int argc, char *argv[]){
@@ -39,6 +66,15 @@ int main(int argc, char *argv[]){
   switch(argv[1][1]){
     case 'h':
       usage();
+      break;
+    case 's':
+      state();
+      break;
+    case 'e':
+      enable();
+      break;
+    case 'd':
+      disable();
       break;
     default:
       usage();

@@ -214,7 +214,7 @@ static void long_callback_job(void* data)
     case MSG_IFC:
       if(prov_ops.log_ifc!=NULL)
         prov_ops.log_ifc(&(msg->ifc_info));
-      break;      
+      break;
     case MSG_DISC_ENTITY:
     case MSG_DISC_ACTIVITY:
     case MSG_DISC_AGENT:
@@ -331,6 +331,19 @@ int provenance_set_enable(bool value){
   }
   close(fd);
   return 0;
+}
+
+bool provenance_get_enable( void ){
+  int fd = open(PROV_ENABLE_FILE, O_RDONLY);
+  char c;
+  if(fd<0)
+  {
+    return false;
+  }
+
+  read(fd, &c, sizeof(char));
+  close(fd);
+  return c!='0';
 }
 
 int provenance_set_all(bool value){
