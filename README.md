@@ -12,6 +12,7 @@
 ### v0.1.3
 
 ```
+- Added a command line tool to configure provenance.
 - Provide functionality to create JSON output corresponding to chunk of the graph.
 - Aligning with W3C Prov JSON format.
 ```

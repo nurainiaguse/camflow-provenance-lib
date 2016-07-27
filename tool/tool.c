@@ -26,23 +26,20 @@
 void usage( void ){
   printf("-h usage.\n");
   printf("-s print provenance capture state.\n");
-  printf("-e enable provenance capture.\n");
-  printf("-d disable provenance capture.\n");
+  printf("-e <bool> enable/disable provenance capture.\n");
 }
 
-void enable( void ){
-  if(!provenance_get_enable()){
-    provenance_set_enable(true);
-  }
-}
+#define is_str_true(str) ( strcmp (str, "true") == 0)
+#define is_str_false(str) ( strcmp (str, "false") == 0)
 
-void disable( void ){
-  if(provenance_get_enable()){
-    if( provenance_set_enable(false)<0 ){
-      perror("Error disabling provenance capture.");
-      exit(-1);
-    }
+void enable( const char* str ){
+  if(!is_str_true(str) && !is_str_false(str)){
+    printf("Excepted a boolean, got %s.\n", str);
+    return;
   }
+
+  if(provenance_set_enable(is_str_true(str))<0)
+    perror("Could not enable provenance capture");
 }
 
 void state( void ){
@@ -71,10 +68,7 @@ int main(int argc, char *argv[]){
       state();
       break;
     case 'e':
-      enable();
-      break;
-    case 'd':
-      disable();
+      enable(argv[2]);
       break;
     default:
       usage();
