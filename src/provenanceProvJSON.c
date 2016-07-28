@@ -178,7 +178,7 @@ static inline char* ready_to_print(){
 
   /* recording entities */
   if(!str_is_empty(message)){
-    strcat(json, JSON_ENTITY);
+    strcat(json, JSON_MESSAGE);
     strcat(json, message);
     memset(message, '\0', MAX_PROVJSON_BUFFER_LENGTH);
   }
