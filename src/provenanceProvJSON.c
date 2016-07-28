@@ -42,6 +42,7 @@ static pthread_mutex_t l_used =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_generated =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_informed =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_derived =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+static pthread_mutex_t l_message =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
 static char activity[MAX_PROVJSON_BUFFER_LENGTH];
 static char agent[MAX_PROVJSON_BUFFER_LENGTH];
@@ -51,6 +52,7 @@ static char used[MAX_PROVJSON_BUFFER_LENGTH];
 static char generated[MAX_PROVJSON_BUFFER_LENGTH];
 static char informed[MAX_PROVJSON_BUFFER_LENGTH];
 static char derived[MAX_PROVJSON_BUFFER_LENGTH];
+static char message[MAX_PROVJSON_BUFFER_LENGTH];
 
 bool writing_out = false;
 
@@ -99,6 +101,7 @@ static inline bool __append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* 
 #define JSON_ACTIVITY "}, \"activity\":{"
 #define JSON_AGENT "}, \"agent\":{"
 #define JSON_ENTITY "}, \"entity\":{"
+#define JSON_MESSAGE "}, \"message\":{"
 #define JSON_EDGE "}, \"edge\":{"
 #define JSON_USED "}, \"used\":{"
 #define JSON_GENERATED "}, \"wasGeneratedBy\":{"
@@ -110,6 +113,7 @@ static inline bool __append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* 
                       +strlen(JSON_ACTIVITY)\
                       +strlen(JSON_AGENT)\
                       +strlen(JSON_ENTITY)\
+                      +strlen(JSON_MESSAGE)\
                       +strlen(JSON_EDGE)\
                       +strlen(JSON_USED)\
                       +strlen(JSON_GENERATED)\
@@ -120,6 +124,7 @@ static inline bool __append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* 
                       +strlen(activity)\
                       +strlen(agent)\
                       +strlen(entity)\
+                      +strlen(message)\
                       +strlen(edge)\
                       +strlen(used)\
                       +strlen(generated)\
@@ -135,6 +140,7 @@ static inline char* ready_to_print(){
   pthread_mutex_lock(&l_generated);
   pthread_mutex_lock(&l_used);
   pthread_mutex_lock(&l_edge);
+  pthread_mutex_lock(&l_message);
   pthread_mutex_lock(&l_entity);
   pthread_mutex_lock(&l_agent);
   pthread_mutex_lock(&l_activity);
@@ -169,6 +175,14 @@ static inline char* ready_to_print(){
     memset(entity, '\0', MAX_PROVJSON_BUFFER_LENGTH);
   }
   pthread_mutex_unlock(&l_entity);
+
+  /* recording entities */
+  if(!str_is_empty(message)){
+    strcat(json, JSON_ENTITY);
+    strcat(json, message);
+    memset(message, '\0', MAX_PROVJSON_BUFFER_LENGTH);
+  }
+  pthread_mutex_unlock(&l_message);
 
   /* recording edges */
   if(!str_is_empty(edge)){
@@ -253,6 +267,10 @@ void append_agent(char* json_element){
 
 void append_entity(char* json_element){
   json_append(&l_entity, entity, json_element);
+}
+
+void append_message(char* json_element){
+  json_append(&l_message, message, json_element);
 }
 
 void append_edge(char* json_element){
@@ -521,9 +539,11 @@ char* sock_to_json(struct sock_struct* n){
 }
 
 char* str_msg_to_json(struct str_struct* n){
+  char edge_info[1024];
   char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
-  sprintf(buffer, "\"cf:%s\" : {\"cf:msg\":\"%s\"}",
+  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:message\":\"%s\"}",
     id,
+    edge_info_to_json(edge_info, &n->identifier.edge_id),
     n->str);
   free(id);
   return buffer;

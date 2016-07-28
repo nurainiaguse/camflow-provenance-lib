@@ -20,6 +20,7 @@ void flush_json( void );
 void append_activity(char* json_element);
 void append_agent(char* json_element);
 void append_entity(char* json_element);
+void append_message(char* json_element);
 void append_edge(char* json_element);
 void append_used(char* json_element);
 void append_generated(char* json_element);
