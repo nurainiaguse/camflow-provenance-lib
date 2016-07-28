@@ -14,6 +14,6 @@
 #ifndef __PROVENANCEUTILS_H
 #define __PROVENANCEUTILS_H
 
-char *base64_encode(const unsigned char *data, size_t input_length);
+size_t hexify(uint8_t *in, size_t in_size, char *out, size_t out_size);
 
 #endif /* __PROVENANCEUTILS_H */

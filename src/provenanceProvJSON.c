@@ -294,6 +294,20 @@ void append_derived(char* json_element){
 }
 
 static __thread char buffer[MAX_PROVJSON_BUFFER_LENGTH];
+#define PROV_ID_STR_LEN PROV_IDENTIFIER_BUFFER_LENGTH*2+1
+static __thread char id[PROV_ID_STR_LEN];
+static __thread char sender[PROV_ID_STR_LEN];
+static __thread char receiver[PROV_ID_STR_LEN];
+static __thread char parent_id[PROV_ID_STR_LEN];
+
+#define EDGE_PREP_IDs(e) hexify(e->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN);\
+                        hexify(e->snd.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, sender, PROV_ID_STR_LEN);\
+                        hexify(e->rcv.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, receiver, PROV_ID_STR_LEN);
+
+#define DISC_PREP_IDs(n) hexify(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN);\
+                        hexify(n->parent.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, parent_id, PROV_ID_STR_LEN);
+
+#define NODE_PREP_IDs(n) hexify(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN);
 
 char* node_info_to_json(char* buf, struct node_identifier* n){
   sprintf(buf, "\"cf:type\": %u, \"cf:id\":%llu, \"cf:boot_id\":%u, \"cf:machine_id\":%u, \"cf:version\":%u", n->type, n->id, n->boot_id, n->machine_id, n->version);
@@ -309,9 +323,7 @@ static char* bool_str[] = {"false", "true"};
 
 char* edge_to_json(struct edge_struct* e){
   char edge_info[1024];
-  char* id = base64_encode(e->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
-  char* sender = base64_encode(e->snd.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
-  char* receiver = base64_encode(e->rcv.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  EDGE_PREP_IDs(e);
   sprintf(buffer, "\"cf:%s\":{%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"cf:sender\":\"cf:%s\", \"cf:receiver\":\"cf:%s\"}",
     id,
     edge_info_to_json(edge_info, &e->identifier.edge_id),
@@ -319,17 +331,12 @@ char* edge_to_json(struct edge_struct* e){
     bool_str[e->allowed],
     sender,
     receiver);
-  free(id);
-  free(sender);
-  free(receiver);
   return buffer;
 }
 
 char* used_to_json(struct edge_struct* e){
   char edge_info[1024];
-  char* id = base64_encode(e->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
-  char* sender = base64_encode(e->snd.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
-  char* receiver = base64_encode(e->rcv.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  EDGE_PREP_IDs(e);
   sprintf(buffer, "\"cf:%s\":{%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:entity\":\"cf:%s\", \"prov:activity\":\"cf:%s\"}",
     id,
     edge_info_to_json(edge_info, &e->identifier.edge_id),
@@ -337,17 +344,12 @@ char* used_to_json(struct edge_struct* e){
     bool_str[e->allowed],
     sender,
     receiver);
-  free(id);
-  free(sender);
-  free(receiver);
   return buffer;
 }
 
 char* generated_to_json(struct edge_struct* e){
   char edge_info[1024];
-  char* id = base64_encode(e->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
-  char* sender = base64_encode(e->snd.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
-  char* receiver = base64_encode(e->rcv.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  EDGE_PREP_IDs(e);
   sprintf(buffer, "\"cf:%s\":{%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:activity\":\"cf:%s\", \"prov:entity\":\"cf:%s\"}",
     id,
     edge_info_to_json(edge_info, &e->identifier.edge_id),
@@ -355,17 +357,12 @@ char* generated_to_json(struct edge_struct* e){
     bool_str[e->allowed],
     sender,
     receiver);
-  free(id);
-  free(sender);
-  free(receiver);
   return buffer;
 }
 
 char* informed_to_json(struct edge_struct* e){
   char edge_info[1024];
-  char* id = base64_encode(e->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
-  char* sender = base64_encode(e->snd.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
-  char* receiver = base64_encode(e->rcv.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  EDGE_PREP_IDs(e);
   sprintf(buffer, "\"cf:%s\":{%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:informant\":\"cf:%s\", \"prov:informed\":\"cf:%s\"}",
     id,
     edge_info_to_json(edge_info, &e->identifier.edge_id),
@@ -373,17 +370,12 @@ char* informed_to_json(struct edge_struct* e){
     bool_str[e->allowed],
     sender,
     receiver);
-  free(id);
-  free(sender);
-  free(receiver);
   return buffer;
 }
 
 char* derived_to_json(struct edge_struct* e){
   char edge_info[1024];
-  char* id = base64_encode(e->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
-  char* sender = base64_encode(e->snd.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
-  char* receiver = base64_encode(e->rcv.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  EDGE_PREP_IDs(e);
   sprintf(buffer, "\"cf:%s\":{%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:usedEntity\":\"cf:%s\", \"prov:generatedEntity\":\"cf:%s\"}",
     id,
     edge_info_to_json(edge_info, &e->identifier.edge_id),
@@ -391,16 +383,12 @@ char* derived_to_json(struct edge_struct* e){
     bool_str[e->allowed],
     sender,
     receiver);
-  free(id);
-  free(sender);
-  free(receiver);
   return buffer;
 }
 
 char* disc_to_json(struct disc_node_struct* n){
   char node_info[1024];
-  char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
-  char* parent_id = base64_encode(n->parent.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  DISC_PREP_IDs(n);
   if(n->length > 0){
     sprintf(buffer, "\"cf:%s\" : {%s, \"cf:parent_id\":\"cf:%s\", %s}",
       id,
@@ -413,20 +401,17 @@ char* disc_to_json(struct disc_node_struct* n){
       node_info_to_json(node_info, &n->identifier.node_id),
       parent_id);
   }
-  free(id);
-  free(parent_id);
   return buffer;
 }
 
 char* task_to_json(struct task_prov_struct* n){
   char node_info[1024];
-  char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  NODE_PREP_IDs(n);
   sprintf(buffer, "\"cf:%s\" : {%s, \"cf:user_id\":%u, \"cf:group_id\":%u}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     n->uid,
     n->gid);
-  free(id);
   return buffer;
 }
 
@@ -478,7 +463,7 @@ char* inode_to_json(struct inode_prov_struct* n){
   char msg_info[1024];
   char node_info[1024];
   char uuid[UUID_STR_SIZE];
-  char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  NODE_PREP_IDs(n)
   sprintf(buffer, "\"cf:%s\" : {%s, \"cf:user_id\":%u, \"cf:group_id\":%u, \"prov:type\":\"cf:%s\", \"cf:mode\":\"0X%04hhX\", \"cf:uuid\":\"%s\"}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
@@ -487,65 +472,59 @@ char* inode_to_json(struct inode_prov_struct* n){
     get_inode_type(n->mode),
     n->mode,
     uuid_to_str(n->sb_uuid, uuid, UUID_STR_SIZE));
-  free(id);
   return buffer;
 }
 
 char* sb_to_json(struct sb_struct* n){
   char node_info[1024];
   char uuid[UUID_STR_SIZE];
-  char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  NODE_PREP_IDs(n)
   sprintf(buffer, "\"cf:%s\" : {%s, \"cf:uuid\":\"%s\"}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     uuid_to_str(n->uuid, uuid, UUID_STR_SIZE));
-  free(id);
   return buffer;
 }
 
 char* msg_to_json(struct msg_msg_struct* n){
   char node_info[1024];
-  char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  NODE_PREP_IDs(n)
   sprintf(buffer, "\"cf:%s\" : {%s, \"cf:type\":%ld}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     n->type);
-  free(id);
   return buffer;
 }
 
 char* shm_to_json(struct shm_struct* n){
   char node_info[1024];
-  char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  NODE_PREP_IDs(n)
   sprintf(buffer, "\"cf:%s\" : {%s, \"cf:mode\":\"0X%04hhX\"}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     n->mode);
-  free(id);
   return buffer;
 }
 
 char* sock_to_json(struct sock_struct* n){
   char node_info[1024];
-  char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  NODE_PREP_IDs(n)
   sprintf(buffer, "\"cf:%s\" : {%s, \"cf:type\":%u, \"cf:family\":%u, \"cf:protocol\":%u}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     n->type,
     n->family,
     n->protocol);
-  free(id);
   return buffer;
 }
 
 char* str_msg_to_json(struct str_struct* n){
   char edge_info[1024];
-  char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  NODE_PREP_IDs(n)
   sprintf(buffer, "\"cf:%s\" : {%s, \"cf:message\":\"%s\"}",
     id,
     edge_info_to_json(edge_info, &n->identifier.edge_id),
     n->str);
-  free(id);
   return buffer;
 }
 
@@ -571,33 +550,30 @@ char* sockaddr_to_json(char* buf, struct sockaddr* addr, size_t length){
 char* addr_to_json(struct address_struct* n){
   char node_info[1024];
   char addr_info[PATH_MAX+1024];
-  char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  NODE_PREP_IDs(n)
   sprintf(buffer, "\"cf:%s\" : {%s, \"cf:address\":%s}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     sockaddr_to_json(addr_info, &n->addr, n->length));
-  free(id);
   return buffer;
 }
 
 char* pathname_to_json(struct file_name_struct* n){
   char node_info[1024];
-  char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  NODE_PREP_IDs(n)
   sprintf(buffer, "\"cf:%s\" : {%s, \"cf:pathname\":\"%s\"}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
     n->name);
-  free(id);
   return buffer;
 }
 
 char* ifc_to_json(struct ifc_context_struct* n){
   char node_info[1024];
-  char* id = base64_encode(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH);
+  NODE_PREP_IDs(n)
   sprintf(buffer, "\"cf:%s\" : {%s, \"cf:ifc\":\"TODO\"}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id));
-  free(id);
   return buffer;
 }
 
