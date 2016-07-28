@@ -377,7 +377,7 @@ bool provenance_get_all( void ){
 }
 
 int provenance_set_track_dir(bool value){
-  int fd = open(PROV_TRACK_DIR, O_WRONLY);
+  int fd = open(PROV_TRACK_DIR_FILE, O_WRONLY);
 
   if(fd<0)
   {
@@ -394,7 +394,7 @@ int provenance_set_track_dir(bool value){
 }
 
 bool provenance_get_track_dir( void ){
-  int fd = open(PROV_TRACK_DIR, O_RDONLY);
+  int fd = open(PROV_TRACK_DIR_FILE, O_RDONLY);
   char c;
   if(fd<0)
   {
