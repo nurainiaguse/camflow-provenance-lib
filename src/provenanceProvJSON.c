@@ -294,7 +294,7 @@ void append_derived(char* json_element){
 }
 
 static __thread char buffer[MAX_PROVJSON_BUFFER_LENGTH];
-#define PROV_ID_STR_LEN PROV_IDENTIFIER_BUFFER_LENGTH*2+1
+#define PROV_ID_STR_LEN HEXIFY_OUTPUT_LENGTH(PROV_IDENTIFIER_BUFFER_LENGTH)
 static __thread char id[PROV_ID_STR_LEN];
 static __thread char sender[PROV_ID_STR_LEN];
 static __thread char receiver[PROV_ID_STR_LEN];
