@@ -132,7 +132,7 @@ int provenance_get_node_filter( uint32_t* filter );
 
 /*
 * @filter value of node filter
-* set provenance capture filter.
+* set node provenance capture filter.
 */
 int provenance_add_node_filter( uint32_t filter );
 int provenance_remove_node_filter( uint32_t filter );
