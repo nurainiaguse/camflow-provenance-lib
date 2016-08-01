@@ -125,15 +125,30 @@ int provenance_set_all(bool v);
 bool provenance_get_all( void );
 
 /*
-* @v boolean value
-* activate/discativate the capture of directories provenance.
+* @filter pointer to contain filter to read
+* read the current state of the node filter.
 */
-int provenance_set_track_dir(bool v);
+int provenance_get_node_filter( uint32_t* filter );
 
 /*
-* return either or not directories provenance is captured.
+* @filter value of node filter
+* set provenance capture filter.
 */
-bool provenance_get_track_dir( void );
+int provenance_add_node_filter( uint32_t filter );
+int provenance_remove_node_filter( uint32_t filter );
+
+/*
+* @filter pointer to contain filter to read
+* read the current state of the edge filter.
+*/
+int provenance_get_edge_filter( uint32_t* filter );
+
+/*
+* @filter value of node filter
+* set edge provenance capture filter.
+*/
+int provenance_add_edge_filter( uint32_t filter );
+int provenance_remove_edge_filter( uint32_t filter );
 
 /*
 * @v boolean value

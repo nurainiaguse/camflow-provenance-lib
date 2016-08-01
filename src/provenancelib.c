@@ -383,34 +383,94 @@ bool provenance_get_all( void ){
   return c!='0';
 }
 
-int provenance_set_track_dir(bool value){
-  int fd = open(PROV_TRACK_DIR_FILE, O_WRONLY);
+int provenance_add_node_filter( uint32_t filter ){
+  struct prov_filter f;
+  int fd = open(PROV_NODE_FILTER_FILE, O_WRONLY);
 
   if(fd<0)
   {
     return fd;
   }
-  if(value)
-  {
-    write(fd, "1", sizeof(char));
-  }else{
-    write(fd, "0", sizeof(char));
-  }
+  f.filter=filter;
+  f.add=1;
+
+  write(fd, &f, sizeof(struct prov_filter));
   close(fd);
   return 0;
 }
 
-bool provenance_get_track_dir( void ){
-  int fd = open(PROV_TRACK_DIR_FILE, O_RDONLY);
-  char c;
+int provenance_remove_node_filter( uint32_t filter ){
+  struct prov_filter f;
+  int fd = open(PROV_NODE_FILTER_FILE, O_WRONLY);
+
   if(fd<0)
   {
-    return false;
+    return fd;
+  }
+  f.filter=filter;
+  f.add=0;
+
+  write(fd, &f, sizeof(struct prov_filter));
+  close(fd);
+  return 0;
+}
+
+int provenance_get_node_filter( uint32_t* filter ){
+  int fd = open(PROV_NODE_FILTER_FILE, O_RDONLY);
+  int err=0;
+  if(fd<0)
+  {
+    return fd;
   }
 
-  read(fd, &c, sizeof(char));
+  read(fd, filter, sizeof(uint32_t));
   close(fd);
-  return c!='0';
+  return 0;
+}
+
+int provenance_add_edge_filter( uint32_t filter ){
+  struct prov_filter f;
+  int fd = open(PROV_EDGE_FILTER_FILE, O_WRONLY);
+
+  if(fd<0)
+  {
+    return fd;
+  }
+  f.filter=filter;
+  f.add=1;
+
+  write(fd, &f, sizeof(struct prov_filter));
+  close(fd);
+  return 0;
+}
+
+int provenance_remove_edge_filter( uint32_t filter ){
+  struct prov_filter f;
+  int fd = open(PROV_EDGE_FILTER_FILE, O_WRONLY);
+
+  if(fd<0)
+  {
+    return fd;
+  }
+  f.filter=filter;
+  f.add=0;
+
+  write(fd, &f, sizeof(struct prov_filter));
+  close(fd);
+  return 0;
+}
+
+int provenance_get_edge_filter( uint32_t* filter ){
+  int fd = open(PROV_EDGE_FILTER_FILE, O_RDONLY);
+  int err=0;
+  if(fd<0)
+  {
+    return fd;
+  }
+
+  read(fd, filter, sizeof(uint32_t));
+  close(fd);
+  return 0;
 }
 
 int provenance_set_opaque(bool value){

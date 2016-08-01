@@ -55,16 +55,25 @@ void all( const char* str ){
 }
 
 void dir( const char* str ){
+  int err;
   if(!is_str_true(str) && !is_str_false(str)){
     printf("Excepted a boolean, got %s.\n", str);
     return;
   }
 
-  if(provenance_set_track_dir(is_str_true(str))<0)
+  if(is_str_true(str)){
+    err = provenance_add_node_filter(MSG_INODE_DIRECTORY);
+  }else{
+    err = provenance_remove_node_filter(MSG_INODE_DIRECTORY);
+  }
+
+  if(err<0){
     perror("Could not activate/deactivate directories provenance capture");
+  }
 }
 
 void state( void ){
+  uint32_t filter;
   printf("Provenance capture:\n");
   if(provenance_get_enable()){
     printf("- capture enabled;\n");
@@ -76,7 +85,9 @@ void state( void ){
   }else{
     printf("- all disabled;\n");
   }
-  if( provenance_get_track_dir() ){
+
+  provenance_get_node_filter(&filter);
+  if( filter&MSG_INODE_DIRECTORY !=0 ){
     printf("- directories provenance captured;\n");
   }else{
     printf("- directories provenance not captured;\n");
