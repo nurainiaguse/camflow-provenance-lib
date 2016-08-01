@@ -164,7 +164,14 @@ static void callback_job(void* data)
       if(prov_ops.log_task!=NULL)
         prov_ops.log_task(&(msg->task_info));
       break;
-    case MSG_INODE:
+    case MSG_INODE_UNKNOWN:
+    case MSG_INODE_LINK:
+    case MSG_INODE_FILE:
+    case MSG_INODE_DIRECTORY:
+    case MSG_INODE_CHAR:
+    case MSG_INODE_BLOCK:
+    case MSG_INODE_FIFO:
+    case MSG_INODE_SOCKET:
       if(prov_ops.log_inode!=NULL)
         prov_ops.log_inode(&(msg->inode_info));
       break;
