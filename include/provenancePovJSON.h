@@ -32,8 +32,8 @@ void append_derived(char* json_element);
 #define disclose_activity_ProvJSON(content, identifier) disclose_node_ProvJSON(MSG_DISC_ACTIVITY, content, identifier)
 #define disclose_agent_ProvJSON(content, identifier) disclose_node_ProvJSON(MSG_DISC_AGENT, content, identifier)
 
-int disclose_node_ProvJSON(uint8_t type, const char* content, prov_identifier_t* identifier);
-int disclose_edge_ProvJSON(uint8_t type, prov_identifier_t* sender, prov_identifier_t* receiver);
+int disclose_node_ProvJSON(uint32_t type, const char* content, prov_identifier_t* identifier);
+int disclose_edge_ProvJSON(uint32_t type, prov_identifier_t* sender, prov_identifier_t* receiver);
 
 /* struct to json functions */
 /* TODO provide clean implementation? right now probably highly inneficient */

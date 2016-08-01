@@ -58,7 +58,7 @@ bool writing_out = false;
 
 static void (*print_json)(char* json);
 
-int disclose_node_ProvJSON(uint8_t type, const char* content, prov_identifier_t* identifier){
+int disclose_node_ProvJSON(uint32_t type, const char* content, prov_identifier_t* identifier){
   int err;
   struct disc_node_struct node;
 
@@ -73,7 +73,7 @@ int disclose_node_ProvJSON(uint8_t type, const char* content, prov_identifier_t*
   return err;
 }
 
-int disclose_edge_ProvJSON(uint8_t type, prov_identifier_t* sender, prov_identifier_t* receiver){
+int disclose_edge_ProvJSON(uint32_t type, prov_identifier_t* sender, prov_identifier_t* receiver){
   struct edge_struct edge;
   edge.type=type;
   edge.allowed=true;
