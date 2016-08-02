@@ -87,6 +87,7 @@ void state( void ){
   }
 
   provenance_get_node_filter(&filter);
+  printf("\nNode filter (%0x):\n", filter);
   if( (filter&MSG_INODE_DIRECTORY) == 0 ){
     printf("- directories provenance captured;\n");
   }else{
