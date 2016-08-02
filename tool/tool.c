@@ -73,7 +73,7 @@ void dir( const char* str ){
 }
 
 void state( void ){
-  uint32_t filter;
+  uint32_t filter=0;
   printf("Provenance capture:\n");
   if(provenance_get_enable()){
     printf("- capture enabled;\n");
@@ -87,7 +87,7 @@ void state( void ){
   }
 
   provenance_get_node_filter(&filter);
-  if( filter&MSG_INODE_DIRECTORY !=0 ){
+  if( (filter&MSG_INODE_DIRECTORY) == 0 ){
     printf("- directories provenance captured;\n");
   }else{
     printf("- directories provenance not captured;\n");
