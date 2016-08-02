@@ -346,6 +346,7 @@ static const char ED_STR_LINK []                  = "link";
 static const char ED_STR_NAMED []                 = "named";
 static const char ED_STR_IFC []                   = "ifc";
 static const char ED_STR_EXEC []                  = "exec";
+static const char ED_STR_FORK []                  = "fork";
 static const char ED_STR_VERSION_PROCESS []       = "version";
 static const char ED_STR_SEARCH []                = "search";
 
@@ -389,6 +390,8 @@ static inline const char* edge_str(uint32_t type){
       return ED_STR_IFC;
     case ED_EXEC:
       return ED_STR_EXEC;
+    case ED_FORK:
+      return ED_STR_FORK;
     case ED_VERSION_PROCESS:
       return ED_STR_VERSION_PROCESS;
     case ED_SEARCH:
