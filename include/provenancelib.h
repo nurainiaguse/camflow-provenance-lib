@@ -21,47 +21,6 @@
 #include <sys/socket.h>
 #include <linux/provenance.h>
 
-
-static char* edge_str[]={"read",
-                          "write",
-                          "create",
-                          "pass",
-                          "change",
-                          "mmap",
-                          "attach",
-                          "associate",
-                          "bind",
-                          "connect",
-                          "listen",
-                          "accept",
-                          "open",
-                          "parent",
-                          "version",
-                          "link",
-                          "named",
-                          "ifc",
-                          "exec",
-                          "fork",
-                          "unknown",
-                          "version",
-                          "search"};
-
-static char* msg_type[] = {"string",
-                            "flow",
-                            "task",
-                            "inode",
-                            "message",
-                            "shared memory",
-                            "socket",
-                            "address",
-                            "super block",
-                            "file name",
-                            "ifc",
-                            "disclosed entity",
-                            "disclosed activity",
-                            "disclosed agent",
-                            "disclosed node"};
-
 struct provenance_ops{
   void (*init)(void);
   void (*log_edge)(struct edge_struct*);

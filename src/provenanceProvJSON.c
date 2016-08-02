@@ -324,13 +324,87 @@ char* edge_info_to_json(char* buf, struct edge_identifier* e){
 
 static char* bool_str[] = {"false", "true"};
 
+
+
+static const char ED_STR_UNKNOWN []               = "unknown";
+static const char ED_STR_READ []                  = "read";
+static const char ED_STR_WRITE []                 = "write";
+static const char ED_STR_CREATE []                = "create";
+static const char ED_STR_PASS []                  = "pass";
+static const char ED_STR_CHANGE []                = "change";
+static const char ED_STR_MMAP []                  = "mmap";
+static const char ED_STR_ATTACH []                = "attach";
+static const char ED_STR_ASSOCIATE []             = "associate";
+static const char ED_STR_BIND []                  = "bind";
+static const char ED_STR_CONNECT []               = "connect";
+static const char ED_STR_LISTEN []                = "listen";
+static const char ED_STR_ACCEPT []                = "accept";
+static const char ED_STR_OPEN []                  = "open";
+static const char ED_STR_PARENT []                = "parent";
+static const char ED_STR_VERSION []               = "version";
+static const char ED_STR_LINK []                  = "link";
+static const char ED_STR_NAMED []                 = "named";
+static const char ED_STR_IFC []                   = "ifc";
+static const char ED_STR_EXEC []                  = "exec";
+static const char ED_STR_VERSION_PROCESS []       = "version";
+static const char ED_STR_SEARCH []                = "search";
+
+static inline const char* edge_str(uint32_t type){
+  switch(type){
+    case ED_READ:
+      return ED_STR_READ;
+    case ED_WRITE:
+      return ED_STR_WRITE;
+    case ED_CREATE:
+      return ED_STR_CREATE;
+    case ED_PASS:
+      return ED_STR_PASS;
+    case ED_CHANGE:
+      return ED_STR_CHANGE;
+    case ED_MMAP:
+      return ED_STR_MMAP;
+    case ED_ATTACH:
+      return ED_STR_ATTACH;
+    case ED_ASSOCIATE:
+      return ED_STR_ASSOCIATE;
+    case ED_BIND:
+      return ED_STR_BIND;
+    case ED_CONNECT:
+      return ED_STR_CONNECT;
+    case ED_LISTEN:
+      return ED_STR_LISTEN;
+    case ED_ACCEPT:
+      return ED_STR_ACCEPT;
+    case ED_OPEN:
+      return ED_STR_OPEN;
+    case ED_PARENT:
+      return ED_STR_PARENT;
+    case ED_VERSION:
+      return ED_STR_VERSION;
+    case ED_LINK:
+      return ED_STR_LINK;
+    case ED_NAMED:
+      return ED_STR_NAMED;
+    case ED_IFC:
+      return ED_STR_IFC;
+    case ED_EXEC:
+      return ED_STR_EXEC;
+    case ED_VERSION_PROCESS:
+      return ED_STR_VERSION_PROCESS;
+    case ED_SEARCH:
+      return ED_STR_SEARCH;
+    default:
+      return ED_STR_UNKNOWN;
+  }
+}
+
 char* edge_to_json(struct edge_struct* e){
   char edge_info[1024];
   EDGE_PREP_IDs(e);
   sprintf(buffer, "\"cf:%s\":{%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"cf:sender\":\"cf:%s\", \"cf:receiver\":\"cf:%s\"}",
     id,
     edge_info_to_json(edge_info, &e->identifier.edge_id),
-    edge_str[e->type],
+    edge_str(e->type),
     bool_str[e->allowed],
     sender,
     receiver);
@@ -343,7 +417,7 @@ char* used_to_json(struct edge_struct* e){
   sprintf(buffer, "\"cf:%s\":{%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:entity\":\"cf:%s\", \"prov:activity\":\"cf:%s\"}",
     id,
     edge_info_to_json(edge_info, &e->identifier.edge_id),
-    edge_str[e->type],
+    edge_str(e->type),
     bool_str[e->allowed],
     sender,
     receiver);
@@ -356,7 +430,7 @@ char* generated_to_json(struct edge_struct* e){
   sprintf(buffer, "\"cf:%s\":{%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:activity\":\"cf:%s\", \"prov:entity\":\"cf:%s\"}",
     id,
     edge_info_to_json(edge_info, &e->identifier.edge_id),
-    edge_str[e->type],
+    edge_str(e->type),
     bool_str[e->allowed],
     sender,
     receiver);
@@ -369,7 +443,7 @@ char* informed_to_json(struct edge_struct* e){
   sprintf(buffer, "\"cf:%s\":{%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:informant\":\"cf:%s\", \"prov:informed\":\"cf:%s\"}",
     id,
     edge_info_to_json(edge_info, &e->identifier.edge_id),
-    edge_str[e->type],
+    edge_str(e->type),
     bool_str[e->allowed],
     sender,
     receiver);
@@ -382,7 +456,7 @@ char* derived_to_json(struct edge_struct* e){
   sprintf(buffer, "\"cf:%s\":{%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:usedEntity\":\"cf:%s\", \"prov:generatedEntity\":\"cf:%s\"}",
     id,
     edge_info_to_json(edge_info, &e->identifier.edge_id),
-    edge_str[e->type],
+    edge_str(e->type),
     bool_str[e->allowed],
     sender,
     receiver);
@@ -433,32 +507,31 @@ char* uuid_to_str(uint8_t* uuid, char* str, size_t size){
     return str;
 }
 
-static char STR_UNKNOWN[]= "unknown";
-static char STR_BLOCK_SPECIAL[]= "block special";
-static char STR_CHAR_SPECIAL[]= "char special";
-static char STR_DIRECTORY[]= "directory";
-static char STR_FIFO[]= "fifo";
-static char STR_LINK[]= "link";
-static char STR_FILE[]= "file";
-static char STR_SOCKET[]= "socket";
+static const char STR_UNKNOWN[]= "unknown";
+static const char STR_BLOCK_SPECIAL[]= "block special";
+static const char STR_CHAR_SPECIAL[]= "char special";
+static const char STR_DIRECTORY[]= "directory";
+static const char STR_FIFO[]= "fifo";
+static const char STR_LINK[]= "link";
+static const char STR_FILE[]= "file";
+static const char STR_SOCKET[]= "socket";
 
-static inline char* get_inode_type(mode_t mode){
-  char* type=STR_UNKNOWN;
+static inline const char* get_inode_type(mode_t mode){
   if(S_ISBLK(mode))
-    type=STR_BLOCK_SPECIAL;
+    return STR_BLOCK_SPECIAL;
   else if(S_ISCHR(mode))
-    type=STR_CHAR_SPECIAL;
+    return STR_CHAR_SPECIAL;
   else if(S_ISDIR(mode))
-    type=STR_DIRECTORY;
+    return STR_DIRECTORY;
   else if(S_ISFIFO(mode))
-    type=STR_FIFO;
+    return STR_FIFO;
   else if(S_ISLNK(mode))
-    type=STR_LINK;
+    return STR_LINK;
   else if(S_ISREG(mode))
-    type=STR_FILE;
+    return STR_FILE;
   else if(S_ISSOCK(mode))
-    type=STR_SOCKET;
-  return type;
+    return STR_SOCKET;
+  return STR_UNKNOWN;
 }
 
 char* inode_to_json(struct inode_prov_struct* n){
