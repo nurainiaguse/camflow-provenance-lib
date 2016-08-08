@@ -1,4 +1,4 @@
-SRC = provenancelib.c
+SRC = provenancelib.c provenanceProvJSON.c provenanceutils.c
 OBJ = $(SRC:.c=.o)
 OUT = provenance.a
 INCLUDES = -I../threadpool -I../include

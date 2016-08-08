@@ -4,9 +4,18 @@
 
 | Library version | Kernel version | Date       |
 | --------------- |----------------| ---------- |
+| 0.1.3           | 4.4.6          | 08/08/2016 |
 | 0.1.2           | 4.4.6          | 26/05/2016 |
 | 0.1.1           | 4.4.6          | 03/04/2016 |
 | 0.1.0           | 4.2.8          | 28/03/2016 |
+
+### v0.1.3
+
+```
+- Added a command line tool to configure provenance.
+- Provide functionality to create JSON output corresponding to chunk of the graph.
+- Aligning with W3C Prov JSON format.
+```
 
 ### v0.1.2
 

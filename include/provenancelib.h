@@ -21,17 +21,12 @@
 #include <sys/socket.h>
 #include <linux/provenance.h>
 
-
-static char* edge_str[]={"data", "create", "pass", "change", "mmap", "attach", "associate", "bind", "connect", "listen", "accept", "open", "parent", "version", "unknown"};
-
 struct provenance_ops{
   void (*init)(void);
   void (*log_edge)(struct edge_struct*);
   void (*log_task)(struct task_prov_struct*);
   void (*log_inode)(struct inode_prov_struct*);
   void (*log_str)(struct str_struct*);
-  void (*log_link)(struct link_struct*);
-  void (*log_unlink)(struct unlink_struct*);
   void (*log_disc)(struct disc_node_struct*);
   void (*log_msg)(struct msg_msg_struct*);
   void (*log_shm)(struct shm_struct*);
@@ -71,6 +66,11 @@ void provenance_stop(void);
 int provenance_set_enable(bool v);
 
 /*
+* return either or not the provenance capture is active.
+*/
+bool provenance_get_enable( void );
+
+/*
 * @v boolean value
 * activate provenance on all kernel objects. WARNING the computer may slow down
 * dramatically and the amount of data generated may be excessively large. Will
@@ -79,12 +79,50 @@ int provenance_set_enable(bool v);
 int provenance_set_all(bool v);
 
 /*
+* return either or not provenance on all kernel object is active.
+*/
+bool provenance_get_all( void );
+
+/*
+* @filter pointer to contain filter to read
+* read the current state of the node filter.
+*/
+int provenance_get_node_filter( uint32_t* filter );
+
+/*
+* @filter value of node filter
+* set node provenance capture filter.
+*/
+int provenance_add_node_filter( uint32_t filter );
+int provenance_remove_node_filter( uint32_t filter );
+
+/*
+* @filter pointer to contain filter to read
+* read the current state of the edge filter.
+*/
+int provenance_get_edge_filter( uint32_t* filter );
+
+/*
+* @filter value of node filter
+* set edge provenance capture filter.
+*/
+int provenance_add_edge_filter( uint32_t filter );
+int provenance_remove_edge_filter( uint32_t filter );
+
+/*
 * @v boolean value
 * Hide the current process from provenance capture. Should be mostly used by the
 * provenance capture service itself. Will fail if the current process is not
 * root.
 */
 int provenance_set_opaque(bool v);
+
+/*
+* @v boolean value
+* Request the current process to be part of the provenance record (even if 'all'
+* is not set).
+*/
+int provenance_set_tracked(bool v);
 
 /*
 * @v uint32_t value
@@ -119,22 +157,5 @@ int provenance_disclose_edge(struct edge_struct* edge);
 * process.
 */
 int provenance_self(struct task_prov_struct* self);
-
-/* struct to json functions */
-/* TODO detach from main library? provide clean implementation? right now probably highly inneficient */
-char* edge_to_json(char* buffer, struct edge_struct* e);
-char* disc_to_json(char* buffer, struct disc_node_struct* n);
-char* task_to_json(char* buffer, struct task_prov_struct* n);
-char* inode_to_json(char* buffer, struct inode_prov_struct* n);
-char* sb_to_json(char* buffer, struct sb_struct* n);
-char* msg_to_json(char* buffer, struct msg_msg_struct* n);
-char* shm_to_json(char* buffer, struct shm_struct* n);
-char* sock_to_json(char* buffer, struct sock_struct* n);
-char* str_msg_to_json(char* buffer, struct str_struct* n);
-char* addr_to_json(char* buffer, struct address_struct* n);
-char* link_to_json(char* buffer, struct link_struct* n);
-char* unlink_to_json(char* buffer, struct unlink_struct* n);
-char* pathname_to_json(char* buffer, struct file_name_struct* n);
-char* ifc_to_json(char* buffer, struct ifc_context_struct* n);
 
 #endif /* __PROVENANCELIB_H */
