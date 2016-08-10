@@ -95,6 +95,10 @@ void state( void ){
   }
 }
 
+void print_version(){
+  printf("CamFlow %s\n", CAMFLOW_VERSION_STR);
+}
+
 int main(int argc, char *argv[]){
   int i;
   tag_t tag;
@@ -107,6 +111,9 @@ int main(int argc, char *argv[]){
   switch(argv[1][1]){
     case 'h':
       usage();
+      break;
+    case 'v':
+      print_version();
       break;
     case 's':
       state();
