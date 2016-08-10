@@ -13,6 +13,7 @@
 ### v0.1.4
 
 ```
+- Filter related prototypes now in provenancefilter.h
 - Callbacks to filter provenance data in userspace.
 - camflow-prov -v return version of CamFlow LSM.
 ```
