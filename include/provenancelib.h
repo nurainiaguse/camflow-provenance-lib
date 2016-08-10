@@ -87,32 +87,6 @@ int provenance_set_all(bool v);
 bool provenance_get_all( void );
 
 /*
-* @filter pointer to contain filter to read
-* read the current state of the node filter.
-*/
-int provenance_get_node_filter( uint32_t* filter );
-
-/*
-* @filter value of node filter
-* set node provenance capture filter.
-*/
-int provenance_add_node_filter( uint32_t filter );
-int provenance_remove_node_filter( uint32_t filter );
-
-/*
-* @filter pointer to contain filter to read
-* read the current state of the edge filter.
-*/
-int provenance_get_edge_filter( uint32_t* filter );
-
-/*
-* @filter value of node filter
-* set edge provenance capture filter.
-*/
-int provenance_add_edge_filter( uint32_t filter );
-int provenance_remove_edge_filter( uint32_t filter );
-
-/*
 * @v boolean value
 * Hide the current process from provenance capture. Should be mostly used by the
 * provenance capture service itself. Will fail if the current process is not
