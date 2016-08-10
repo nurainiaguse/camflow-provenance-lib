@@ -11,20 +11,110 @@
 */
 
 #define _GNU_SOURCE
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <string.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <stdarg.h>
 #include <sys/types.h>
 #include <sys/syscall.h>
+#include <sys/stat.h>
+#include <sys/poll.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <sys/stat.h>
-#include <netdb.h>
+#include <errno.h>
 #include <pthread.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <netdb.h>
 
 #include "provenancelib.h"
 #include "provenancefilter.h"
+
+int provenance_add_node_filter( uint32_t filter ){
+  struct prov_filter f;
+  int fd = open(PROV_NODE_FILTER_FILE, O_WRONLY);
+
+  if(fd<0)
+  {
+    return fd;
+  }
+  f.filter=filter;
+  f.add=1;
+
+  write(fd, &f, sizeof(struct prov_filter));
+  close(fd);
+  return 0;
+}
+
+int provenance_remove_node_filter( uint32_t filter ){
+  struct prov_filter f;
+  int fd = open(PROV_NODE_FILTER_FILE, O_WRONLY);
+
+  if(fd<0)
+  {
+    return fd;
+  }
+  f.filter=filter;
+  f.add=0;
+
+  write(fd, &f, sizeof(struct prov_filter));
+  close(fd);
+  return 0;
+}
+
+int provenance_get_node_filter( uint32_t* filter ){
+  int fd = open(PROV_NODE_FILTER_FILE, O_RDONLY);
+  int err=0;
+  if(fd<0)
+  {
+    return fd;
+  }
+
+  read(fd, filter, sizeof(uint32_t));
+  close(fd);
+  return 0;
+}
+
+int provenance_add_edge_filter( uint32_t filter ){
+  struct prov_filter f;
+  int fd = open(PROV_EDGE_FILTER_FILE, O_WRONLY);
+
+  if(fd<0)
+  {
+    return fd;
+  }
+  f.filter=filter;
+  f.add=1;
+
+  write(fd, &f, sizeof(struct prov_filter));
+  close(fd);
+  return 0;
+}
+
+int provenance_remove_edge_filter( uint32_t filter ){
+  struct prov_filter f;
+  int fd = open(PROV_EDGE_FILTER_FILE, O_WRONLY);
+
+  if(fd<0)
+  {
+    return fd;
+  }
+  f.filter=filter;
+  f.add=0;
+
+  write(fd, &f, sizeof(struct prov_filter));
+  close(fd);
+  return 0;
+}
+
+int provenance_get_edge_filter( uint32_t* filter ){
+  int fd = open(PROV_EDGE_FILTER_FILE, O_RDONLY);
+  int err=0;
+  if(fd<0)
+  {
+    return fd;
+  }
+
+  read(fd, filter, sizeof(uint32_t));
+  close(fd);
+  return 0;
+}

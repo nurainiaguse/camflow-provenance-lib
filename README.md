@@ -13,6 +13,7 @@
 ### v0.1.4
 
 ```
+- Callbacks to filter provenance data in userspace.
 - camflow-prov -v return version of CamFlow LSM.
 ```
 

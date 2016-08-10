@@ -22,6 +22,7 @@
 #include <unistd.h>
 
 #include "provenancelib.h"
+#include "provenancefilter.h"
 
 void usage( void ){
   printf("-h usage.\n");
