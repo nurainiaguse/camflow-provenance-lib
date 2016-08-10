@@ -1,7 +1,5 @@
 /*
 *
-* provenancelib.h
-*
 * Author: Thomas Pasquier <tfjmp2@cam.ac.uk>
 *
 * Copyright (C) 2015 University of Cambridge
@@ -23,6 +21,8 @@
 
 struct provenance_ops{
   void (*init)(void);
+  bool (*filter)(prov_msg_t* msg);
+  bool (*long_filter)(long_prov_msg_t* msg);
   void (*log_edge)(struct edge_struct*);
   void (*log_task)(struct task_prov_struct*);
   void (*log_inode)(struct inode_prov_struct*);
@@ -35,6 +35,9 @@ struct provenance_ops{
   void (*log_file_name)(struct file_name_struct*);
   void (*log_ifc)(struct ifc_context_struct*);
 };
+
+void prov_record(prov_msg_t* msg);
+void long_prov_record(long_prov_msg_t* msg);
 
 /*
 * Function return boolean value corresponding to the presence or not of the

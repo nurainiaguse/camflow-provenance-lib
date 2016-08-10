@@ -1,7 +1,5 @@
 /*
 *
-* provenancelib.c
-*
 * Author: Thomas Pasquier <tfjmp2@cam.ac.uk>
 *
 * Copyright (C) 2015 University of Cambridge
@@ -144,17 +142,7 @@ static int destroy_worker_pool(void)
 /* per worker thread initialised variable */
 static __thread int initialised=0;
 
-/* handle application callbacks */
-static void callback_job(void* data)
-{
-  prov_msg_t* msg = (prov_msg_t*)data;
-
-  /* initialise per worker thread */
-  if(!initialised && prov_ops.init!=NULL){
-    prov_ops.init();
-    initialised=1;
-  }
-
+void prov_record(prov_msg_t* msg){
   switch(prov_type(msg)){
     case MSG_EDGE:
       if(prov_ops.log_edge!=NULL)
@@ -191,13 +179,12 @@ static void callback_job(void* data)
       printf("Error: unknown message type %u\n", prov_type(msg));
       break;
   }
-  free(data); /* free the memory allocated in the reader */
 }
 
 /* handle application callbacks */
-static void long_callback_job(void* data)
+static void callback_job(void* data)
 {
-  long_prov_msg_t* msg = (long_prov_msg_t*)data;
+  prov_msg_t* msg = (prov_msg_t*)data;
 
   /* initialise per worker thread */
   if(!initialised && prov_ops.init!=NULL){
@@ -205,6 +192,18 @@ static void long_callback_job(void* data)
     initialised=1;
   }
 
+  // dealing with filter
+  if(prov_ops.filter!=NULL){
+    if(prov_ops.filter(msg)){ // message has been fitlered
+      return;
+    }
+  }
+
+  prov_record(msg);
+  free(data); /* free the memory allocated in the reader */
+}
+
+void long_prov_record(long_prov_msg_t* msg){
   switch(prov_type(msg)){
     case MSG_STR:
       if(prov_ops.log_str!=NULL)
@@ -233,6 +232,27 @@ static void long_callback_job(void* data)
       printf("Error: unknown message type %u\n", prov_type(msg));
       break;
   }
+}
+
+/* handle application callbacks */
+static void long_callback_job(void* data)
+{
+  long_prov_msg_t* msg = (long_prov_msg_t*)data;
+
+  /* initialise per worker thread */
+  if(!initialised && prov_ops.init!=NULL){
+    prov_ops.init();
+    initialised=1;
+  }
+
+  // dealing with filter
+  if(prov_ops.long_filter!=NULL){
+    if(prov_ops.long_filter(msg)){ // message has been fitlered
+      return;
+    }
+  }
+
+  long_prov_record(msg);
   free(data); /* free the memory allocated in the reader */
 }
 

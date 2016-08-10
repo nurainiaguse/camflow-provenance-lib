@@ -1,5 +1,4 @@
 /*
-* CamFlow userspace audit example
 *
 * Author: Thomas Pasquier <tfjmp2@cam.ac.uk>
 *
@@ -89,8 +88,17 @@ void log_ifc(struct ifc_context_struct* ifc){
   append_entity(ifc_to_json(ifc));
 }
 
+bool filter(prov_msg_t* msg){
+  return false;
+}
+bool long_filter(long_prov_msg_t* msg){
+  return false;
+}
+
 struct provenance_ops ops = {
   .init=init,
+  .filter=filter,
+  .long_filter=long_filter,
   .log_edge=log_edge,
   .log_task=log_task,
   .log_inode=log_inode,
