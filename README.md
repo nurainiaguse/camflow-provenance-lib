@@ -13,9 +13,11 @@
 ### v0.1.4
 
 ```
+- Examples moved to https://github.com/CamFlow/examples.
+- Install library to /usr/local
 - Filter related prototypes now in provenancefilter.h
 - Callbacks to filter provenance data in userspace.
-- camflow-prov -v return version of CamFlow LSM.
+- camflow-prov -v print version of CamFlow LSM.
 ```
 
 ### v0.1.3
