@@ -34,15 +34,15 @@ int provenance_remove_node_filter( uint32_t filter );
 
 /*
 * @filter pointer to contain filter to read
-* read the current state of the edge filter.
+* read the current state of the relation filter.
 */
-int provenance_get_edge_filter( uint32_t* filter );
+int provenance_get_relation_filter( uint32_t* filter );
 
 /*
 * @filter value of node filter
-* set edge provenance capture filter.
+* set relation provenance capture filter.
 */
-int provenance_add_edge_filter( uint32_t filter );
-int provenance_remove_edge_filter( uint32_t filter );
+int provenance_add_relation_filter( uint32_t filter );
+int provenance_remove_relation_filter( uint32_t filter );
 
 #endif

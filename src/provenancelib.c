@@ -144,9 +144,9 @@ static __thread int initialised=0;
 
 void prov_record(prov_msg_t* msg){
   switch(prov_type(msg)){
-    case MSG_EDGE:
-      if(prov_ops.log_edge!=NULL)
-        prov_ops.log_edge(&(msg->edge_info));
+    case MSG_RELATION:
+      if(prov_ops.log_relation!=NULL)
+        prov_ops.log_relation(&(msg->relation_info));
       break;
     case MSG_TASK:
       if(prov_ops.log_task!=NULL)
@@ -474,15 +474,15 @@ int provenance_disclose_node(struct disc_node_struct* node){
   return rc;
 }
 
-int provenance_disclose_edge(struct edge_struct* edge){
+int provenance_disclose_relation(struct relation_struct* relation){
   int rc;
-  int fd = open(PROV_EDGE_FILE, O_WRONLY);
+  int fd = open(PROV_RELATION_FILE, O_WRONLY);
 
   if(fd<0)
   {
     return fd;
   }
-  rc = write(fd, edge, sizeof(struct edge_struct));
+  rc = write(fd, relation, sizeof(struct relation_struct));
   close(fd);
   return rc;
 }

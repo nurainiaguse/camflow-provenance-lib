@@ -23,7 +23,7 @@ struct provenance_ops{
   void (*init)(void);
   bool (*filter)(prov_msg_t* msg);
   bool (*long_filter)(long_prov_msg_t* msg);
-  void (*log_edge)(struct edge_struct*);
+  void (*log_relation)(struct relation_struct*);
   void (*log_task)(struct task_prov_struct*);
   void (*log_inode)(struct inode_prov_struct*);
   void (*log_str)(struct str_struct*);
@@ -122,11 +122,11 @@ int provenance_get_machine_id(uint32_t* v);
 int provenance_disclose_node(struct disc_node_struct* node);
 
 /*
-* @edge edge data structure to be recorded
-* API to dsiclose a provenance edge. Some values should be left blank and Will
+* @relation relation data structure to be recorded
+* API to dsiclose a provenance relation. Some values should be left blank and Will
 * be updated by the kernel.
 */
-int provenance_disclose_edge(struct edge_struct* edge);
+int provenance_disclose_relation(struct relation_struct* relation);
 
 /*
 * @self point to a node data structure

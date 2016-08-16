@@ -13,6 +13,7 @@
 ### v0.1.4
 
 ```
+- Edge renamed relation to align with W3C PROV model.
 - Examples moved to https://github.com/CamFlow/examples.
 - Install library to /usr/local
 - Filter related prototypes now in provenancefilter.h

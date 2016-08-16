@@ -74,9 +74,9 @@ int provenance_get_node_filter( uint32_t* filter ){
   return 0;
 }
 
-int provenance_add_edge_filter( uint32_t filter ){
+int provenance_add_relation_filter( uint32_t filter ){
   struct prov_filter f;
-  int fd = open(PROV_EDGE_FILTER_FILE, O_WRONLY);
+  int fd = open(PROV_RELATION_FILTER_FILE, O_WRONLY);
 
   if(fd<0)
   {
@@ -90,9 +90,9 @@ int provenance_add_edge_filter( uint32_t filter ){
   return 0;
 }
 
-int provenance_remove_edge_filter( uint32_t filter ){
+int provenance_remove_relation_filter( uint32_t filter ){
   struct prov_filter f;
-  int fd = open(PROV_EDGE_FILTER_FILE, O_WRONLY);
+  int fd = open(PROV_RELATION_FILTER_FILE, O_WRONLY);
 
   if(fd<0)
   {
@@ -106,8 +106,8 @@ int provenance_remove_edge_filter( uint32_t filter ){
   return 0;
 }
 
-int provenance_get_edge_filter( uint32_t* filter ){
-  int fd = open(PROV_EDGE_FILTER_FILE, O_RDONLY);
+int provenance_get_relation_filter( uint32_t* filter ){
+  int fd = open(PROV_RELATION_FILTER_FILE, O_RDONLY);
   int err=0;
   if(fd<0)
   {

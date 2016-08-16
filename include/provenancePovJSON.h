@@ -19,27 +19,27 @@ void append_activity(char* json_element);
 void append_agent(char* json_element);
 void append_entity(char* json_element);
 void append_message(char* json_element);
-void append_edge(char* json_element);
+void append_relation(char* json_element);
 void append_used(char* json_element);
 void append_generated(char* json_element);
 void append_informed(char* json_element);
 void append_derived(char* json_element);
 
-/* disclosing nodes and edges for provjson */
+/* disclosing nodes and relations for provjson */
 #define disclose_entity_ProvJSON(content, identifier) disclose_node_ProvJSON(MSG_DISC_ENTITY, content, identifier)
 #define disclose_activity_ProvJSON(content, identifier) disclose_node_ProvJSON(MSG_DISC_ACTIVITY, content, identifier)
 #define disclose_agent_ProvJSON(content, identifier) disclose_node_ProvJSON(MSG_DISC_AGENT, content, identifier)
 
 int disclose_node_ProvJSON(uint32_t type, const char* content, prov_identifier_t* identifier);
-int disclose_edge_ProvJSON(uint32_t type, prov_identifier_t* sender, prov_identifier_t* receiver);
+int disclose_relation_ProvJSON(uint32_t type, prov_identifier_t* sender, prov_identifier_t* receiver);
 
 /* struct to json functions */
 /* TODO provide clean implementation? right now probably highly inneficient */
-char* edge_to_json(struct edge_struct* e);
-char* used_to_json(struct edge_struct* e);
-char* generated_to_json(struct edge_struct* e);
-char* informed_to_json(struct edge_struct* e);
-char* derived_to_json(struct edge_struct* e);
+char* relation_to_json(struct relation_struct* e);
+char* used_to_json(struct relation_struct* e);
+char* generated_to_json(struct relation_struct* e);
+char* informed_to_json(struct relation_struct* e);
+char* derived_to_json(struct relation_struct* e);
 char* disc_to_json(struct disc_node_struct* n);
 char* task_to_json(struct task_prov_struct* n);
 char* inode_to_json(struct inode_prov_struct* n);

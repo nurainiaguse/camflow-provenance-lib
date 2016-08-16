@@ -47,8 +47,8 @@ void log_str(struct str_struct* data){
   append_message(str_msg_to_json(data));
 }
 
-void log_edge(struct edge_struct* edge){
-  append_edge(edge_to_json(edge));
+void log_relation(struct relation_struct* relation){
+  append_relation(relation_to_json(relation));
 }
 
 void log_task(struct task_prov_struct* task){
@@ -99,7 +99,7 @@ struct provenance_ops ops = {
   .init=init,
   .filter=filter,
   .long_filter=long_filter,
-  .log_edge=log_edge,
+  .log_relation=log_relation,
   .log_task=log_task,
   .log_inode=log_inode,
   .log_str=log_str,
@@ -122,7 +122,7 @@ int main(void){
   int rc;
   //hostid = gethostid();
 	_init_logs();
-  simplog.writeLog(SIMPLOG_INFO, "audit process pid: %ld", getpid());
+  simplog.writeLog(SIMPLOG_INFO, "audit service pid: %ld", getpid());
   rc = provenance_register(&ops);
   if(rc){
     simplog.writeLog(SIMPLOG_ERROR, "Failed registering audit operation.");
