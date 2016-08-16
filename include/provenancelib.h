@@ -135,4 +135,9 @@ int provenance_disclose_relation(struct relation_struct* relation);
 */
 int provenance_self(struct task_prov_struct* self);
 
+/*
+* flush the current relay subuffers.
+*/
+int provenance_flush(void);
+
 #endif /* __PROVENANCELIB_H */

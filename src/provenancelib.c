@@ -267,6 +267,7 @@ static void reader_job(void *data)
   uint8_t cpu = (uint8_t)(*(uint8_t*)data);
   struct pollfd pollfd;
 
+before_loop:
   do{
     /* file to look on */
     pollfd.fd = relay_file[cpu];
@@ -285,13 +286,15 @@ static void reader_job(void *data)
     do{
       rc = read(relay_file[cpu], buf+size, sizeof(prov_msg_t)-size);
       if(rc==0){ /* we did not read anything */
-        continue;
+        free(buf);
+        goto before_loop;
       }
       if(rc<0){
         if(errno==EAGAIN){ // retry
           continue;
         }
         thpool_add_work(worker_thpool, (void*)reader_job, (void*)data);
+        free(buf);
         return; // something bad happened
       }
       size+=rc;
@@ -310,6 +313,7 @@ static void long_reader_job(void *data)
   uint8_t cpu = (uint8_t)(*(uint8_t*)data);
   struct pollfd pollfd;
 
+before_loop:
   do{
     /* file to look on */
     pollfd.fd = long_relay_file[cpu];
@@ -328,7 +332,8 @@ static void long_reader_job(void *data)
     do{
       rc = read(long_relay_file[cpu], buf+size, sizeof(long_prov_msg_t)-size);
       if(rc==0){ /* we did not read anything */
-        continue;
+        free(buf);
+        goto before_loop;
       }
       if(rc<0){
         printf("Error %d\n", rc);
@@ -336,6 +341,7 @@ static void long_reader_job(void *data)
           continue;
         }
         thpool_add_work(worker_thpool, (void*)long_reader_job, (void*)data);
+        free(buf);
         return; // something bad happened
       }
       size+=rc;
@@ -507,4 +513,18 @@ bool provenance_is_present(void){
     return false;
   }
   return true;
+}
+
+int provenance_flush(void){
+  char tmp = 1;
+  int rc;
+  int fd = open(PROV_FLUSH_FILE, O_WRONLY);
+
+  if(fd<0)
+  {
+    return fd;
+  }
+  rc = write(fd, &tmp, sizeof(char));
+  close(fd);
+  return rc;
 }

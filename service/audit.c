@@ -131,7 +131,8 @@ int main(void){
   }
   set_ProvJSON_callback(print_json);
   while(1){
-    sleep(5);
+    sleep(10);
+    provenance_flush();
     flush_json();
   }
   provenance_stop();
