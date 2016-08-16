@@ -140,4 +140,26 @@ int provenance_self(struct task_prov_struct* self);
 */
 int provenance_flush(void);
 
+/*
+* @name file name
+* @inode_info point to an inode_info structure
+* retrieve provenance information of the file associated with name.
+*/
+int provenance_read_file(const char name[PATH_MAX], struct inode_prov_struct* inode_info);
+
+/*
+* @name file name
+* @track boolean either to track or not the file
+* @depth how many removed node should be tracked
+* set tracking option corresponding to the file associated with name
+*/
+int provenance_track_file(const char name[PATH_MAX], bool track, uint8_t depth);
+
+/*
+* @name file name
+* @opaque boolean either to make opaque or not the file
+* Make the file opaque to provenance tracking.
+*/
+int provenance_opaque_file(const char name[PATH_MAX], bool opaque);
+
 #endif /* __PROVENANCELIB_H */

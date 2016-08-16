@@ -528,3 +528,63 @@ int provenance_flush(void){
   close(fd);
   return rc;
 }
+
+int provenance_read_file(const char name[PATH_MAX], struct inode_prov_struct* inode_info){
+  struct prov_file_config cfg;
+  int rc;
+  int fd = open(PROV_FILE_FILE, O_RDONLY);
+
+  if( fd < 0 ){
+    return fd;
+  }
+  realpath(name, cfg.name);
+
+  rc = read(fd, &cfg, sizeof(struct prov_file_config));
+  close(fd);
+  memcpy(inode_info, &(cfg.prov), sizeof(struct inode_prov_struct));
+  return rc;
+}
+
+int provenance_track_file(const char name[PATH_MAX], bool track, uint8_t depth){
+  struct prov_file_config cfg;
+  int rc;
+  int fd = open(PROV_FILE_FILE, O_WRONLY);
+
+  if( fd < 0 ){
+    return fd;
+  }
+  realpath(name, cfg.name);
+  cfg.op=PROV_SET_TRACKED|PROV_SET_PROPAGATE;
+  if(track){
+    cfg.prov.node_kern.tracked=NODE_TRACKED;
+    cfg.prov.node_kern.propagate=depth;
+  }else{
+    cfg.prov.node_kern.tracked=NODE_NOT_TRACKED;
+    cfg.prov.node_kern.propagate=0;
+  }
+
+  rc = write(fd, &cfg, sizeof(struct prov_file_config));
+  close(fd);
+  return rc;
+}
+
+int provenance_opaque_file(const char name[PATH_MAX], bool opaque){
+  struct prov_file_config cfg;
+  int rc;
+  int fd = open(PROV_FILE_FILE, O_WRONLY);
+
+  if( fd < 0 ){
+    return fd;
+  }
+  realpath(name, cfg.name);
+  cfg.op=PROV_SET_OPAQUE;
+  if(opaque){
+    cfg.prov.node_kern.opaque=NODE_OPAQUE;
+  }else{
+    cfg.prov.node_kern.opaque=NODE_NOT_OPAQUE;
+  }
+
+  rc = write(fd, &cfg, sizeof(struct prov_file_config));
+  close(fd);
+  return rc;
+}

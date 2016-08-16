@@ -30,6 +30,9 @@ void usage( void ){
   printf("-e <bool> enable/disable provenance capture.\n");
   printf("-a <bool> activate/deactivate whole-system provenance capture.\n");
   printf("-d <bool> activate/deactivate directories provenance capture.\n");
+  printf("-f <filename> display provenance info of a file.\n");
+  printf("-t <bool> <filename> [depth] activate/deactivate tracking of a file.\n");
+  printf("-o <bool> <filename> mark/unmark a file as opaque.\n");
 }
 
 #define is_str_true(str) ( strcmp (str, "true") == 0)

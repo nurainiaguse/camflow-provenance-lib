@@ -13,6 +13,7 @@
 ### v0.1.4
 
 ```
+- Allow to set tracking option on a particular file.
 - Adding function to flush relay buffer.
 - Fixing polling bug, that used a very large amount of CPU through bust wait.
 - Edge renamed relation to align with W3C PROV model.
