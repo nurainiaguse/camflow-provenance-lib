@@ -21,3 +21,6 @@ install:
 	cd ./tool && sudo $(MAKE) install
 	cd ./src && sudo $(MAKE) install
 	cd ./include && sudo $(MAKE) install
+
+restart:
+	cd ./service && sudo $(MAKE) restart

@@ -22,6 +22,7 @@
 #include <sys/un.h>
 #include <sys/stat.h>
 #include <netdb.h>
+#include <pthread.h>
 
 #include "simplog.h"
 #include "provenancelib.h"

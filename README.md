@@ -13,6 +13,7 @@
 ### v0.1.4
 
 ```
+- Fixing polling bug, that used a very large amount of CPU.
 - Edge renamed relation to align with W3C PROV model.
 - Examples moved to https://github.com/CamFlow/examples.
 - Install library to /usr/local

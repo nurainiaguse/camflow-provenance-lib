@@ -8,9 +8,6 @@ LIB = ../src/provenancelib.a -lpthread
 all:
 	$(CCC) $(INCLUDES) tool.c $(LIB) -o tool.o $(CCFLAGS)
 
-logger:
-
-
 debug:
 	$(CCC) $(INCLUDES) tool.c $(LIB) -o tool.o $(CCFLAGS) -g
 

@@ -256,6 +256,8 @@ static void long_callback_job(void* data)
   free(data); /* free the memory allocated in the reader */
 }
 
+#define POL_FLAG (POLLIN|POLLRDNORM|POLLERR)
+
 /* read from relayfs file */
 static void reader_job(void *data)
 {
@@ -269,9 +271,9 @@ static void reader_job(void *data)
     /* file to look on */
     pollfd.fd = relay_file[cpu];
     /* something to read */
-		pollfd.events = POLLIN;
+		pollfd.events = POL_FLAG;
     /* one file, timeout 100ms */
-    rc = poll(&pollfd, 1, 100);
+    rc = poll(&pollfd, 1, -1);
     if(rc<0){
       if(errno!=EINTR){
         break; /* something bad happened */
@@ -312,9 +314,9 @@ static void long_reader_job(void *data)
     /* file to look on */
     pollfd.fd = long_relay_file[cpu];
     /* something to read */
-		pollfd.events = POLLIN;
+		pollfd.events = POL_FLAG;
     /* one file, timeout 100ms */
-    rc = poll(&pollfd, 1, 100);
+    rc = poll(&pollfd, 1, -1);
     if(rc<0){
       if(errno!=EINTR){
         break; /* something bad happened */
