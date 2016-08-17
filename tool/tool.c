@@ -32,8 +32,8 @@ void usage( void ){
   printf("-a <bool> activate/deactivate whole-system provenance capture.\n");
   printf("-d <bool> activate/deactivate directories provenance capture.\n");
   printf("-f <filename> display provenance info of a file.\n");
-  printf("-t <bool> <filename> [depth] activate/deactivate tracking of a file.\n");
-  printf("-o <bool> <filename> mark/unmark a file as opaque.\n");
+  printf("-t <filename> <bool> [depth] activate/deactivate tracking of a file.\n");
+  printf("-o <filename> <bool> mark/unmark a file as opaque.\n");
 }
 
 #define is_str_true(str) ( strcmp (str, "true") == 0)
@@ -131,17 +131,16 @@ void file( const char* path){
   }else{
     printf("File is not opaque.\n");
   }
-  printf("Propagate: %u", inode_info.node_kern.propagate);
+  printf("Propagate: %u\n", inode_info.node_kern.propagate);
 }
 
+#define CHECK_ATTR_NB(argc, min) if(argc < min){ usage();exit(-1);}
+
 int main(int argc, char *argv[]){
-  int i;
+  int err;
   tag_t tag;
 
-  if(argc < 2){
-    usage();
-    exit(-1);
-  }
+  CHECK_ATTR_NB(argc, 2);
   // do it properly, but that will do for now
   switch(argv[1][1]){
     case 'h':
@@ -154,16 +153,38 @@ int main(int argc, char *argv[]){
       state();
       break;
     case 'e':
+      CHECK_ATTR_NB(argc, 3);
       enable(argv[2]);
       break;
     case 'a':
+      CHECK_ATTR_NB(argc, 3);
       all(argv[2]);
       break;
     case 'd':
+      CHECK_ATTR_NB(argc, 3);
       dir(argv[2]);
       break;
     case 'f':
+      CHECK_ATTR_NB(argc, 3);
       file(argv[2]);
+      break;
+    case 't':
+      CHECK_ATTR_NB(argc, 4);
+      if(argc==4){ // no depth specified
+        err = provenance_track_file(argv[2], is_str_true(argv[3]), 1);
+      }else{
+        err = provenance_track_file(argv[2], is_str_true(argv[3]), atoi(argv[4]));
+      }
+      if(err < 0){
+        perror("Could not change tracking settings for this file.\n");
+      }
+      break;
+    case 'o':
+      CHECK_ATTR_NB(argc, 4);
+      err = provenance_opaque_file(argv[2], is_str_true(argv[3]));
+      if(err < 0){
+        perror("Could not change opacity settings for this file.\n");
+      }
       break;
     default:
       usage();
