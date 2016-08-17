@@ -293,9 +293,6 @@ void append_derived(char* json_element){
 
 static __thread char buffer[MAX_PROVJSON_BUFFER_LENGTH];
 
-#define PROV_ID_STR_LEN HEXIFY_OUTPUT_LENGTH(PROV_IDENTIFIER_BUFFER_LENGTH)
-#define ID_ENCODE hexify
-
 static __thread char id[PROV_ID_STR_LEN];
 static __thread char sender[PROV_ID_STR_LEN];
 static __thread char receiver[PROV_ID_STR_LEN];
@@ -308,7 +305,7 @@ static __thread char parent_id[PROV_ID_STR_LEN];
 #define DISC_PREP_IDs(n) ID_ENCODE(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN);\
                         ID_ENCODE(n->parent.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, parent_id, PROV_ID_STR_LEN);
 
-#define NODE_PREP_IDs(n) hexify(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN);
+#define NODE_PREP_IDs(n) ID_ENCODE(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN);
 
 char* node_info_to_json(char* buf, struct node_identifier* n){
   sprintf(buf, "\"cf:type\": %u, \"cf:id\":%llu, \"cf:boot_id\":%u, \"cf:machine_id\":%u, \"cf:version\":%u", n->type, n->id, n->boot_id, n->machine_id, n->version);

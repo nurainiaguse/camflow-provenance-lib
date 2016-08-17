@@ -20,6 +20,9 @@ size_t hexify(uint8_t *in, size_t in_size, char *out, size_t out_size);
 #define ENCODE64_OUTPUT_LENGTH(in) (4 * ((in + 2) / 3) + 1)
 int base64encode(const void* data_buf, size_t dataLength, char* result, size_t resultSize);
 
+#define PROV_ID_STR_LEN HEXIFY_OUTPUT_LENGTH(PROV_IDENTIFIER_BUFFER_LENGTH)
+#define ID_ENCODE hexify
+
 static const char RL_STR_UNKNOWN []               = "unknown";
 static const char RL_STR_READ []                  = "read";
 static const char RL_STR_WRITE []                 = "write";

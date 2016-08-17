@@ -23,6 +23,7 @@
 
 #include "provenancelib.h"
 #include "provenancefilter.h"
+#include "provenanceutils.h"
 
 void usage( void ){
   printf("-h usage.\n");
@@ -103,6 +104,36 @@ void print_version(){
   printf("CamFlow %s\n", CAMFLOW_VERSION_STR);
 }
 
+void file( const char* path){
+  struct inode_prov_struct inode_info;
+  char id[PROV_ID_STR_LEN];
+  int err;
+
+  err = provenance_read_file(path, &inode_info);
+  if(err < 0){
+    perror("Could not read file provenance information.\n");
+  }
+
+  ID_ENCODE(inode_info.identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN);
+  printf("Identifier: %s\n", id);
+  printf("Type: %u\n", inode_info.identifier.relation_id.type);
+  printf("ID: %lu\n", inode_info.identifier.relation_id.id);
+  printf("Boot ID: %u\n", inode_info.identifier.relation_id.boot_id);
+  printf("Machine ID: %u\n", inode_info.identifier.relation_id.machine_id);
+  printf("\n");
+  if(inode_info.node_kern.tracked == NODE_TRACKED){
+    printf("File is tracked.\n");
+  }else{
+    printf("File is not tracked.\n");
+  }
+  if(inode_info.node_kern.opaque == NODE_OPAQUE){
+    printf("File is opaque.\n");
+  }else{
+    printf("File is not opaque.\n");
+  }
+  printf("Propagate: %u", inode_info.node_kern.propagate);
+}
+
 int main(int argc, char *argv[]){
   int i;
   tag_t tag;
@@ -130,6 +161,9 @@ int main(int argc, char *argv[]){
       break;
     case 'd':
       dir(argv[2]);
+      break;
+    case 'f':
+      file(argv[2]);
       break;
     default:
       usage();
