@@ -267,7 +267,6 @@ static void reader_job(void *data)
   uint8_t cpu = (uint8_t)(*(uint8_t*)data);
   struct pollfd pollfd;
 
-before_loop:
   do{
     /* file to look on */
     pollfd.fd = relay_file[cpu];
@@ -285,11 +284,7 @@ before_loop:
     size = 0;
     do{
       rc = read(relay_file[cpu], buf+size, sizeof(prov_msg_t)-size);
-      if(rc==0){ /* we did not read anything */
-        free(buf);
-        goto before_loop;
-      }
-      if(rc<0){
+      if(rc<=0){
         if(errno==EAGAIN){ // retry
           continue;
         }
@@ -313,7 +308,6 @@ static void long_reader_job(void *data)
   uint8_t cpu = (uint8_t)(*(uint8_t*)data);
   struct pollfd pollfd;
 
-before_loop:
   do{
     /* file to look on */
     pollfd.fd = long_relay_file[cpu];
@@ -331,12 +325,7 @@ before_loop:
     size = 0;
     do{
       rc = read(long_relay_file[cpu], buf+size, sizeof(long_prov_msg_t)-size);
-      if(rc==0){ /* we did not read anything */
-        free(buf);
-        goto before_loop;
-      }
-      if(rc<0){
-        printf("Error %d\n", rc);
+      if(rc<=0){
         if(errno==EAGAIN){ // retry
           continue;
         }
