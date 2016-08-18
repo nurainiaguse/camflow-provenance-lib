@@ -268,6 +268,7 @@ static void reader_job(void *data)
   struct pollfd pollfd;
 
   do{
+read_again:
     /* file to look on */
     pollfd.fd = relay_file[cpu];
     /* something to read */
@@ -284,19 +285,22 @@ static void reader_job(void *data)
     size = 0;
     do{
       rc = read(relay_file[cpu], buf+size, sizeof(prov_msg_t)-size);
-      if(rc<=0){
+      if(rc==0)
+        goto read_again;
+      if(rc<0){
         if(errno==EAGAIN){ // retry
           continue;
         }
-        thpool_add_work(worker_thpool, (void*)reader_job, (void*)data);
         free(buf);
-        return; // something bad happened
+        goto error; // something bad happened
       }
       size+=rc;
     }while(size<sizeof(prov_msg_t));
     /* add job to queue */
     thpool_add_work(worker_thpool, (void*)callback_job, buf);
   }while(1);
+error:
+  thpool_add_work(worker_thpool, (void*)reader_job, (void*)data);
 }
 
 /* read from relayfs file */
@@ -309,6 +313,7 @@ static void long_reader_job(void *data)
   struct pollfd pollfd;
 
   do{
+read_again:
     /* file to look on */
     pollfd.fd = long_relay_file[cpu];
     /* something to read */
@@ -325,19 +330,22 @@ static void long_reader_job(void *data)
     size = 0;
     do{
       rc = read(long_relay_file[cpu], buf+size, sizeof(long_prov_msg_t)-size);
-      if(rc<=0){
+      if(rc==0)
+        goto read_again;
+      if(rc<0){
         if(errno==EAGAIN){ // retry
           continue;
         }
-        thpool_add_work(worker_thpool, (void*)long_reader_job, (void*)data);
         free(buf);
-        return; // something bad happened
+        goto error; // something bad happened
       }
       size+=rc;
     }while(size<sizeof(long_prov_msg_t));
     /* add job to queue */
     thpool_add_work(worker_thpool, (void*)long_callback_job, buf);
   }while(1);
+error:
+  thpool_add_work(worker_thpool, (void*)long_reader_job, (void*)data);
 }
 
 int provenance_set_enable(bool value){
