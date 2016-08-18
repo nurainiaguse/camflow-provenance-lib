@@ -4,7 +4,7 @@
 
 | Library version | Kernel version | Date       |
 | --------------- |----------------| ---------- |
-| 0.1.4           | 4.4.16         | N/A        |
+| 0.1.4           | 4.4.16         | 18/08/2016 |
 | 0.1.3           | 4.4.6          | 08/08/2016 |
 | 0.1.2           | 4.4.6          | 26/05/2016 |
 | 0.1.1           | 4.4.6          | 03/04/2016 |
@@ -13,9 +13,9 @@
 ### v0.1.4
 
 ```
-- Allow to set tracking option on a particular file.
+- Allow to set tracking options on a file.
 - Adding function to flush relay buffer.
-- Fixing polling bug, that used a very large amount of CPU through bust wait.
+- Fixing polling bug, that used a very large amount of CPU through busy wait.
 - Edge renamed relation to align with W3C PROV model.
 - Examples moved to https://github.com/CamFlow/examples.
 - Install library to /usr/local
