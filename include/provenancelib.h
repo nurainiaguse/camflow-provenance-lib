@@ -1,7 +1,5 @@
 /*
 *
-* provenancelib.h
-*
 * Author: Thomas Pasquier <tfjmp2@cam.ac.uk>
 *
 * Copyright (C) 2015 University of Cambridge
@@ -23,7 +21,9 @@
 
 struct provenance_ops{
   void (*init)(void);
-  void (*log_edge)(struct edge_struct*);
+  bool (*filter)(prov_msg_t* msg);
+  bool (*long_filter)(long_prov_msg_t* msg);
+  void (*log_relation)(struct relation_struct*);
   void (*log_task)(struct task_prov_struct*);
   void (*log_inode)(struct inode_prov_struct*);
   void (*log_str)(struct str_struct*);
@@ -35,6 +35,9 @@ struct provenance_ops{
   void (*log_file_name)(struct file_name_struct*);
   void (*log_ifc)(struct ifc_context_struct*);
 };
+
+void prov_record(prov_msg_t* msg);
+void long_prov_record(long_prov_msg_t* msg);
 
 /*
 * Function return boolean value corresponding to the presence or not of the
@@ -84,32 +87,6 @@ int provenance_set_all(bool v);
 bool provenance_get_all( void );
 
 /*
-* @filter pointer to contain filter to read
-* read the current state of the node filter.
-*/
-int provenance_get_node_filter( uint32_t* filter );
-
-/*
-* @filter value of node filter
-* set node provenance capture filter.
-*/
-int provenance_add_node_filter( uint32_t filter );
-int provenance_remove_node_filter( uint32_t filter );
-
-/*
-* @filter pointer to contain filter to read
-* read the current state of the edge filter.
-*/
-int provenance_get_edge_filter( uint32_t* filter );
-
-/*
-* @filter value of node filter
-* set edge provenance capture filter.
-*/
-int provenance_add_edge_filter( uint32_t filter );
-int provenance_remove_edge_filter( uint32_t filter );
-
-/*
 * @v boolean value
 * Hide the current process from provenance capture. Should be mostly used by the
 * provenance capture service itself. Will fail if the current process is not
@@ -145,11 +122,11 @@ int provenance_get_machine_id(uint32_t* v);
 int provenance_disclose_node(struct disc_node_struct* node);
 
 /*
-* @edge edge data structure to be recorded
-* API to dsiclose a provenance edge. Some values should be left blank and Will
+* @relation relation data structure to be recorded
+* API to dsiclose a provenance relation. Some values should be left blank and Will
 * be updated by the kernel.
 */
-int provenance_disclose_edge(struct edge_struct* edge);
+int provenance_disclose_relation(struct relation_struct* relation);
 
 /*
 * @self point to a node data structure
@@ -157,5 +134,32 @@ int provenance_disclose_edge(struct edge_struct* edge);
 * process.
 */
 int provenance_self(struct task_prov_struct* self);
+
+/*
+* flush the current relay subuffers.
+*/
+int provenance_flush(void);
+
+/*
+* @name file name
+* @inode_info point to an inode_info structure
+* retrieve provenance information of the file associated with name.
+*/
+int provenance_read_file(const char name[PATH_MAX], struct inode_prov_struct* inode_info);
+
+/*
+* @name file name
+* @track boolean either to track or not the file
+* @depth how many removed node should be tracked
+* set tracking option corresponding to the file associated with name
+*/
+int provenance_track_file(const char name[PATH_MAX], bool track, uint8_t depth);
+
+/*
+* @name file name
+* @opaque boolean either to make opaque or not the file
+* Make the file opaque to provenance tracking.
+*/
+int provenance_opaque_file(const char name[PATH_MAX], bool opaque);
 
 #endif /* __PROVENANCELIB_H */

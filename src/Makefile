@@ -1,4 +1,4 @@
-SRC = provenancelib.c provenanceProvJSON.c provenanceutils.c
+SRC = provenancelib.c provenanceProvJSON.c provenanceutils.c provenancefilter.c
 OBJ = $(SRC:.c=.o)
 OUT = provenance.a
 INCLUDES = -I../threadpool -I../include
@@ -21,3 +21,6 @@ $(OUT): $(OBJ)
 
 clean:
 	rm -f $(OBJ) $(OUT)
+
+install:
+	cp --force ./provenancelib.a /usr/local/lib/provenancelib.a

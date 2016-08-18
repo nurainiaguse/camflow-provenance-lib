@@ -1,7 +1,5 @@
 /*
 *
-* provenancelib.c
-*
 * Author: Thomas Pasquier <tfjmp2@cam.ac.uk>
 *
 * Copyright (C) 2015 University of Cambridge
@@ -144,21 +142,11 @@ static int destroy_worker_pool(void)
 /* per worker thread initialised variable */
 static __thread int initialised=0;
 
-/* handle application callbacks */
-static void callback_job(void* data)
-{
-  prov_msg_t* msg = (prov_msg_t*)data;
-
-  /* initialise per worker thread */
-  if(!initialised && prov_ops.init!=NULL){
-    prov_ops.init();
-    initialised=1;
-  }
-
+void prov_record(prov_msg_t* msg){
   switch(prov_type(msg)){
-    case MSG_EDGE:
-      if(prov_ops.log_edge!=NULL)
-        prov_ops.log_edge(&(msg->edge_info));
+    case MSG_RELATION:
+      if(prov_ops.log_relation!=NULL)
+        prov_ops.log_relation(&(msg->relation_info));
       break;
     case MSG_TASK:
       if(prov_ops.log_task!=NULL)
@@ -191,13 +179,12 @@ static void callback_job(void* data)
       printf("Error: unknown message type %u\n", prov_type(msg));
       break;
   }
-  free(data); /* free the memory allocated in the reader */
 }
 
 /* handle application callbacks */
-static void long_callback_job(void* data)
+static void callback_job(void* data)
 {
-  long_prov_msg_t* msg = (long_prov_msg_t*)data;
+  prov_msg_t* msg = (prov_msg_t*)data;
 
   /* initialise per worker thread */
   if(!initialised && prov_ops.init!=NULL){
@@ -205,6 +192,18 @@ static void long_callback_job(void* data)
     initialised=1;
   }
 
+  // dealing with filter
+  if(prov_ops.filter!=NULL){
+    if(prov_ops.filter(msg)){ // message has been fitlered
+      return;
+    }
+  }
+
+  prov_record(msg);
+  free(data); /* free the memory allocated in the reader */
+}
+
+void long_prov_record(long_prov_msg_t* msg){
   switch(prov_type(msg)){
     case MSG_STR:
       if(prov_ops.log_str!=NULL)
@@ -233,8 +232,31 @@ static void long_callback_job(void* data)
       printf("Error: unknown message type %u\n", prov_type(msg));
       break;
   }
+}
+
+/* handle application callbacks */
+static void long_callback_job(void* data)
+{
+  long_prov_msg_t* msg = (long_prov_msg_t*)data;
+
+  /* initialise per worker thread */
+  if(!initialised && prov_ops.init!=NULL){
+    prov_ops.init();
+    initialised=1;
+  }
+
+  // dealing with filter
+  if(prov_ops.long_filter!=NULL){
+    if(prov_ops.long_filter(msg)){ // message has been fitlered
+      return;
+    }
+  }
+
+  long_prov_record(msg);
   free(data); /* free the memory allocated in the reader */
 }
+
+#define POL_FLAG (POLLIN|POLLRDNORM|POLLERR)
 
 /* read from relayfs file */
 static void reader_job(void *data)
@@ -249,9 +271,9 @@ static void reader_job(void *data)
     /* file to look on */
     pollfd.fd = relay_file[cpu];
     /* something to read */
-		pollfd.events = POLLIN;
+		pollfd.events = POL_FLAG;
     /* one file, timeout 100ms */
-    rc = poll(&pollfd, 1, 100);
+    rc = poll(&pollfd, 1, -1);
     if(rc<0){
       if(errno!=EINTR){
         break; /* something bad happened */
@@ -262,14 +284,12 @@ static void reader_job(void *data)
     size = 0;
     do{
       rc = read(relay_file[cpu], buf+size, sizeof(prov_msg_t)-size);
-      if(rc==0){ /* we did not read anything */
-        continue;
-      }
-      if(rc<0){
+      if(rc<=0){
         if(errno==EAGAIN){ // retry
           continue;
         }
         thpool_add_work(worker_thpool, (void*)reader_job, (void*)data);
+        free(buf);
         return; // something bad happened
       }
       size+=rc;
@@ -292,9 +312,9 @@ static void long_reader_job(void *data)
     /* file to look on */
     pollfd.fd = long_relay_file[cpu];
     /* something to read */
-		pollfd.events = POLLIN;
+		pollfd.events = POL_FLAG;
     /* one file, timeout 100ms */
-    rc = poll(&pollfd, 1, 100);
+    rc = poll(&pollfd, 1, -1);
     if(rc<0){
       if(errno!=EINTR){
         break; /* something bad happened */
@@ -305,15 +325,12 @@ static void long_reader_job(void *data)
     size = 0;
     do{
       rc = read(long_relay_file[cpu], buf+size, sizeof(long_prov_msg_t)-size);
-      if(rc==0){ /* we did not read anything */
-        continue;
-      }
-      if(rc<0){
-        printf("Error %d\n", rc);
+      if(rc<=0){
         if(errno==EAGAIN){ // retry
           continue;
         }
         thpool_add_work(worker_thpool, (void*)long_reader_job, (void*)data);
+        free(buf);
         return; // something bad happened
       }
       size+=rc;
@@ -381,96 +398,6 @@ bool provenance_get_all( void ){
   read(fd, &c, sizeof(char));
   close(fd);
   return c!='0';
-}
-
-int provenance_add_node_filter( uint32_t filter ){
-  struct prov_filter f;
-  int fd = open(PROV_NODE_FILTER_FILE, O_WRONLY);
-
-  if(fd<0)
-  {
-    return fd;
-  }
-  f.filter=filter;
-  f.add=1;
-
-  write(fd, &f, sizeof(struct prov_filter));
-  close(fd);
-  return 0;
-}
-
-int provenance_remove_node_filter( uint32_t filter ){
-  struct prov_filter f;
-  int fd = open(PROV_NODE_FILTER_FILE, O_WRONLY);
-
-  if(fd<0)
-  {
-    return fd;
-  }
-  f.filter=filter;
-  f.add=0;
-
-  write(fd, &f, sizeof(struct prov_filter));
-  close(fd);
-  return 0;
-}
-
-int provenance_get_node_filter( uint32_t* filter ){
-  int fd = open(PROV_NODE_FILTER_FILE, O_RDONLY);
-  int err=0;
-  if(fd<0)
-  {
-    return fd;
-  }
-
-  read(fd, filter, sizeof(uint32_t));
-  close(fd);
-  return 0;
-}
-
-int provenance_add_edge_filter( uint32_t filter ){
-  struct prov_filter f;
-  int fd = open(PROV_EDGE_FILTER_FILE, O_WRONLY);
-
-  if(fd<0)
-  {
-    return fd;
-  }
-  f.filter=filter;
-  f.add=1;
-
-  write(fd, &f, sizeof(struct prov_filter));
-  close(fd);
-  return 0;
-}
-
-int provenance_remove_edge_filter( uint32_t filter ){
-  struct prov_filter f;
-  int fd = open(PROV_EDGE_FILTER_FILE, O_WRONLY);
-
-  if(fd<0)
-  {
-    return fd;
-  }
-  f.filter=filter;
-  f.add=0;
-
-  write(fd, &f, sizeof(struct prov_filter));
-  close(fd);
-  return 0;
-}
-
-int provenance_get_edge_filter( uint32_t* filter ){
-  int fd = open(PROV_EDGE_FILTER_FILE, O_RDONLY);
-  int err=0;
-  if(fd<0)
-  {
-    return fd;
-  }
-
-  read(fd, filter, sizeof(uint32_t));
-  close(fd);
-  return 0;
 }
 
 int provenance_set_opaque(bool value){
@@ -544,15 +471,15 @@ int provenance_disclose_node(struct disc_node_struct* node){
   return rc;
 }
 
-int provenance_disclose_edge(struct edge_struct* edge){
+int provenance_disclose_relation(struct relation_struct* relation){
   int rc;
-  int fd = open(PROV_EDGE_FILE, O_WRONLY);
+  int fd = open(PROV_RELATION_FILE, O_WRONLY);
 
   if(fd<0)
   {
     return fd;
   }
-  rc = write(fd, edge, sizeof(struct edge_struct));
+  rc = write(fd, relation, sizeof(struct relation_struct));
   close(fd);
   return rc;
 }
@@ -575,4 +502,78 @@ bool provenance_is_present(void){
     return false;
   }
   return true;
+}
+
+int provenance_flush(void){
+  char tmp = 1;
+  int rc;
+  int fd = open(PROV_FLUSH_FILE, O_WRONLY);
+
+  if(fd<0)
+  {
+    return fd;
+  }
+  rc = write(fd, &tmp, sizeof(char));
+  close(fd);
+  return rc;
+}
+
+int provenance_read_file(const char name[PATH_MAX], struct inode_prov_struct* inode_info){
+  struct prov_file_config cfg;
+  int rc;
+  int fd = open(PROV_FILE_FILE, O_RDONLY);
+
+  if( fd < 0 ){
+    return fd;
+  }
+  realpath(name, cfg.name);
+
+  rc = read(fd, &cfg, sizeof(struct prov_file_config));
+  close(fd);
+  memcpy(inode_info, &(cfg.prov), sizeof(struct inode_prov_struct));
+  return rc;
+}
+
+int provenance_track_file(const char name[PATH_MAX], bool track, uint8_t depth){
+  struct prov_file_config cfg;
+  int rc;
+  int fd = open(PROV_FILE_FILE, O_WRONLY);
+
+  if( fd < 0 ){
+    return fd;
+  }
+  realpath(name, cfg.name);
+  cfg.op=PROV_SET_TRACKED|PROV_SET_PROPAGATE;
+  if(track){
+    cfg.prov.node_kern.tracked=NODE_TRACKED;
+    cfg.prov.node_kern.propagate=depth;
+  }else{
+    cfg.prov.node_kern.tracked=NODE_NOT_TRACKED;
+    cfg.prov.node_kern.propagate=0;
+  }
+
+  rc = write(fd, &cfg, sizeof(struct prov_file_config));
+  close(fd);
+  return rc;
+}
+
+int provenance_opaque_file(const char name[PATH_MAX], bool opaque){
+  struct prov_file_config cfg;
+  int rc;
+  int fd = open(PROV_FILE_FILE, O_WRONLY);
+
+  if( fd < 0 ){
+    return fd;
+  }
+  realpath(name, cfg.name);
+  cfg.op=PROV_SET_OPAQUE;
+  if(opaque){
+    cfg.prov.node_kern.opaque=NODE_OPAQUE;
+  }else{
+    cfg.prov.node_kern.opaque=NODE_NOT_OPAQUE;
+  }
+
+  rc = write(fd, &cfg, sizeof(struct prov_file_config));
+  close(fd);
+  return rc;
 }

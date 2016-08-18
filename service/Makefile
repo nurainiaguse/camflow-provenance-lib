@@ -11,6 +11,9 @@ all:
 debug:
 	$(CCC) $(INCLUDES) audit.c $(LIB) -o audit.o $(CCFLAGS) -g
 
+restart:
+	systemctl restart camflow-provenance.service
+
 install:
 	cp --force ./audit.o /usr/bin/camflow-provenance
 	mkdir -p /var/relay
