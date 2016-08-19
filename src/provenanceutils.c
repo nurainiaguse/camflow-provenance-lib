@@ -119,3 +119,20 @@ int base64encode(const void* data_buf, size_t dataLength, char* result, size_t r
    result[resultIndex] = 0;
    return 0;   /* indicate success */
 }
+
+int compress64encode(const char* in, size_t inlen, char* out, size_t outlen){
+  uLongf len;
+  char* buf;
+
+  if(outlen < compress64encodeBound(inlen)){
+    return -1;
+  }
+
+  len = compressBound(inlen);
+  buf = (char*)malloc(len);
+  compress((Bytef*)buf, &len, (Bytef*)in, inlen);
+  base64encode(buf, len, out, outlen);
+  free(buf);
+
+  return 0;
+}

@@ -1,7 +1,7 @@
 INCLUDES = -I../include -I../simplelogger
 CCFLAGS = -g -O2 -fpic
 CCC = gcc
-LIB = ../src/provenancelib.a ../simplelogger/simplog.a -lpthread
+LIB = ../src/provenancelib.a ../simplelogger/simplog.a -lpthread -lz
 
 .SUFFIXES: .c
 

@@ -14,13 +14,16 @@
 
 #include <sys/socket.h>
 #include <linux/provenance.h>
+#include <zlib.h>
 
-#define HEXIFY_OUTPUT_LENGTH(in) (in*2+1)
+#define hexifyBound(in) (in*2+1)
 size_t hexify(uint8_t *in, size_t in_size, char *out, size_t out_size);
-#define ENCODE64_OUTPUT_LENGTH(in) (4 * ((in + 2) / 3) + 1)
+#define encode64Bound(in) (4 * ((in + 2) / 3) + 1)
 int base64encode(const void* data_buf, size_t dataLength, char* result, size_t resultSize);
+#define compress64encodeBound(in) encode64Bound(compressBound(in))
+int compress64encode(const char* in, size_t inlen, char* out, size_t outlen);
 
-#define PROV_ID_STR_LEN HEXIFY_OUTPUT_LENGTH(PROV_IDENTIFIER_BUFFER_LENGTH)
+#define PROV_ID_STR_LEN hexifyBound(PROV_IDENTIFIER_BUFFER_LENGTH)
 #define ID_ENCODE hexify
 
 static const char RL_STR_UNKNOWN []               = "unknown";

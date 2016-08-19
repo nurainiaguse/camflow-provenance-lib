@@ -26,6 +26,7 @@
 
 #include "simplog.h"
 #include "provenancelib.h"
+#include "provenanceutils.h"
 #include "provenancePovJSON.h"
 
 #define	LOG_FILE "/tmp/audit.log"
@@ -120,9 +121,19 @@ struct provenance_ops ops = {
 };
 
 void print_json(char* json){
-  if(strlen(json)>100){
+  size_t len;
+  char* buf;
+  const size_t inlen = strlen(json);
+  size_t len64;
+  if(inlen>100){
     simplog.writeLog(SIMPLOG_INFO,  json);
+    len = compress64encodeBound(inlen);
+    buf = (char*)malloc(len);
+    compress64encode(json, inlen, buf, len);
+    simplog.writeLog(SIMPLOG_INFO, buf);
+    free(buf);
   }
+
 }
 
 int main(void){
