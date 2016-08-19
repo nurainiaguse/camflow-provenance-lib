@@ -133,6 +133,9 @@ static inline bool __append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* 
 #define str_is_empty(str) (str[0]=='\0')
 // we create the JSON string to be sent to the call back
 static inline char* ready_to_print(){
+  char* json = (char*)malloc(JSON_LENGTH * sizeof(char));
+  bool content=false;
+
   pthread_mutex_lock(&l_derived);
   pthread_mutex_lock(&l_informed);
   pthread_mutex_lock(&l_generated);
@@ -143,8 +146,6 @@ static inline char* ready_to_print(){
   pthread_mutex_lock(&l_agent);
   pthread_mutex_lock(&l_activity);
 
-  /* allocate memory */
-  char* json = (char*)malloc(JSON_LENGTH * sizeof(char));
   json[0]='\0';
 
   strcat(json, JSON_START);
@@ -152,6 +153,7 @@ static inline char* ready_to_print(){
 
   /* recording activities */
   if(!str_is_empty(activity)){
+    content=true;
     strcat(json, JSON_ACTIVITY);
     strcat(json, activity);
     memset(activity, '\0', MAX_PROVJSON_BUFFER_LENGTH);
@@ -160,6 +162,7 @@ static inline char* ready_to_print(){
 
   /* recording agents */
   if(!str_is_empty(agent)){
+    content=true;
     strcat(json, JSON_AGENT);
     strcat(json, agent);
     memset(agent, '\0', MAX_PROVJSON_BUFFER_LENGTH);
@@ -168,6 +171,7 @@ static inline char* ready_to_print(){
 
   /* recording entities */
   if(!str_is_empty(entity)){
+    content=true;
     strcat(json, JSON_ENTITY);
     strcat(json, entity);
     memset(entity, '\0', MAX_PROVJSON_BUFFER_LENGTH);
@@ -176,6 +180,7 @@ static inline char* ready_to_print(){
 
   /* recording entities */
   if(!str_is_empty(message)){
+    content=true;
     strcat(json, JSON_MESSAGE);
     strcat(json, message);
     memset(message, '\0', MAX_PROVJSON_BUFFER_LENGTH);
@@ -184,6 +189,7 @@ static inline char* ready_to_print(){
 
   /* recording relations */
   if(!str_is_empty(relation)){
+    content=true;
     strcat(json, JSON_RELATION);
     strcat(json, relation);
     memset(relation, '\0', MAX_PROVJSON_BUFFER_LENGTH);
@@ -191,6 +197,7 @@ static inline char* ready_to_print(){
   pthread_mutex_unlock(&l_relation);
 
   if(!str_is_empty(used)){
+    content=true;
     strcat(json, JSON_USED);
     strcat(json, used);
     memset(used, '\0', MAX_PROVJSON_BUFFER_LENGTH);
@@ -198,6 +205,7 @@ static inline char* ready_to_print(){
   pthread_mutex_unlock(&l_used);
 
   if(!str_is_empty(generated)){
+    content=true;
     strcat(json, JSON_GENERATED);
     strcat(json, generated);
     memset(generated, '\0', MAX_PROVJSON_BUFFER_LENGTH);
@@ -205,6 +213,7 @@ static inline char* ready_to_print(){
   pthread_mutex_unlock(&l_generated);
 
   if(!str_is_empty(informed)){
+    content=true;
     strcat(json, JSON_INFORMED);
     strcat(json, informed);
     memset(informed, '\0', MAX_PROVJSON_BUFFER_LENGTH);
@@ -212,11 +221,17 @@ static inline char* ready_to_print(){
   pthread_mutex_unlock(&l_informed);
 
   if(!str_is_empty(derived)){
+    content=true;
     strcat(json, JSON_DERIVED);
     strcat(json, derived);
     memset(derived, '\0', MAX_PROVJSON_BUFFER_LENGTH);
   }
   pthread_mutex_unlock(&l_derived);
+
+  if(!content){
+    free(json);
+    return NULL;
+  }
 
   strcat(json, JSON_END);
   return json;
@@ -235,10 +250,10 @@ void flush_json(){
 
   if(should_flush){
     json = ready_to_print();
-    if(strlen(json)>100){
+    if(json!=NULL){
       print_json(json);
+      free(json);
     }
-    free(json);
     pthread_mutex_lock(&l_flush);
     writing_out = false;
     pthread_mutex_unlock(&l_flush);

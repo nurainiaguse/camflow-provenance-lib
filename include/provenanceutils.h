@@ -23,8 +23,8 @@ int base64encode(const void* data_buf, size_t dataLength, char* result, size_t r
 #define compress64encodeBound(in) encode64Bound(compressBound(in))
 int compress64encode(const char* in, size_t inlen, char* out, size_t outlen);
 
-#define PROV_ID_STR_LEN hexifyBound(PROV_IDENTIFIER_BUFFER_LENGTH)
-#define ID_ENCODE hexify
+#define PROV_ID_STR_LEN encode64Bound(PROV_IDENTIFIER_BUFFER_LENGTH)
+#define ID_ENCODE base64encode
 
 static const char RL_STR_UNKNOWN []               = "unknown";
 static const char RL_STR_READ []                  = "read";
