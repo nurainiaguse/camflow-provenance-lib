@@ -53,7 +53,7 @@ static void long_callback_job(void* data);
 static void reader_job(void *data);
 static void long_reader_job(void *data);
 
-void record_error(const char* fmt, ...){
+static inline void record_error(const char* fmt, ...){
   char tmp[2048];
 	va_list args;
 
@@ -109,11 +109,13 @@ static int open_files(void)
     sprintf(tmp, "%s%d", PROV_BASE_NAME, i);
     relay_file[i] = open(tmp, O_RDONLY | O_NONBLOCK);
     if(relay_file[i]<0){
+      record_error("Could not open files (%d)\n", relay_file[i]);
       return -1;
     }
     sprintf(tmp, "%s%d", LONG_PROV_BASE_NAME, i);
     long_relay_file[i] = open(tmp, O_RDONLY | O_NONBLOCK);
     if(long_relay_file[i]<0){
+      record_error("Could not open files (%d)\n", long_relay_file[i]);
       return -1;
     }
   }
