@@ -23,9 +23,15 @@
 #include "thpool.h"
 #include "provenancelib.h"
 
+/*
+* TODO look at code to avoid duplication across normal and "long" relay
+*/
+
 #define NUMBER_CPUS           256 /* support 256 core max */
 #define PROV_BASE_NAME        "/sys/kernel/debug/provenance"
 #define LONG_PROV_BASE_NAME   "/sys/kernel/debug/long_provenance"
+
+#define RELAY_POLL_TIMEOUT 50
 
 /* internal variables */
 static struct provenance_ops prov_ops;
@@ -278,8 +284,8 @@ read_again:
     pollfd.fd = relay_file[cpu];
     /* something to read */
 		pollfd.events = POL_FLAG;
-    /* one file, timeout 100ms */
-    rc = poll(&pollfd, 1, 100);
+    /* one file, timeout */
+    rc = poll(&pollfd, 1, RELAY_POLL_TIMEOUT);
     if(rc<0){
       record_error("Failed while polling (%d).", rc);
       goto read_again; /* something bad happened */
@@ -292,7 +298,7 @@ read_again:
 
       if(rc==0 && size==0){
         free(buf);
-        goto read_again;
+        goto read_again; // going back to polling
       }
 
       if(rc<0){
@@ -301,7 +307,7 @@ read_again:
           continue;
         }
         free(buf);
-        goto read_again; // something bad happened
+        goto read_again; // going back to polling
       }
       size+=rc;
     }while(size<sizeof(prov_msg_t));
@@ -325,8 +331,8 @@ read_again:
     pollfd.fd = long_relay_file[cpu];
     /* something to read */
 		pollfd.events = POL_FLAG;
-    /* one file, timeout 100ms */
-    rc = poll(&pollfd, 1, 100);
+    /* one file, timeout */
+    rc = poll(&pollfd, 1, RELAY_POLL_TIMEOUT);
     if(rc<0){
       record_error("Failed while polling (%d).", rc);
       goto read_again; /* something bad happened */
@@ -339,7 +345,7 @@ read_again:
 
       if(rc==0 && size==0){
         free(buf);
-        goto read_again;
+        goto read_again; // going back to polling
       }
 
       if(rc<0){
@@ -348,7 +354,7 @@ read_again:
           continue;
         }
         free(buf);
-        goto read_again; // something bad happened
+        goto read_again; // going back to polling
       }
       size+=rc;
     }while(size<sizeof(long_prov_msg_t));
