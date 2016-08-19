@@ -121,9 +121,7 @@ struct provenance_ops ops = {
 };
 
 void print_json(char* json){
-  if(strlen(json>100){
     simplog.writeLog(SIMPLOG_INFO,  json);
-  }
 }
 
 int main(void){
