@@ -28,8 +28,6 @@
 */
 
 #define NUMBER_CPUS           256 /* support 256 core max */
-#define PROV_BASE_NAME        "/sys/kernel/debug/provenance"
-#define LONG_PROV_BASE_NAME   "/sys/kernel/debug/long_provenance"
 
 #define RELAY_POLL_TIMEOUT 50
 
@@ -106,13 +104,13 @@ static int open_files(void)
   char tmp[4096]; // to store file name
 
   for(i=0; i<ncpus; i++){
-    sprintf(tmp, "%s%d", PROV_BASE_NAME, i);
+    sprintf(tmp, "%s%d", PROV_RELAY_NAME, i);
     relay_file[i] = open(tmp, O_RDONLY | O_NONBLOCK);
     if(relay_file[i]<0){
       record_error("Could not open files (%d)\n", relay_file[i]);
       return -1;
     }
-    sprintf(tmp, "%s%d", LONG_PROV_BASE_NAME, i);
+    sprintf(tmp, "%s%d", PROV_LONG_RELAY_NAME, i);
     long_relay_file[i] = open(tmp, O_RDONLY | O_NONBLOCK);
     if(long_relay_file[i]<0){
       record_error("Could not open files (%d)\n", long_relay_file[i]);
