@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <netdb.h>
+#include <stdarg.h>
 
 #include "thpool.h"
 #include "provenancelib.h"
@@ -50,6 +51,16 @@ static void callback_job(void* data);
 static void long_callback_job(void* data);
 static void reader_job(void *data);
 static void long_reader_job(void *data);
+
+void record_error(const char* fmt, ...){
+  char tmp[2048];
+	va_list args;
+
+	va_start(args, fmt);
+	vsprintf(tmp, fmt, args);
+	va_end(args);
+  prov_ops.log_error(tmp);
+}
 
 
 int provenance_register(struct provenance_ops* ops)
@@ -274,33 +285,35 @@ read_again:
     /* something to read */
 		pollfd.events = POL_FLAG;
     /* one file, timeout 100ms */
-    rc = poll(&pollfd, 1, -1);
+    rc = poll(&pollfd, 1, 100);
     if(rc<0){
-      if(errno!=EINTR){
-        break; /* something bad happened */
-      }
+      record_error("Failed while polling (%d).", rc);
+      goto read_again; /* something bad happened */
     }
     buf = (uint8_t*)malloc(sizeof(prov_msg_t)); /* freed by worker thread */
 
     size = 0;
     do{
       rc = read(relay_file[cpu], buf+size, sizeof(prov_msg_t)-size);
-      if(rc==0)
+
+      if(rc==0 && size==0){
+        free(buf);
         goto read_again;
+      }
+
       if(rc<0){
+        record_error("Failed while reading (%d).", errno);
         if(errno==EAGAIN){ // retry
           continue;
         }
         free(buf);
-        goto error; // something bad happened
+        goto read_again; // something bad happened
       }
       size+=rc;
     }while(size<sizeof(prov_msg_t));
     /* add job to queue */
     thpool_add_work(worker_thpool, (void*)callback_job, buf);
   }while(1);
-error:
-  thpool_add_work(worker_thpool, (void*)reader_job, (void*)data);
 }
 
 /* read from relayfs file */
@@ -319,33 +332,35 @@ read_again:
     /* something to read */
 		pollfd.events = POL_FLAG;
     /* one file, timeout 100ms */
-    rc = poll(&pollfd, 1, -1);
+    rc = poll(&pollfd, 1, 100);
     if(rc<0){
-      if(errno!=EINTR){
-        break; /* something bad happened */
-      }
+      record_error("Failed while polling (%d).", rc);
+      goto read_again; /* something bad happened */
     }
     buf = (uint8_t*)malloc(sizeof(long_prov_msg_t)); /* freed by worker thread */
 
     size = 0;
     do{
       rc = read(long_relay_file[cpu], buf+size, sizeof(long_prov_msg_t)-size);
-      if(rc==0)
+
+      if(rc==0 && size==0){
+        free(buf);
         goto read_again;
+      }
+
       if(rc<0){
+        record_error("Failed while reading (%d).", errno);
         if(errno==EAGAIN){ // retry
           continue;
         }
         free(buf);
-        goto error; // something bad happened
+        goto read_again; // something bad happened
       }
       size+=rc;
     }while(size<sizeof(long_prov_msg_t));
     /* add job to queue */
     thpool_add_work(worker_thpool, (void*)long_callback_job, buf);
   }while(1);
-error:
-  thpool_add_work(worker_thpool, (void*)long_reader_job, (void*)data);
 }
 
 int provenance_set_enable(bool value){

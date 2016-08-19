@@ -92,8 +92,13 @@ void log_ifc(struct ifc_context_struct* ifc){
 bool filter(prov_msg_t* msg){
   return false;
 }
+
 bool long_filter(long_prov_msg_t* msg){
   return false;
+}
+
+void log_error(char* err_msg){
+  simplog.writeLog(SIMPLOG_ERROR,  err_msg);
 }
 
 struct provenance_ops ops = {
@@ -110,7 +115,8 @@ struct provenance_ops ops = {
   .log_sock=log_sock,
   .log_address=log_address,
   .log_file_name=log_file_name,
-  .log_ifc=log_ifc
+  .log_ifc=log_ifc,
+  .log_error=log_error
 };
 
 void print_json(char* json){
@@ -132,7 +138,6 @@ int main(void){
   set_ProvJSON_callback(print_json);
   while(1){
     sleep(10);
-    provenance_flush();
     flush_json();
   }
   provenance_stop();
