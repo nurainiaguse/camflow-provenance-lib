@@ -85,7 +85,7 @@ void set_ProvJSON_callback( void (*fcn)(char* json) ){
 }
 
 static inline bool __append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* source){
-  if (strlen(source) + 2 > MAX_PROVJSON_BUFFER_LENGTH - strlen(destination)){ // not enough space
+  if (strlen(source) + 2 > MAX_PROVJSON_BUFFER_LENGTH - strlen(destination) - 1){ // not enough space
     return false;
   }
   // add the comma
@@ -133,9 +133,8 @@ static inline bool __append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* 
 #define str_is_empty(str) (str[0]=='\0')
 // we create the JSON string to be sent to the call back
 static inline char* ready_to_print(){
-  char* json = (char*)malloc(JSON_LENGTH * sizeof(char));
+  char* json;
   bool content=false;
-
   pthread_mutex_lock(&l_derived);
   pthread_mutex_lock(&l_informed);
   pthread_mutex_lock(&l_generated);
@@ -146,6 +145,7 @@ static inline char* ready_to_print(){
   pthread_mutex_lock(&l_agent);
   pthread_mutex_lock(&l_activity);
 
+  json = (char*)malloc(JSON_LENGTH * sizeof(char));
   json[0]='\0';
 
   strcat(json, JSON_START);
