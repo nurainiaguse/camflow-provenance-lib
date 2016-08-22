@@ -171,7 +171,7 @@ int main(int argc, char *argv[]){
     case 't':
       CHECK_ATTR_NB(argc, 4);
       if(argc==4){ // no depth specified
-        err = provenance_track_file(argv[2], is_str_true(argv[3]), 1);
+        err = provenance_track_file(argv[2], is_str_true(argv[3]), PROVENANCE_DEFAULT_PROPAGATE_DEPTH);
       }else{
         err = provenance_track_file(argv[2], is_str_true(argv[3]), atoi(argv[4]));
       }
