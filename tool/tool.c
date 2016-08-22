@@ -30,7 +30,6 @@ void usage( void ){
   printf("-s print provenance capture state.\n");
   printf("-e <bool> enable/disable provenance capture.\n");
   printf("-a <bool> activate/deactivate whole-system provenance capture.\n");
-  printf("-d <bool> activate/deactivate directories provenance capture.\n");
   printf("-f <filename> display provenance info of a file.\n");
   printf("-t <filename> <bool> activate/deactivate tracking of a file.\n");
   printf("-o <filename> <bool> mark/unmark a file as opaque.\n");
@@ -57,24 +56,6 @@ void all( const char* str ){
 
   if(provenance_set_all(is_str_true(str))<0)
     perror("Could not activate/deactivate whole-system provenance capture");
-}
-
-void dir( const char* str ){
-  int err;
-  if(!is_str_true(str) && !is_str_false(str)){
-    printf("Excepted a boolean, got %s.\n", str);
-    return;
-  }
-
-  if(is_str_true(str)){
-    err = provenance_add_node_filter(MSG_INODE_DIRECTORY);
-  }else{
-    err = provenance_remove_node_filter(MSG_INODE_DIRECTORY);
-  }
-
-  if(err<0){
-    perror("Could not activate/deactivate directories provenance capture");
-  }
 }
 
 void state( void ){
@@ -162,10 +143,6 @@ int main(int argc, char *argv[]){
     case 'a':
       CHECK_ATTR_NB(argc, 3);
       all(argv[2]);
-      break;
-    case 'd':
-      CHECK_ATTR_NB(argc, 3);
-      dir(argv[2]);
       break;
     case 'f':
       CHECK_ATTR_NB(argc, 3);
