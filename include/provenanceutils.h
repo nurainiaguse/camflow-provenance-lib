@@ -107,4 +107,34 @@ static inline const char* relation_str(uint32_t type){
   }
 }
 
+#define MATCH(str1, str2, v) if(strcmp(str1, str2)==0) return v
+
+static inline const int relation_id(char* str){
+  MATCH(str, RL_STR_READ, RL_READ);
+  MATCH(str, RL_STR_WRITE, RL_WRITE);
+  MATCH(str, RL_STR_CREATE, RL_CREATE);
+  MATCH(str, RL_STR_PASS, RL_PASS);
+  MATCH(str, RL_STR_CHANGE, RL_CHANGE);
+  MATCH(str, RL_STR_MMAP_WRITE, RL_MMAP_WRITE);
+  MATCH(str, RL_STR_ATTACH, RL_ATTACH);
+  MATCH(str, RL_STR_ASSOCIATE, RL_ASSOCIATE);
+  MATCH(str, RL_STR_BIND, RL_BIND);
+  MATCH(str, RL_STR_CONNECT, RL_CONNECT);
+  MATCH(str, RL_STR_LISTEN, RL_LISTEN);
+  MATCH(str, RL_STR_ACCEPT, RL_ACCEPT);
+  MATCH(str, RL_STR_OPEN, RL_OPEN);
+  MATCH(str, RL_STR_PARENT, RL_PARENT);
+  MATCH(str, RL_STR_VERSION, RL_VERSION);
+  MATCH(str, RL_STR_LINK, RL_LINK);
+  MATCH(str, RL_STR_NAMED, RL_NAMED);
+  MATCH(str, RL_STR_IFC, RL_IFC);
+  MATCH(str, RL_STR_EXEC, RL_EXEC);
+  MATCH(str, RL_STR_FORK, RL_FORK);
+  MATCH(str, RL_STR_VERSION_PROCESS, RL_VERSION_PROCESS);
+  MATCH(str, RL_STR_SEARCH, RL_SEARCH);
+  MATCH(str, RL_STR_MMAP_READ, RL_MMAP_READ);
+  MATCH(str, RL_STR_MMAP_EXEC, RL_MMAP_EXEC);
+  return 0;
+}
+
 #endif /* __PROVENANCEUTILS_H */

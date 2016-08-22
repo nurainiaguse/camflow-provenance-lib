@@ -154,7 +154,7 @@ int provenance_read_file(const char name[PATH_MAX], struct inode_prov_struct* in
 * @depth how many removed node should be tracked
 * set tracking option corresponding to the file associated with name
 */
-int provenance_track_file(const char name[PATH_MAX], bool track, uint8_t depth);
+int provenance_track_file(const char name[PATH_MAX], bool track);
 
 /*
 * @name file name

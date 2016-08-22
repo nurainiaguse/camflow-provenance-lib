@@ -213,7 +213,7 @@ int provenance_read_file(const char name[PATH_MAX], struct inode_prov_struct* in
   return rc;
 }
 
-int provenance_track_file(const char name[PATH_MAX], bool track, uint8_t depth){
+int provenance_track_file(const char name[PATH_MAX], bool track){
   struct prov_file_config cfg;
   int rc;
   int fd = open(PROV_FILE_FILE, O_WRONLY);
@@ -222,13 +222,11 @@ int provenance_track_file(const char name[PATH_MAX], bool track, uint8_t depth){
     return fd;
   }
   realpath(name, cfg.name);
-  cfg.op=PROV_SET_TRACKED|PROV_SET_PROPAGATE;
+  cfg.op=PROV_SET_TRACKED;
   if(track){
     cfg.prov.node_kern.tracked=NODE_TRACKED;
-    cfg.prov.node_kern.propagate=depth;
   }else{
     cfg.prov.node_kern.tracked=NODE_NOT_TRACKED;
-    cfg.prov.node_kern.propagate=0;
   }
 
   rc = write(fd, &cfg, sizeof(struct prov_file_config));

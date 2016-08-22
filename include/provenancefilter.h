@@ -34,6 +34,19 @@ int provenance_remove_node_filter( uint32_t filter );
 
 /*
 * @filter pointer to contain filter to read
+* read the current state of the node filter.
+*/
+int provenance_get_propagate_node_filter( uint32_t* filter );
+
+/*
+* @filter value of node filter
+* set node provenance propagate filter.
+*/
+int provenance_add_propagate_node_filter( uint32_t filter );
+int provenance_remove_propagate_node_filter( uint32_t filter );
+
+/*
+* @filter pointer to contain filter to read
 * read the current state of the relation filter.
 */
 int provenance_get_relation_filter( uint32_t* filter );
@@ -44,5 +57,18 @@ int provenance_get_relation_filter( uint32_t* filter );
 */
 int provenance_add_relation_filter( uint32_t filter );
 int provenance_remove_relation_filter( uint32_t filter );
+
+/*
+* @filter pointer to contain filter to read
+* read the current state of the relation filter.
+*/
+int provenance_get_propagate_relation_filter( uint32_t* filter );
+
+/*
+* @filter value of node filter
+* set relation provenance propagate filter.
+*/
+int provenance_add_propagate_relation_filter( uint32_t filter );
+int provenance_remove_propagate_relation_filter( uint32_t filter );
 
 #endif

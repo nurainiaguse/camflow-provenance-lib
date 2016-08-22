@@ -32,7 +32,7 @@ void usage( void ){
   printf("-a <bool> activate/deactivate whole-system provenance capture.\n");
   printf("-d <bool> activate/deactivate directories provenance capture.\n");
   printf("-f <filename> display provenance info of a file.\n");
-  printf("-t <filename> <bool> [depth] activate/deactivate tracking of a file.\n");
+  printf("-t <filename> <bool> activate/deactivate tracking of a file.\n");
   printf("-o <filename> <bool> mark/unmark a file as opaque.\n");
 }
 
@@ -93,11 +93,15 @@ void state( void ){
 
   provenance_get_node_filter(&filter);
   printf("\nNode filter (%0x):\n", filter);
-  if( (filter&MSG_INODE_DIRECTORY) == 0 ){
-    printf("- directories provenance captured;\n");
-  }else{
-    printf("- directories provenance not captured;\n");
-  }
+
+  provenance_get_relation_filter(&filter);
+  printf("Relation filter (%0x):\n", filter);
+
+  provenance_get_propagate_node_filter(&filter);
+  printf("\nNode filter (%0x):\n", filter);
+
+  provenance_get_propagate_relation_filter(&filter);
+  printf("Relation filter (%0x):\n", filter);
 }
 
 void print_version(){
@@ -131,7 +135,6 @@ void file( const char* path){
   }else{
     printf("File is not opaque.\n");
   }
-  printf("Propagate: %u\n", inode_info.node_kern.propagate);
 }
 
 #define CHECK_ATTR_NB(argc, min) if(argc < min){ usage();exit(-1);}
@@ -170,11 +173,7 @@ int main(int argc, char *argv[]){
       break;
     case 't':
       CHECK_ATTR_NB(argc, 4);
-      if(argc==4){ // no depth specified
-        err = provenance_track_file(argv[2], is_str_true(argv[3]), PROVENANCE_DEFAULT_PROPAGATE_DEPTH);
-      }else{
-        err = provenance_track_file(argv[2], is_str_true(argv[3]), atoi(argv[4]));
-      }
+      err = provenance_track_file(argv[2], is_str_true(argv[3]));
       if(err < 0){
         perror("Could not change tracking settings for this file.\n");
       }

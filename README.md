@@ -14,6 +14,7 @@
 
 ### v0.1.6
 ```
+- Rework how tracking propagation work.
 - Added utils function for compression + encoding.
 - Refactor code relating to relay.
 ```
