@@ -33,6 +33,10 @@ void usage( void ){
   printf("-f <filename> display provenance info of a file.\n");
   printf("-t <filename> <bool> activate/deactivate tracking of a file.\n");
   printf("-o <filename> <bool> mark/unmark a file as opaque.\n");
+  printf("-p <type> <bool> filter/unfilter propagation to node type.\n");
+  printf("-q <type> <bool> filter/unfilter propagation through edge type.\n");
+  printf("-i <type> <bool> filter/unfilter capture of node type.\n");
+  printf("-j <type> <bool> filter/unfilter capture of edge type.\n");
 }
 
 #define is_str_true(str) ( strcmp (str, "true") == 0)
