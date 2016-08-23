@@ -83,10 +83,10 @@ void state( void ){
   printf("Relation filter (%0x):\n", filter);
 
   provenance_get_propagate_node_filter(&filter);
-  printf("\nNode filter (%0x):\n", filter);
+  printf("\nPropagate node filter (%0x):\n", filter);
 
   provenance_get_propagate_relation_filter(&filter);
-  printf("Relation filter (%0x):\n", filter);
+  printf("Propagate relation filter (%0x):\n", filter);
 }
 
 void print_version(){
