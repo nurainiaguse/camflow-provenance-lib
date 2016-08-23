@@ -126,6 +126,7 @@ void file( const char* path){
 
 int main(int argc, char *argv[]){
   int err;
+  uint32_t id;
   tag_t tag;
 
   CHECK_ATTR_NB(argc, 2);
@@ -162,6 +163,70 @@ int main(int argc, char *argv[]){
     case 'o':
       CHECK_ATTR_NB(argc, 4);
       err = provenance_opaque_file(argv[2], is_str_true(argv[3]));
+      if(err < 0){
+        perror("Could not change opacity settings for this file.\n");
+      }
+      break;
+    case 'p':
+      CHECK_ATTR_NB(argc, 4);
+      id = node_id(argv[2]);
+      if(id == 0){
+        printf("Error invalid node type");
+        exit(-1);
+      }
+      if(is_str_true(argv[3])){
+        err = provenance_add_propagate_node_filter(id);
+      }else{
+        err = provenance_remove_propagate_node_filter(id);
+      }
+      if(err < 0){
+        perror("Could not change opacity settings for this file.\n");
+      }
+      break;
+    case 'q':
+      CHECK_ATTR_NB(argc, 4);
+      id = relation_id(argv[2]);
+      if(id == 0){
+        printf("Error invalid relation type");
+        exit(-1);
+      }
+      if(is_str_true(argv[3])){
+        err = provenance_add_propagate_relation_filter(id);
+      }else{
+        err = provenance_remove_propagate_relation_filter(id);
+      }
+      if(err < 0){
+        perror("Could not change opacity settings for this file.\n");
+      }
+      break;
+    case 'i':
+      CHECK_ATTR_NB(argc, 4);
+      id = node_id(argv[2]);
+      if(id == 0){
+        printf("Error invalid node type");
+        exit(-1);
+      }
+      if(is_str_true(argv[3])){
+        err = provenance_add_node_filter(id);
+      }else{
+        err = provenance_remove_node_filter(id);
+      }
+      if(err < 0){
+        perror("Could not change opacity settings for this file.\n");
+      }
+      break;
+    case 'j':
+      CHECK_ATTR_NB(argc, 4);
+      id = relation_id(argv[2]);
+      if(id == 0){
+        printf("Error invalid relation type");
+        exit(-1);
+      }
+      if(is_str_true(argv[3])){
+        err = provenance_add_relation_filter(id);
+      }else{
+        err = provenance_remove_relation_filter(id);
+      }
       if(err < 0){
         perror("Could not change opacity settings for this file.\n");
       }

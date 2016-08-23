@@ -137,4 +137,51 @@ static inline const int relation_id(char* str){
   return 0;
 }
 
+#define MSG_STR_STR               "string"
+#define MSG_STR_RELATION          "relation"
+#define MSG_STR_TASK              "task"
+#define MSG_STR_INODE_UNKNOWN     "inode_unknown"
+#define MSG_STR_INODE_LINK        "link"
+#define MSG_STR_INODE_FILE        "file"
+#define MSG_STR_INODE_DIRECTORY   "directory"
+#define MSG_STR_INODE_CHAR        "char"
+#define MSG_STR_INODE_BLOCK       "block"
+#define MSG_STR_INODE_FIFO        "fifo"
+#define MSG_STR_INODE_SOCKET      "socket"
+#define MSG_STR_MSG               "msg"
+#define MSG_STR_SHM               "shm"
+#define MSG_STR_SOCK              "sock"
+#define MSG_STR_ADDR              "address"
+#define MSG_STR_SB                "sb"
+#define MSG_STR_FILE_NAME         "file_name"
+#define MSG_STR_IFC               "ifc"
+#define MSG_STR_DISC_ENTITY       "disc_entity"
+#define MSG_STR_DISC_ACTIVITY     "disc_activity"
+#define MSG_STR_DISC_AGENT        "disc_agent"
+#define MSG_STR_DISC_NODE         "disc_node"
+
+static inline const int node_id(char* str){
+  MATCH(str, MSG_STR_TASK, MSG_TASK);
+  MATCH(str, MSG_STR_INODE_UNKNOWN, MSG_INODE_UNKNOWN);
+  MATCH(str, MSG_STR_INODE_LINK, MSG_INODE_LINK);
+  MATCH(str, MSG_STR_INODE_FILE, MSG_INODE_FILE);
+  MATCH(str, MSG_STR_INODE_DIRECTORY, MSG_INODE_DIRECTORY);
+  MATCH(str, MSG_STR_INODE_CHAR, MSG_INODE_CHAR);
+  MATCH(str, MSG_STR_INODE_BLOCK, MSG_INODE_BLOCK);
+  MATCH(str, MSG_STR_INODE_FIFO, MSG_INODE_FIFO);
+  MATCH(str, MSG_STR_INODE_SOCKET, MSG_INODE_SOCKET);
+  MATCH(str, MSG_STR_MSG, MSG_MSG);
+  MATCH(str, MSG_STR_SHM, MSG_SHM);
+  MATCH(str, MSG_STR_SOCK, MSG_SOCK);
+  MATCH(str, MSG_STR_ADDR, MSG_ADDR);
+  MATCH(str, MSG_STR_SB, MSG_SB);
+  MATCH(str, MSG_STR_FILE_NAME, MSG_FILE_NAME);
+  MATCH(str, MSG_STR_IFC, MSG_IFC);
+  MATCH(str, MSG_STR_DISC_ENTITY, MSG_DISC_ENTITY);
+  MATCH(str, MSG_STR_DISC_ACTIVITY, MSG_DISC_ACTIVITY);
+  MATCH(str, MSG_STR_DISC_AGENT, MSG_DISC_AGENT);
+  MATCH(str, MSG_STR_DISC_NODE, MSG_DISC_NODE);
+  return 0;
+}
+
 #endif /* __PROVENANCEUTILS_H */
