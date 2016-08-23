@@ -171,7 +171,7 @@ int main(int argc, char *argv[]){
       CHECK_ATTR_NB(argc, 4);
       id = node_id(argv[2]);
       if(id == 0){
-        printf("Error invalid node type");
+        printf("Error invalid node type\n");
         exit(-1);
       }
       if(is_str_true(argv[3])){
@@ -187,7 +187,7 @@ int main(int argc, char *argv[]){
       CHECK_ATTR_NB(argc, 4);
       id = relation_id(argv[2]);
       if(id == 0){
-        printf("Error invalid relation type");
+        printf("Error invalid relation type\n");
         exit(-1);
       }
       if(is_str_true(argv[3])){
@@ -203,7 +203,7 @@ int main(int argc, char *argv[]){
       CHECK_ATTR_NB(argc, 4);
       id = node_id(argv[2]);
       if(id == 0){
-        printf("Error invalid node type");
+        printf("Error invalid node type\n");
         exit(-1);
       }
       if(is_str_true(argv[3])){
@@ -219,7 +219,7 @@ int main(int argc, char *argv[]){
       CHECK_ATTR_NB(argc, 4);
       id = relation_id(argv[2]);
       if(id == 0){
-        printf("Error invalid relation type");
+        printf("Error invalid relation type\n");
         exit(-1);
       }
       if(is_str_true(argv[3])){

@@ -32,7 +32,7 @@ static const char RL_STR_WRITE []                 = "write";
 static const char RL_STR_CREATE []                = "create";
 static const char RL_STR_PASS []                  = "pass";
 static const char RL_STR_CHANGE []                = "change";
-static const char RL_STR_MMAP_WRITE []            = "mmap write";
+static const char RL_STR_MMAP_WRITE []            = "mmap_write";
 static const char RL_STR_ATTACH []                = "attach";
 static const char RL_STR_ASSOCIATE []             = "associate";
 static const char RL_STR_BIND []                  = "bind";
@@ -49,8 +49,8 @@ static const char RL_STR_EXEC []                  = "exec";
 static const char RL_STR_FORK []                  = "fork";
 static const char RL_STR_VERSION_PROCESS []       = "version";
 static const char RL_STR_SEARCH []                = "search";
-static const char RL_STR_MMAP_READ []             = "mmap read";
-static const char RL_STR_MMAP_EXEC []             = "mmap exec";
+static const char RL_STR_MMAP_READ []             = "mmap_read";
+static const char RL_STR_MMAP_EXEC []             = "mmap_exec";
 
 static inline const char* relation_str(uint32_t type){
   switch(type){
