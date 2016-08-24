@@ -19,8 +19,8 @@
 
 #include "provenancelib.h"
 
-int provenance_set_enable(bool value){
-  int fd = open(PROV_ENABLE_FILE, O_WRONLY);
+static inline int __set_boolean(bool value, const char* name){
+  int fd = open(name, O_WRONLY);
 
   if(fd<0)
   {
@@ -36,8 +36,8 @@ int provenance_set_enable(bool value){
   return 0;
 }
 
-bool provenance_get_enable( void ){
-  int fd = open(PROV_ENABLE_FILE, O_RDONLY);
+static inline bool __get_boolean(const char* name){
+  int fd = open(name, O_RDONLY);
   char c;
   if(fd<0)
   {
@@ -49,69 +49,23 @@ bool provenance_get_enable( void ){
   return c!='0';
 }
 
-int provenance_set_all(bool value){
-  int fd = open(PROV_ALL_FILE, O_WRONLY);
+#define declare_set_boolean_fcn( fcn_name, file_name ) int fcn_name (bool value ) { return __set_boolean(value, file_name);}
+#define declare_get_boolean_fcn( fcn_name, file_name ) bool fcn_name ( void ) { return __get_boolean(file_name);}
 
-  if(fd<0)
-  {
-    return fd;
-  }
-  if(value)
-  {
-    write(fd, "1", sizeof(char));
-  }else{
-    write(fd, "0", sizeof(char));
-  }
-  close(fd);
-  return 0;
-}
+declare_set_boolean_fcn(provenance_set_enable, PROV_ENABLE_FILE);
+declare_get_boolean_fcn(provenance_get_enable, PROV_ENABLE_FILE);
 
-bool provenance_get_all( void ){
-  int fd = open(PROV_ALL_FILE, O_RDONLY);
-  char c;
-  if(fd<0)
-  {
-    return false;
-  }
+declare_set_boolean_fcn(provenance_set_all, PROV_ALL_FILE);
+declare_get_boolean_fcn(provenance_get_all, PROV_ALL_FILE);
 
-  read(fd, &c, sizeof(char));
-  close(fd);
-  return c!='0';
-}
+declare_set_boolean_fcn(provenance_set_tracked, PROV_TRACKED_FILE);
+declare_get_boolean_fcn(provenance_get_tracked, PROV_TRACKED_FILE);
 
-int provenance_set_opaque(bool value){
-  int fd = open(PROV_OPAQUE_FILE, O_WRONLY);
+declare_set_boolean_fcn(provenance_set_opaque, PROV_OPAQUE_FILE);
+declare_get_boolean_fcn(provenance_get_opaque, PROV_OPAQUE_FILE);
 
-  if(fd<0)
-  {
-    return fd;
-  }
-  if(value)
-  {
-    write(fd, "1", sizeof(char));
-  }else{
-    write(fd, "0", sizeof(char));
-  }
-  close(fd);
-  return 0;
-}
-
-int provenance_set_tracked(bool value){
-  int fd = open(PROV_TRACKED_FILE, O_WRONLY);
-
-  if(fd<0)
-  {
-    return fd;
-  }
-  if(value)
-  {
-    write(fd, "1", sizeof(char));
-  }else{
-    write(fd, "0", sizeof(char));
-  }
-  close(fd);
-  return 0;
-}
+declare_set_boolean_fcn(provenance_set_propagate, PROV_PROPAGATE_FILE);
+declare_get_boolean_fcn(provenance_get_propagate, PROV_PROPAGATE_FILE);
 
 int provenance_set_machine_id(uint32_t v){
   int fd = open(PROV_MACHINE_ID_FILE, O_WRONLY);
@@ -213,44 +167,25 @@ int provenance_read_file(const char name[PATH_MAX], struct inode_prov_struct* in
   return rc;
 }
 
-int provenance_track_file(const char name[PATH_MAX], bool track){
-  struct prov_file_config cfg;
-  int rc;
-  int fd = open(PROV_FILE_FILE, O_WRONLY);
-
-  if( fd < 0 ){
-    return fd;
-  }
-  realpath(name, cfg.name);
-  cfg.op=PROV_SET_TRACKED;
-  if(track){
-    cfg.prov.node_kern.tracked=NODE_TRACKED;
-  }else{
-    cfg.prov.node_kern.tracked=NODE_NOT_TRACKED;
-  }
-
-  rc = write(fd, &cfg, sizeof(struct prov_file_config));
-  close(fd);
-  return rc;
-}
-
-int provenance_opaque_file(const char name[PATH_MAX], bool opaque){
-  struct prov_file_config cfg;
-  int rc;
-  int fd = open(PROV_FILE_FILE, O_WRONLY);
-
-  if( fd < 0 ){
-    return fd;
-  }
-  realpath(name, cfg.name);
-  cfg.op=PROV_SET_OPAQUE;
-  if(opaque){
-    cfg.prov.node_kern.opaque=NODE_OPAQUE;
-  }else{
-    cfg.prov.node_kern.opaque=NODE_NOT_OPAQUE;
+#define declare_set_file_fcn(fcn_name, element, operation) int fcn_name (const char name[PATH_MAX], bool track){\
+    struct prov_file_config cfg;\
+    int rc;\
+    int fd = open(PROV_FILE_FILE, O_WRONLY);\
+    if( fd < 0 ){\
+      return fd;\
+    }\
+    realpath(name, cfg.name);\
+    cfg.op=operation;\
+    if(track){\
+      cfg.prov.node_kern.element=1;\
+    }else{\
+      cfg.prov.node_kern.element=0;\
+    }\
+    rc = write(fd, &cfg, sizeof(struct prov_file_config));\
+    close(fd);\
+    return rc;\
   }
 
-  rc = write(fd, &cfg, sizeof(struct prov_file_config));
-  close(fd);
-  return rc;
-}
+declare_set_file_fcn(provenance_track_file, tracked, PROV_SET_TRACKED);
+declare_set_file_fcn(provenance_opaque_file, opaque, PROV_SET_OPAQUE);
+declare_set_file_fcn(provenance_propagate_file, propagate, PROV_SET_PROPAGATE);

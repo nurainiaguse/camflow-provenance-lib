@@ -94,6 +94,7 @@ bool provenance_get_all( void );
 * root.
 */
 int provenance_set_opaque(bool v);
+bool provenance_get_opaque(void);
 
 /*
 * @v boolean value
@@ -101,6 +102,10 @@ int provenance_set_opaque(bool v);
 * is not set).
 */
 int provenance_set_tracked(bool v);
+bool provenance_get_tracked(void);
+
+int provenance_set_propagate(bool v);
+bool provenance_get_propagate(void);
 
 /*
 * @v uint32_t value
@@ -162,5 +167,7 @@ int provenance_track_file(const char name[PATH_MAX], bool track);
 * Make the file opaque to provenance tracking.
 */
 int provenance_opaque_file(const char name[PATH_MAX], bool opaque);
+
+int provenance_propagate_file(const char name[PATH_MAX], bool opaque);
 
 #endif /* __PROVENANCELIB_H */

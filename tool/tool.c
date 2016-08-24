@@ -31,7 +31,7 @@ void usage( void ){
   printf("-e <bool> enable/disable provenance capture.\n");
   printf("-a <bool> activate/deactivate whole-system provenance capture.\n");
   printf("-f <filename> display provenance info of a file.\n");
-  printf("-t <filename> <bool> activate/deactivate tracking of a file.\n");
+  printf("-t <filename> false/true/propagate deactivate/activate/propagate tracking.\n");
   printf("-o <filename> <bool> mark/unmark a file as opaque.\n");
   printf("-p <type> <bool> filter/unfilter propagation to node type.\n");
   printf("-q <type> <bool> filter/unfilter propagation through edge type.\n");
@@ -39,6 +39,7 @@ void usage( void ){
   printf("-j <type> <bool> filter/unfilter capture of edge type.\n");
 }
 
+#define is_str_propagate(str) ( strcmp (str, "propagate") == 0)
 #define is_str_true(str) ( strcmp (str, "true") == 0)
 #define is_str_false(str) ( strcmp (str, "false") == 0)
 
@@ -120,6 +121,11 @@ void file( const char* path){
   }else{
     printf("File is not opaque.\n");
   }
+  if(inode_info.node_kern.propagate == NODE_PROPAGATE){
+    printf("File propagates tracking.\n");
+  }else{
+    printf("File is not propagating tracking.\n");
+  }
 }
 
 #define CHECK_ATTR_NB(argc, min) if(argc < min){ usage();exit(-1);}
@@ -155,7 +161,14 @@ int main(int argc, char *argv[]){
       break;
     case 't':
       CHECK_ATTR_NB(argc, 4);
-      err = provenance_track_file(argv[2], is_str_true(argv[3]));
+      if( is_str_propagate(argv[3]) ){
+        err = provenance_track_file(argv[2], true);
+        err |= provenance_propagate_file(argv[2], true);
+      }else {
+        err = provenance_track_file(argv[2], is_str_true(argv[3]));
+        err |= provenance_propagate_file(argv[2], false);
+      }
+
       if(err < 0){
         perror("Could not change tracking settings for this file.\n");
       }
