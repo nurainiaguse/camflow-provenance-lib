@@ -267,19 +267,47 @@ static void long_callback_job(void* data)
   free(data); /* free the memory allocated in the reader */
 }
 
+
+static void ___read_relay( const int relay_file, const size_t prov_size, const void* callback){
+  uint8_t* buf;
+  size_t size;
+  int rc;
+
+  while(1){
+    buf = (uint8_t*)malloc(prov_size); /* freed by worker thread */
+    size = 0;
+    do{
+      rc = read(relay_file, buf+size, prov_size-size);
+
+      if(rc==0 && size==0){
+        return;
+      }
+
+      if(rc<0){
+        record_error("Failed while reading (%d).", errno);
+        if(errno==EAGAIN){ // retry
+          continue;
+        }
+        free(buf);
+        return;
+      }
+      size+=rc;
+    }while(size<prov_size);
+    /* add job to queue */
+    thpool_add_work(worker_thpool, callback, buf);
+  }
+}
+
 #define POL_FLAG (POLLIN|POLLRDNORM|POLLERR)
 
 /* read from relayfs file */
 static void reader_job(void *data)
 {
-  uint8_t* buf;
-  size_t size;
   int rc;
   uint8_t cpu = (uint8_t)(*(uint8_t*)data);
   struct pollfd pollfd;
 
   do{
-read_again:
     /* file to look on */
     pollfd.fd = relay_file[cpu];
     /* something to read */
@@ -288,45 +316,20 @@ read_again:
     rc = poll(&pollfd, 1, RELAY_POLL_TIMEOUT);
     if(rc<0){
       record_error("Failed while polling (%d).", rc);
-      goto read_again; /* something bad happened */
+      continue; /* something bad happened */
     }
-    buf = (uint8_t*)malloc(sizeof(prov_msg_t)); /* freed by worker thread */
-
-    size = 0;
-    do{
-      rc = read(relay_file[cpu], buf+size, sizeof(prov_msg_t)-size);
-
-      if(rc==0 && size==0){
-        free(buf);
-        goto read_again; // going back to polling
-      }
-
-      if(rc<0){
-        record_error("Failed while reading (%d).", errno);
-        if(errno==EAGAIN){ // retry
-          continue;
-        }
-        free(buf);
-        goto read_again; // going back to polling
-      }
-      size+=rc;
-    }while(size<sizeof(prov_msg_t));
-    /* add job to queue */
-    thpool_add_work(worker_thpool, (void*)callback_job, buf);
+    ___read_relay(relay_file[cpu], sizeof(prov_msg_t), callback_job);
   }while(1);
 }
 
 /* read from relayfs file */
 static void long_reader_job(void *data)
 {
-  uint8_t* buf;
-  size_t size;
   int rc;
   uint8_t cpu = (uint8_t)(*(uint8_t*)data);
   struct pollfd pollfd;
 
   do{
-read_again:
     /* file to look on */
     pollfd.fd = long_relay_file[cpu];
     /* something to read */
@@ -335,30 +338,8 @@ read_again:
     rc = poll(&pollfd, 1, RELAY_POLL_TIMEOUT);
     if(rc<0){
       record_error("Failed while polling (%d).", rc);
-      goto read_again; /* something bad happened */
+      continue; /* something bad happened */
     }
-    buf = (uint8_t*)malloc(sizeof(long_prov_msg_t)); /* freed by worker thread */
-
-    size = 0;
-    do{
-      rc = read(long_relay_file[cpu], buf+size, sizeof(long_prov_msg_t)-size);
-
-      if(rc==0 && size==0){
-        free(buf);
-        goto read_again; // going back to polling
-      }
-
-      if(rc<0){
-        record_error("Failed while reading (%d).", errno);
-        if(errno==EAGAIN){ // retry
-          continue;
-        }
-        free(buf);
-        goto read_again; // going back to polling
-      }
-      size+=rc;
-    }while(size<sizeof(long_prov_msg_t));
-    /* add job to queue */
-    thpool_add_work(worker_thpool, (void*)long_callback_job, buf);
+    ___read_relay(long_relay_file[cpu], sizeof(long_prov_msg_t), long_callback_job);
   }while(1);
 }
