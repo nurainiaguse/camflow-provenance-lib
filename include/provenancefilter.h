@@ -31,6 +31,7 @@ int provenance_get_node_filter( uint32_t* filter );
 */
 int provenance_add_node_filter( uint32_t filter );
 int provenance_remove_node_filter( uint32_t filter );
+int provenance_reset_node_filter( void );
 
 /*
 * @filter pointer to contain filter to read
@@ -44,6 +45,7 @@ int provenance_get_propagate_node_filter( uint32_t* filter );
 */
 int provenance_add_propagate_node_filter( uint32_t filter );
 int provenance_remove_propagate_node_filter( uint32_t filter );
+int provenance_reset_propagate_node_filter( void );
 
 /*
 * @filter pointer to contain filter to read
@@ -57,6 +59,7 @@ int provenance_get_relation_filter( uint32_t* filter );
 */
 int provenance_add_relation_filter( uint32_t filter );
 int provenance_remove_relation_filter( uint32_t filter );
+int provenance_reset_relation_filter( void );
 
 /*
 * @filter pointer to contain filter to read
@@ -70,5 +73,6 @@ int provenance_get_propagate_relation_filter( uint32_t* filter );
 */
 int provenance_add_propagate_relation_filter( uint32_t filter );
 int provenance_remove_propagate_relation_filter( uint32_t filter );
+int provenance_reset_propagate_relation_filter( void );
 
 #endif
