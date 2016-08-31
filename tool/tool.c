@@ -37,6 +37,7 @@ void usage( void ){
   printf("-q <type> <bool> filter/unfilter propagation through edge type.\n");
   printf("-i <type> <bool> filter/unfilter capture of node type.\n");
   printf("-j <type> <bool> filter/unfilter capture of edge type.\n");
+  printf("-r reset filters.\n");
 }
 
 #define is_str_propagate(str) ( strcmp (str, "propagate") == 0)
@@ -242,6 +243,15 @@ int main(int argc, char *argv[]){
       }
       if(err < 0){
         perror("Could not change opacity settings for this file.\n");
+      }
+      break;
+    case 'r':
+      err = provenance_reset_node_filter();
+      err |= provenance_reset_propagate_node_filter();
+      err |= provenance_reset_relation_filter();
+      err |= provenance_reset_propagate_relation_filter();
+      if(err < 0){
+        perror("Could not reset filters.\n");
       }
       break;
     default:
