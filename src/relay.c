@@ -206,11 +206,12 @@ static void callback_job(void* data)
   // dealing with filter
   if(prov_ops.filter!=NULL){
     if(prov_ops.filter(msg)){ // message has been fitlered
-      return;
+      goto out;
     }
   }
 
   prov_record(msg);
+out:
   free(data); /* free the memory allocated in the reader */
 }
 
@@ -259,11 +260,12 @@ static void long_callback_job(void* data)
   // dealing with filter
   if(prov_ops.long_filter!=NULL){
     if(prov_ops.long_filter(msg)){ // message has been fitlered
-      return;
+      goto out;
     }
   }
 
   long_prov_record(msg);
+out:
   free(data); /* free the memory allocated in the reader */
 }
 
