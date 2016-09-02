@@ -9,6 +9,7 @@
 * published by the Free Software Foundation.
 *
 */
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -26,21 +27,28 @@
 
 #include "simplog.h"
 #include "provenancelib.h"
+#include "provenanceutils.h"
 #include "provenancePovJSON.h"
 
 #define	LOG_FILE "/tmp/audit.log"
 #define gettid() syscall(SYS_gettid)
 
+static pthread_mutex_t l_log =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+
 void _init_logs( void ){
+  pthread_mutex_lock(&l_log);
   simplog.setLogFile(LOG_FILE);
   simplog.setLineWrap(false);
   simplog.setLogSilentMode(true);
   simplog.setLogDebugLevel(SIMPLOG_VERBOSE);
+  pthread_mutex_unlock(&l_log);
 }
 
 void init( void ){
   pid_t tid = gettid();
+  pthread_mutex_lock(&l_log);
   simplog.writeLog(SIMPLOG_INFO, "audit writer thread, tid:%ld", tid);
+  pthread_mutex_unlock(&l_log);
 }
 
 
@@ -92,8 +100,15 @@ void log_ifc(struct ifc_context_struct* ifc){
 bool filter(prov_msg_t* msg){
   return false;
 }
+
 bool long_filter(long_prov_msg_t* msg){
   return false;
+}
+
+void log_error(char* err_msg){
+  pthread_mutex_lock(&l_log);
+  simplog.writeLog(SIMPLOG_ERROR,  err_msg);
+  pthread_mutex_unlock(&l_log);
 }
 
 struct provenance_ops ops = {
@@ -110,13 +125,14 @@ struct provenance_ops ops = {
   .log_sock=log_sock,
   .log_address=log_address,
   .log_file_name=log_file_name,
-  .log_ifc=log_ifc
+  .log_ifc=log_ifc,
+  .log_error=log_error
 };
 
 void print_json(char* json){
-  if(strlen(json)>100){
+    pthread_mutex_lock(&l_log);
     simplog.writeLog(SIMPLOG_INFO,  json);
-  }
+    pthread_mutex_unlock(&l_log);
 }
 
 int main(void){
@@ -131,8 +147,7 @@ int main(void){
   }
   set_ProvJSON_callback(print_json);
   while(1){
-    sleep(10);
-    provenance_flush();
+    sleep(1);
     flush_json();
   }
   provenance_stop();

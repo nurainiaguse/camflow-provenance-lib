@@ -29,41 +29,28 @@
 #include "provenancelib.h"
 #include "provenancefilter.h"
 
-int provenance_add_node_filter( uint32_t filter ){
+static inline int __provenance_change_filter( bool add, const char* file, uint32_t filter ){
   struct prov_filter f;
-  int fd = open(PROV_NODE_FILTER_FILE, O_WRONLY);
+  int fd = open(file, O_WRONLY);
 
   if(fd<0)
   {
     return fd;
   }
   f.filter=filter;
-  f.add=1;
-
-  write(fd, &f, sizeof(struct prov_filter));
-  close(fd);
-  return 0;
-}
-
-int provenance_remove_node_filter( uint32_t filter ){
-  struct prov_filter f;
-  int fd = open(PROV_NODE_FILTER_FILE, O_WRONLY);
-
-  if(fd<0)
-  {
-    return fd;
+  if(add){
+    f.add=1;
+  }else{
+    f.add=0;
   }
-  f.filter=filter;
-  f.add=0;
 
   write(fd, &f, sizeof(struct prov_filter));
   close(fd);
   return 0;
 }
 
-int provenance_get_node_filter( uint32_t* filter ){
-  int fd = open(PROV_NODE_FILTER_FILE, O_RDONLY);
-  int err=0;
+static inline int __provenance_get_filter( const char* file, uint32_t* filter ){
+  int fd = open(file, O_RDONLY);
   if(fd<0)
   {
     return fd;
@@ -74,47 +61,31 @@ int provenance_get_node_filter( uint32_t* filter ){
   return 0;
 }
 
-int provenance_add_relation_filter( uint32_t filter ){
-  struct prov_filter f;
-  int fd = open(PROV_RELATION_FILTER_FILE, O_WRONLY);
+#define declare_change_filter_fcn(fcn_name, add, file) int fcn_name ( uint32_t filter ){return __provenance_change_filter(add, file, filter);}
+#define declare_get_filter_fcn(fcn_name, file) int fcn_name ( uint32_t* filter ){ return __provenance_get_filter( file, filter );}
+#define declare_reset_filter_fcn(fcn_name, file) int fcn_name ( void ){return __provenance_change_filter(false, file, 0xFFFFFFFFUL);}
 
-  if(fd<0)
-  {
-    return fd;
-  }
-  f.filter=filter;
-  f.add=1;
 
-  write(fd, &f, sizeof(struct prov_filter));
-  close(fd);
-  return 0;
-}
+// node filter
+declare_change_filter_fcn(provenance_add_node_filter, true, PROV_NODE_FILTER_FILE);
+declare_change_filter_fcn(provenance_remove_node_filter, false, PROV_NODE_FILTER_FILE);
+declare_get_filter_fcn(provenance_get_node_filter, PROV_NODE_FILTER_FILE);
+declare_reset_filter_fcn(provenance_reset_node_filter, PROV_NODE_FILTER_FILE);
 
-int provenance_remove_relation_filter( uint32_t filter ){
-  struct prov_filter f;
-  int fd = open(PROV_RELATION_FILTER_FILE, O_WRONLY);
+// propagate node filter
+declare_change_filter_fcn(provenance_add_propagate_node_filter, true, PROV_PROPAGATE_NODE_FILTER_FILE);
+declare_change_filter_fcn(provenance_remove_propagate_node_filter, false, PROV_PROPAGATE_NODE_FILTER_FILE);
+declare_get_filter_fcn(provenance_get_propagate_node_filter, PROV_PROPAGATE_NODE_FILTER_FILE);
+declare_reset_filter_fcn(provenance_reset_propagate_node_filter, PROV_PROPAGATE_NODE_FILTER_FILE);
 
-  if(fd<0)
-  {
-    return fd;
-  }
-  f.filter=filter;
-  f.add=0;
+// relation filter
+declare_change_filter_fcn(provenance_add_relation_filter, true, PROV_RELATION_FILTER_FILE);
+declare_change_filter_fcn(provenance_remove_relation_filter, false, PROV_RELATION_FILTER_FILE);
+declare_get_filter_fcn(provenance_get_relation_filter, PROV_RELATION_FILTER_FILE);
+declare_reset_filter_fcn(provenance_reset_relation_filter, PROV_RELATION_FILTER_FILE);
 
-  write(fd, &f, sizeof(struct prov_filter));
-  close(fd);
-  return 0;
-}
-
-int provenance_get_relation_filter( uint32_t* filter ){
-  int fd = open(PROV_RELATION_FILTER_FILE, O_RDONLY);
-  int err=0;
-  if(fd<0)
-  {
-    return fd;
-  }
-
-  read(fd, filter, sizeof(uint32_t));
-  close(fd);
-  return 0;
-}
+// propagate relation filter
+declare_change_filter_fcn(provenance_add_propagate_relation_filter, true, PROV_PROPAGATE_RELATION_FILTER_FILE);
+declare_change_filter_fcn(provenance_remove_propagate_relation_filter, false, PROV_PROPAGATE_RELATION_FILTER_FILE);
+declare_get_filter_fcn(provenance_get_propagate_relation_filter, PROV_PROPAGATE_RELATION_FILTER_FILE);
+declare_reset_filter_fcn(provenance_reset_propagate_relation_filter, PROV_PROPAGATE_RELATION_FILTER_FILE);

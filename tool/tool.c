@@ -30,12 +30,17 @@ void usage( void ){
   printf("-s print provenance capture state.\n");
   printf("-e <bool> enable/disable provenance capture.\n");
   printf("-a <bool> activate/deactivate whole-system provenance capture.\n");
-  printf("-d <bool> activate/deactivate directories provenance capture.\n");
   printf("-f <filename> display provenance info of a file.\n");
-  printf("-t <filename> <bool> [depth] activate/deactivate tracking of a file.\n");
+  printf("-t <filename> false/true/propagate deactivate/activate/propagate tracking.\n");
   printf("-o <filename> <bool> mark/unmark a file as opaque.\n");
+  printf("-p <type> <bool> filter/unfilter propagation to node type.\n");
+  printf("-q <type> <bool> filter/unfilter propagation through edge type.\n");
+  printf("-i <type> <bool> filter/unfilter capture of node type.\n");
+  printf("-j <type> <bool> filter/unfilter capture of edge type.\n");
+  printf("-r reset filters.\n");
 }
 
+#define is_str_propagate(str) ( strcmp (str, "propagate") == 0)
 #define is_str_true(str) ( strcmp (str, "true") == 0)
 #define is_str_false(str) ( strcmp (str, "false") == 0)
 
@@ -59,24 +64,6 @@ void all( const char* str ){
     perror("Could not activate/deactivate whole-system provenance capture");
 }
 
-void dir( const char* str ){
-  int err;
-  if(!is_str_true(str) && !is_str_false(str)){
-    printf("Excepted a boolean, got %s.\n", str);
-    return;
-  }
-
-  if(is_str_true(str)){
-    err = provenance_add_node_filter(MSG_INODE_DIRECTORY);
-  }else{
-    err = provenance_remove_node_filter(MSG_INODE_DIRECTORY);
-  }
-
-  if(err<0){
-    perror("Could not activate/deactivate directories provenance capture");
-  }
-}
-
 void state( void ){
   uint32_t filter=0;
   printf("Provenance capture:\n");
@@ -93,11 +80,15 @@ void state( void ){
 
   provenance_get_node_filter(&filter);
   printf("\nNode filter (%0x):\n", filter);
-  if( (filter&MSG_INODE_DIRECTORY) == 0 ){
-    printf("- directories provenance captured;\n");
-  }else{
-    printf("- directories provenance not captured;\n");
-  }
+
+  provenance_get_relation_filter(&filter);
+  printf("Relation filter (%0x):\n", filter);
+
+  provenance_get_propagate_node_filter(&filter);
+  printf("\nPropagate node filter (%0x):\n", filter);
+
+  provenance_get_propagate_relation_filter(&filter);
+  printf("Propagate relation filter (%0x):\n", filter);
 }
 
 void print_version(){
@@ -131,13 +122,18 @@ void file( const char* path){
   }else{
     printf("File is not opaque.\n");
   }
-  printf("Propagate: %u\n", inode_info.node_kern.propagate);
+  if(inode_info.node_kern.propagate == NODE_PROPAGATE){
+    printf("File propagates tracking.\n");
+  }else{
+    printf("File is not propagating tracking.\n");
+  }
 }
 
 #define CHECK_ATTR_NB(argc, min) if(argc < min){ usage();exit(-1);}
 
 int main(int argc, char *argv[]){
   int err;
+  uint32_t id;
   tag_t tag;
 
   CHECK_ATTR_NB(argc, 2);
@@ -160,21 +156,20 @@ int main(int argc, char *argv[]){
       CHECK_ATTR_NB(argc, 3);
       all(argv[2]);
       break;
-    case 'd':
-      CHECK_ATTR_NB(argc, 3);
-      dir(argv[2]);
-      break;
     case 'f':
       CHECK_ATTR_NB(argc, 3);
       file(argv[2]);
       break;
     case 't':
       CHECK_ATTR_NB(argc, 4);
-      if(argc==4){ // no depth specified
-        err = provenance_track_file(argv[2], is_str_true(argv[3]), 1);
-      }else{
-        err = provenance_track_file(argv[2], is_str_true(argv[3]), atoi(argv[4]));
+      if( is_str_propagate(argv[3]) ){
+        err = provenance_track_file(argv[2], true);
+        err |= provenance_propagate_file(argv[2], true);
+      }else {
+        err = provenance_track_file(argv[2], is_str_true(argv[3]));
+        err |= provenance_propagate_file(argv[2], false);
       }
+
       if(err < 0){
         perror("Could not change tracking settings for this file.\n");
       }
@@ -184,6 +179,79 @@ int main(int argc, char *argv[]){
       err = provenance_opaque_file(argv[2], is_str_true(argv[3]));
       if(err < 0){
         perror("Could not change opacity settings for this file.\n");
+      }
+      break;
+    case 'p':
+      CHECK_ATTR_NB(argc, 4);
+      id = node_id(argv[2]);
+      if(id == 0){
+        printf("Error invalid node type\n");
+        exit(-1);
+      }
+      if(is_str_true(argv[3])){
+        err = provenance_add_propagate_node_filter(id);
+      }else{
+        err = provenance_remove_propagate_node_filter(id);
+      }
+      if(err < 0){
+        perror("Could not change opacity settings for this file.\n");
+      }
+      break;
+    case 'q':
+      CHECK_ATTR_NB(argc, 4);
+      id = relation_id(argv[2]);
+      if(id == 0){
+        printf("Error invalid relation type\n");
+        exit(-1);
+      }
+      if(is_str_true(argv[3])){
+        err = provenance_add_propagate_relation_filter(id);
+      }else{
+        err = provenance_remove_propagate_relation_filter(id);
+      }
+      if(err < 0){
+        perror("Could not change opacity settings for this file.\n");
+      }
+      break;
+    case 'i':
+      CHECK_ATTR_NB(argc, 4);
+      id = node_id(argv[2]);
+      if(id == 0){
+        printf("Error invalid node type\n");
+        exit(-1);
+      }
+      if(is_str_true(argv[3])){
+        err = provenance_add_node_filter(id);
+      }else{
+        err = provenance_remove_node_filter(id);
+      }
+      if(err < 0){
+        perror("Could not change opacity settings for this file.\n");
+      }
+      break;
+    case 'j':
+      CHECK_ATTR_NB(argc, 4);
+      id = relation_id(argv[2]);
+      if(id == 0){
+        printf("Error invalid relation type\n");
+        exit(-1);
+      }
+      if(is_str_true(argv[3])){
+        err = provenance_add_relation_filter(id);
+      }else{
+        err = provenance_remove_relation_filter(id);
+      }
+      if(err < 0){
+        perror("Could not change opacity settings for this file.\n");
+      }
+      break;
+    case 'r':
+      err = provenance_reset_node_filter();
+      err |= provenance_reset_propagate_node_filter();
+      err |= provenance_reset_relation_filter();
+      err |= provenance_reset_propagate_relation_filter();
+      if(err < 0){
+        perror("Could not reset filters.\n");
       }
       break;
     default:

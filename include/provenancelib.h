@@ -34,6 +34,7 @@ struct provenance_ops{
   void (*log_address)(struct address_struct*);
   void (*log_file_name)(struct file_name_struct*);
   void (*log_ifc)(struct ifc_context_struct*);
+  void (*log_error)(char*);
 };
 
 void prov_record(prov_msg_t* msg);
@@ -93,6 +94,7 @@ bool provenance_get_all( void );
 * root.
 */
 int provenance_set_opaque(bool v);
+bool provenance_get_opaque(void);
 
 /*
 * @v boolean value
@@ -100,6 +102,10 @@ int provenance_set_opaque(bool v);
 * is not set).
 */
 int provenance_set_tracked(bool v);
+bool provenance_get_tracked(void);
+
+int provenance_set_propagate(bool v);
+bool provenance_get_propagate(void);
 
 /*
 * @v uint32_t value
@@ -153,7 +159,7 @@ int provenance_read_file(const char name[PATH_MAX], struct inode_prov_struct* in
 * @depth how many removed node should be tracked
 * set tracking option corresponding to the file associated with name
 */
-int provenance_track_file(const char name[PATH_MAX], bool track, uint8_t depth);
+int provenance_track_file(const char name[PATH_MAX], bool track);
 
 /*
 * @name file name
@@ -161,5 +167,7 @@ int provenance_track_file(const char name[PATH_MAX], bool track, uint8_t depth);
 * Make the file opaque to provenance tracking.
 */
 int provenance_opaque_file(const char name[PATH_MAX], bool opaque);
+
+int provenance_propagate_file(const char name[PATH_MAX], bool opaque);
 
 #endif /* __PROVENANCELIB_H */
