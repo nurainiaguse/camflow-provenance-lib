@@ -24,7 +24,7 @@
 ### v0.1.5
 
 ```
-- Fix bug with reading from relay.
+- Fix bug when reading from relay.
 ```
 
 
