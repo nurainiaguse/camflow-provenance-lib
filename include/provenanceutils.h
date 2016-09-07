@@ -13,6 +13,7 @@
 #define __PROVENANCEUTILS_H
 
 #include <sys/socket.h>
+#include <stdbool.h>
 #include <linux/provenance.h>
 #include <zlib.h>
 

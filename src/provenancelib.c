@@ -151,7 +151,7 @@ int provenance_flush(void){
   return rc;
 }
 
-int provenance_read_file(const char name[PATH_MAX], struct inode_prov_struct* inode_info){
+int provenance_read_file(const char name[PATH_MAX], prov_msg_t* inode_info){
   struct prov_file_config cfg;
   int rc;
   int fd = open(PROV_FILE_FILE, O_RDONLY);
@@ -163,7 +163,7 @@ int provenance_read_file(const char name[PATH_MAX], struct inode_prov_struct* in
 
   rc = read(fd, &cfg, sizeof(struct prov_file_config));
   close(fd);
-  memcpy(inode_info, &(cfg.prov), sizeof(struct inode_prov_struct));
+  memcpy(inode_info, &(cfg.prov), sizeof(prov_msg_t));
   return rc;
 }
 
@@ -177,15 +177,15 @@ int provenance_read_file(const char name[PATH_MAX], struct inode_prov_struct* in
     realpath(name, cfg.name);\
     cfg.op=operation;\
     if(track){\
-      cfg.prov.node_kern.element=1;\
+      prov_set_flag(&cfg.prov, element);\
     }else{\
-      cfg.prov.node_kern.element=0;\
+      prov_clear_flag(&cfg.prov, element);\
     }\
     rc = write(fd, &cfg, sizeof(struct prov_file_config));\
     close(fd);\
     return rc;\
   }
 
-declare_set_file_fcn(provenance_track_file, tracked, PROV_SET_TRACKED);
-declare_set_file_fcn(provenance_opaque_file, opaque, PROV_SET_OPAQUE);
-declare_set_file_fcn(provenance_propagate_file, propagate, PROV_SET_PROPAGATE);
+declare_set_file_fcn(provenance_track_file, TRACKED_BIT, PROV_SET_TRACKED);
+declare_set_file_fcn(provenance_opaque_file, OPAQUE_BIT, PROV_SET_OPAQUE);
+declare_set_file_fcn(provenance_propagate_file, PROPAGATE_BIT, PROV_SET_PROPAGATE);
