@@ -26,6 +26,8 @@ int compress64encode(const char* in, size_t inlen, char* out, size_t outlen);
 
 #define PROV_ID_STR_LEN encode64Bound(PROV_IDENTIFIER_BUFFER_LENGTH)
 #define ID_ENCODE base64encode
+#define TAINT_ENCODE hexify
+#define TAINT_STR_LEN hexifyBound(PROV_N_BYTES)
 
 static const char RL_STR_UNKNOWN []               = "unknown";
 static const char RL_STR_READ []                  = "read";

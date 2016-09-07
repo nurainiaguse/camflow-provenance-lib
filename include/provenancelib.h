@@ -170,4 +170,6 @@ int provenance_opaque_file(const char name[PATH_MAX], bool opaque);
 
 int provenance_propagate_file(const char name[PATH_MAX], bool opaque);
 
+int provenance_taint_file(const char name[PATH_MAX], uint64_t taint);
+
 #endif /* __PROVENANCELIB_H */

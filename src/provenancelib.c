@@ -167,7 +167,7 @@ int provenance_read_file(const char name[PATH_MAX], prov_msg_t* inode_info){
   return rc;
 }
 
-#define declare_set_file_fcn(fcn_name, element, operation) int fcn_name (const char name[PATH_MAX], bool track){\
+#define declare_set_file_fcn(fcn_name, element, operation) int fcn_name (const char name[PATH_MAX], bool v){\
     struct prov_file_config cfg;\
     int rc;\
     int fd = open(PROV_FILE_FILE, O_WRONLY);\
@@ -176,7 +176,7 @@ int provenance_read_file(const char name[PATH_MAX], prov_msg_t* inode_info){
     }\
     realpath(name, cfg.name);\
     cfg.op=operation;\
-    if(track){\
+    if(v){\
       prov_set_flag(&cfg.prov, element);\
     }else{\
       prov_clear_flag(&cfg.prov, element);\
@@ -189,3 +189,20 @@ int provenance_read_file(const char name[PATH_MAX], prov_msg_t* inode_info){
 declare_set_file_fcn(provenance_track_file, TRACKED_BIT, PROV_SET_TRACKED);
 declare_set_file_fcn(provenance_opaque_file, OPAQUE_BIT, PROV_SET_OPAQUE);
 declare_set_file_fcn(provenance_propagate_file, PROPAGATE_BIT, PROV_SET_PROPAGATE);
+
+int provenance_taint_file(const char name[PATH_MAX], uint64_t taint){
+  struct prov_file_config cfg;
+  int rc;
+  int fd = open(PROV_FILE_FILE, O_WRONLY);
+  if( fd < 0 ){
+    return fd;
+  }
+  memset(&cfg, 0, sizeof(struct prov_file_config));
+  realpath(name, cfg.name);
+  cfg.op=PROV_SET_TAINT;
+  prov_bloom_add(node_kern(&(cfg.prov)).taint, taint);
+
+  rc = write(fd, &cfg, sizeof(struct prov_file_config));
+  close(fd);
+  return rc;
+}

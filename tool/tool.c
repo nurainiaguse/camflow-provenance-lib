@@ -32,6 +32,7 @@ void usage( void ){
   printf("-a <bool> activate/deactivate whole-system provenance capture.\n");
   printf("-f <filename> display provenance info of a file.\n");
   printf("-t <filename> false/true/propagate deactivate/activate/propagate tracking.\n");
+  printf("-u <filename> <uint64> applies taint to the file.\n");
   printf("-o <filename> <bool> mark/unmark a file as opaque.\n");
   printf("-p <type> <bool> filter/unfilter propagation to node type.\n");
   printf("-q <type> <bool> filter/unfilter propagation through edge type.\n");
@@ -98,6 +99,7 @@ void print_version(){
 void file( const char* path){
   prov_msg_t inode_info;
   char id[PROV_ID_STR_LEN];
+  char taint[TAINT_STR_LEN];
   int err;
 
   err = provenance_read_file(path, &inode_info);
@@ -111,6 +113,8 @@ void file( const char* path){
   printf("ID: %lu\n", node_identifier(&inode_info).id);
   printf("Boot ID: %u\n", node_identifier(&inode_info).boot_id);
   printf("Machine ID: %u\n", node_identifier(&inode_info).machine_id);
+  TAINT_ENCODE(node_kern(&(inode_info)).taint, PROV_N_BYTES, taint, TAINT_STR_LEN);
+  printf("Taint: %s\n", taint);
   printf("\n");
   if( provenance_is_tracked(&inode_info) ){
     printf("File is tracked.\n");
@@ -127,6 +131,7 @@ void file( const char* path){
   }else{
     printf("File is not propagating tracking.\n");
   }
+
 }
 
 #define CHECK_ATTR_NB(argc, min) if(argc < min){ usage();exit(-1);}
@@ -174,6 +179,13 @@ int main(int argc, char *argv[]){
         perror("Could not change tracking settings for this file.\n");
       }
       break;
+    case 'u':
+      CHECK_ATTR_NB(argc, 4);
+      err = provenance_taint_file(argv[2], strtoul(argv[3], NULL, 0));
+      if(err < 0){
+        perror("Could not change taint settings for this file.\n");
+      }
+      break;
     case 'o':
       CHECK_ATTR_NB(argc, 4);
       err = provenance_opaque_file(argv[2], is_str_true(argv[3]));
@@ -194,7 +206,7 @@ int main(int argc, char *argv[]){
         err = provenance_remove_propagate_node_filter(id);
       }
       if(err < 0){
-        perror("Could not change opacity settings for this file.\n");
+        perror("Could not change propagation settings for this file.\n");
       }
       break;
     case 'q':
@@ -210,7 +222,7 @@ int main(int argc, char *argv[]){
         err = provenance_remove_propagate_relation_filter(id);
       }
       if(err < 0){
-        perror("Could not change opacity settings for this file.\n");
+        perror("Could not change propagation settings for this file.\n");
       }
       break;
     case 'i':
@@ -226,7 +238,7 @@ int main(int argc, char *argv[]){
         err = provenance_remove_node_filter(id);
       }
       if(err < 0){
-        perror("Could not change opacity settings for this file.\n");
+        perror("Could not change filter settings for this file.\n");
       }
       break;
     case 'j':
@@ -242,7 +254,7 @@ int main(int argc, char *argv[]){
         err = provenance_remove_relation_filter(id);
       }
       if(err < 0){
-        perror("Could not change opacity settings for this file.\n");
+        perror("Could not change filter settings for this file.\n");
       }
       break;
     case 'r':
