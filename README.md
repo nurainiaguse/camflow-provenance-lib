@@ -13,6 +13,11 @@
 | 0.1.1           | 4.4.6          | 03/04/2016 |
 | 0.1.0           | 4.2.8          | 28/03/2016 |
 
+### v0.1.7
+```
+- Adding API to manipulate taint.
+```
+
 ### v0.1.6
 ```
 - Rework how tracking propagation work.
