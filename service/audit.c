@@ -141,8 +141,8 @@ int main(void){
 	_init_logs();
   simplog.writeLog(SIMPLOG_INFO, "audit service pid: %ld", getpid());
   rc = provenance_register(&ops);
-  if(rc){
-    simplog.writeLog(SIMPLOG_ERROR, "Failed registering audit operation.");
+  if(rc<0){
+    simplog.writeLog(SIMPLOG_ERROR, "Failed registering audit operation (%d).", rc);
     exit(rc);
   }
   set_ProvJSON_callback(print_json);

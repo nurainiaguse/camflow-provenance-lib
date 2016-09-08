@@ -58,14 +58,40 @@ declare_get_boolean_fcn(provenance_get_enable, PROV_ENABLE_FILE);
 declare_set_boolean_fcn(provenance_set_all, PROV_ALL_FILE);
 declare_get_boolean_fcn(provenance_get_all, PROV_ALL_FILE);
 
-declare_set_boolean_fcn(provenance_set_tracked, PROV_TRACKED_FILE);
-declare_get_boolean_fcn(provenance_get_tracked, PROV_TRACKED_FILE);
+#define declare_self_set_flag(fcn_name, element, operation) int fcn_name (bool v){ \
+  struct prov_self_config cfg;\
+  int rc;\
+  int fd = open(PROV_SELF_FILE, O_WRONLY);\
+  if( fd < 0 ){\
+    return fd;\
+  }\
+  memset(&cfg, 0, sizeof(struct prov_self_config));\
+  cfg.op=operation;\
+  if(v){\
+    prov_set_flag(&cfg.prov, element);\
+  }else{\
+    prov_clear_flag(&cfg.prov, element);\
+  }\
+  rc = write(fd, &cfg, sizeof(struct prov_file_config));\
+  close(fd);\
+  if(rc>0) rc=0;\
+  return rc;\
+}
 
-declare_set_boolean_fcn(provenance_set_opaque, PROV_OPAQUE_FILE);
-declare_get_boolean_fcn(provenance_get_opaque, PROV_OPAQUE_FILE);
+#define declare_self_get_flag(fcn_name, element) bool fcn_name( void ){\
+  prov_msg_t self;\
+  provenance_self(&self.task_info);\
+  return prov_check_flag(&self, element);\
+}
 
-declare_set_boolean_fcn(provenance_set_propagate, PROV_PROPAGATE_FILE);
-declare_get_boolean_fcn(provenance_get_propagate, PROV_PROPAGATE_FILE);
+declare_self_set_flag(provenance_set_tracked, TRACKED_BIT, PROV_SET_TRACKED);
+declare_self_get_flag(provenance_get_tracked, TRACKED_BIT);
+
+declare_self_set_flag(provenance_set_opaque, OPAQUE_BIT, PROV_SET_OPAQUE);
+declare_self_get_flag(provenance_get_opaque, OPAQUE_BIT);
+
+declare_self_set_flag(provenance_set_propagate, PROPAGATE_BIT, PROV_SET_PROPAGATE);
+declare_self_get_flag(provenance_get_propagate, PROPAGATE_BIT);
 
 int provenance_set_machine_id(uint32_t v){
   int fd = open(PROV_MACHINE_ID_FILE, O_WRONLY);
@@ -199,6 +225,22 @@ int provenance_taint_file(const char name[PATH_MAX], uint64_t taint){
   }
   memset(&cfg, 0, sizeof(struct prov_file_config));
   realpath(name, cfg.name);
+  cfg.op=PROV_SET_TAINT;
+  prov_bloom_add(node_kern(&(cfg.prov)).taint, taint);
+
+  rc = write(fd, &cfg, sizeof(struct prov_file_config));
+  close(fd);
+  return rc;
+}
+
+int provenance_taint(uint64_t taint){
+  struct prov_self_config cfg;
+  int rc;
+  int fd = open(PROV_SELF_FILE, O_WRONLY);
+  if( fd < 0 ){
+    return fd;
+  }
+  memset(&cfg, 0, sizeof(struct prov_self_config));
   cfg.op=PROV_SET_TAINT;
   prov_bloom_add(node_kern(&(cfg.prov)).taint, taint);
 
