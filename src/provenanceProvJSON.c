@@ -31,6 +31,32 @@
 
 #define MAX_PROVJSON_BUFFER_LENGTH PATH_MAX*2
 
+struct taint_entry{
+  uint64_t taint_id;
+  char* taint_name;
+  struct taint_entry* next;
+};
+
+struct taint_entry taint_list = { .taint_id = 0, .taint_name = "test_tain", .next = NULL };
+
+int add_taint(const uint64_t id, const char* name){
+  struct taint_entry* n = &taint_list;
+  struct taint_entry* tmp = (struct taint_entry*)malloc(sizeof(struct taint_entry));
+  char* str = (char*)malloc(strlen(name)+1);
+  strcpy(str, name);
+  while(true){
+    if(n->next!=NULL){
+      n = n->next;
+    }else{
+      tmp->taint_id=id;
+      tmp->taint_name=str;
+      tmp->next=NULL;
+      n->next=tmp;
+      return 0;
+    }
+  }
+}
+
 static pthread_mutex_t l_flush =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_activity =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_agent =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
@@ -144,7 +170,7 @@ static inline bool __append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* 
 static inline char* ready_to_print(){
   char* json;
   bool content=false;
-  
+
   pthread_mutex_lock(&l_derived);
   pthread_mutex_lock(&l_informed);
   pthread_mutex_lock(&l_generated);
@@ -257,15 +283,43 @@ static __thread char id[PROV_ID_STR_LEN];
 static __thread char sender[PROV_ID_STR_LEN];
 static __thread char receiver[PROV_ID_STR_LEN];
 static __thread char parent_id[PROV_ID_STR_LEN];
+static __thread char taint[PATH_MAX];
 
 #define RELATION_PREP_IDs(e) ID_ENCODE(e->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN);\
                         ID_ENCODE(e->snd.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, sender, PROV_ID_STR_LEN);\
-                        ID_ENCODE(e->rcv.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, receiver, PROV_ID_STR_LEN);
+                        ID_ENCODE(e->rcv.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, receiver, PROV_ID_STR_LEN)
 
 #define DISC_PREP_IDs(n) ID_ENCODE(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN);\
-                        ID_ENCODE(n->parent.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, parent_id, PROV_ID_STR_LEN);
+                        ID_ENCODE(n->parent.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, parent_id, PROV_ID_STR_LEN)
 
-#define NODE_PREP_IDs(n) ID_ENCODE(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN);
+#define NODE_PREP_IDs(n) ID_ENCODE(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN)
+
+#define PROV_PREP_TAINT(n) TAINT_ENCODE(n->taint, PROV_N_BYTES, taint, TAINT_STR_LEN)
+
+static void prov_prep_taint(const uint8_t bloom[PROV_N_BYTES]){
+  struct taint_entry* tmp = &taint_list;
+  bool first=true;
+  if(prov_bloom_empty(bloom)){
+    strncpy(taint, "[]", PATH_MAX);
+  }else{
+    taint[0]='\0';
+    strcat(taint, "[");
+    do{
+      if( prov_bloom_in(bloom, tmp->taint_id) ){
+        if(!first){
+          strcat(taint, ",");
+        }
+        strcat(taint, "\"");
+        strcat(taint, tmp->taint_name);
+        strcat(taint, "\"");
+        first=false;
+      }
+      tmp = tmp->next;
+    }while(tmp!=NULL);
+    strcat(taint, "]");
+  }
+}
+
 
 char* node_info_to_json(char* buf, struct node_identifier* n){
   sprintf(buf, "\"cf:type\": %u, \"cf:id\":%llu, \"cf:boot_id\":%u, \"cf:machine_id\":%u, \"cf:version\":%u", n->type, n->id, n->boot_id, n->machine_id, n->version);
@@ -282,9 +336,11 @@ static char* bool_str[] = {"false", "true"};
 char* relation_to_json(struct relation_struct* e){
   char relation_info[1024];
   RELATION_PREP_IDs(e);
-  sprintf(buffer, "\"cf:%s\":{%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"cf:sender\":\"cf:%s\", \"cf:receiver\":\"cf:%s\"}",
+   prov_prep_taint(e->taint);
+  sprintf(buffer, "\"cf:%s\":{%s, \"cf:taint\":%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"cf:sender\":\"cf:%s\", \"cf:receiver\":\"cf:%s\"}",
     id,
     relation_info_to_json(relation_info, &e->identifier.relation_id),
+    taint,
     relation_str(e->type),
     bool_str[e->allowed],
     sender,
@@ -295,9 +351,11 @@ char* relation_to_json(struct relation_struct* e){
 char* used_to_json(struct relation_struct* e){
   char relation_info[1024];
   RELATION_PREP_IDs(e);
-  sprintf(buffer, "\"cf:%s\":{%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:entity\":\"cf:%s\", \"prov:activity\":\"cf:%s\"}",
+   prov_prep_taint(e->taint);
+  sprintf(buffer, "\"cf:%s\":{%s, \"cf:taint\":%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:entity\":\"cf:%s\", \"prov:activity\":\"cf:%s\"}",
     id,
     relation_info_to_json(relation_info, &e->identifier.relation_id),
+    taint,
     relation_str(e->type),
     bool_str[e->allowed],
     sender,
@@ -308,9 +366,11 @@ char* used_to_json(struct relation_struct* e){
 char* generated_to_json(struct relation_struct* e){
   char relation_info[1024];
   RELATION_PREP_IDs(e);
-  sprintf(buffer, "\"cf:%s\":{%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:activity\":\"cf:%s\", \"prov:entity\":\"cf:%s\"}",
+   prov_prep_taint(e->taint);
+  sprintf(buffer, "\"cf:%s\":{%s, \"cf:taint\":%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:activity\":\"cf:%s\", \"prov:entity\":\"cf:%s\"}",
     id,
     relation_info_to_json(relation_info, &e->identifier.relation_id),
+    taint,
     relation_str(e->type),
     bool_str[e->allowed],
     sender,
@@ -321,9 +381,11 @@ char* generated_to_json(struct relation_struct* e){
 char* informed_to_json(struct relation_struct* e){
   char relation_info[1024];
   RELATION_PREP_IDs(e);
-  sprintf(buffer, "\"cf:%s\":{%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:informant\":\"cf:%s\", \"prov:informed\":\"cf:%s\"}",
+   prov_prep_taint(e->taint);
+  sprintf(buffer, "\"cf:%s\":{%s, \"cf:taint\":%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:informant\":\"cf:%s\", \"prov:informed\":\"cf:%s\"}",
     id,
     relation_info_to_json(relation_info, &e->identifier.relation_id),
+    taint,
     relation_str(e->type),
     bool_str[e->allowed],
     sender,
@@ -334,9 +396,11 @@ char* informed_to_json(struct relation_struct* e){
 char* derived_to_json(struct relation_struct* e){
   char relation_info[1024];
   RELATION_PREP_IDs(e);
-  sprintf(buffer, "\"cf:%s\":{%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:usedEntity\":\"cf:%s\", \"prov:generatedEntity\":\"cf:%s\"}",
+   prov_prep_taint(e->taint);
+  sprintf(buffer, "\"cf:%s\":{%s, \"cf:taint\":%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:usedEntity\":\"cf:%s\", \"prov:generatedEntity\":\"cf:%s\"}",
     id,
     relation_info_to_json(relation_info, &e->identifier.relation_id),
+    taint,
     relation_str(e->type),
     bool_str[e->allowed],
     sender,
@@ -347,16 +411,19 @@ char* derived_to_json(struct relation_struct* e){
 char* disc_to_json(struct disc_node_struct* n){
   char node_info[1024];
   DISC_PREP_IDs(n);
+   prov_prep_taint(n->taint);
   if(n->length > 0){
-    sprintf(buffer, "\"cf:%s\" : {%s, \"cf:parent_id\":\"cf:%s\", %s}",
+    sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:parent_id\":\"cf:%s\", %s}",
       id,
       node_info_to_json(node_info, &n->identifier.node_id),
+      taint,
       parent_id,
       n->content);
   }else{
-    sprintf(buffer, "\"cf:%s\" : {%s}, \"cf:parent_id\":\"cf:%s\"",
+    sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:parent_id\":\"cf:%s\"}",
       id,
       node_info_to_json(node_info, &n->identifier.node_id),
+      taint,
       parent_id);
   }
   return buffer;
@@ -365,9 +432,11 @@ char* disc_to_json(struct disc_node_struct* n){
 char* task_to_json(struct task_prov_struct* n){
   char node_info[1024];
   NODE_PREP_IDs(n);
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:user_id\":%u, \"cf:group_id\":%u}",
+   prov_prep_taint(n->taint);
+  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:user_id\":%u, \"cf:group_id\":%u}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
+    taint,
     n->uid,
     n->gid);
   return buffer;
@@ -420,10 +489,12 @@ char* inode_to_json(struct inode_prov_struct* n){
   char msg_info[1024];
   char node_info[1024];
   char uuid[UUID_STR_SIZE];
-  NODE_PREP_IDs(n)
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:user_id\":%u, \"cf:group_id\":%u, \"prov:type\":\"cf:%s\", \"cf:mode\":\"0X%04hhX\", \"cf:uuid\":\"%s\"}",
+  NODE_PREP_IDs(n);
+   prov_prep_taint(n->taint);
+  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:user_id\":%u, \"cf:group_id\":%u, \"prov:type\":\"cf:%s\", \"cf:mode\":\"0X%04hhX\", \"cf:uuid\":\"%s\"}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
+    taint,
     n->uid,
     n->gid,
     get_inode_type(n->mode),
@@ -435,40 +506,48 @@ char* inode_to_json(struct inode_prov_struct* n){
 char* sb_to_json(struct sb_struct* n){
   char node_info[1024];
   char uuid[UUID_STR_SIZE];
-  NODE_PREP_IDs(n)
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:uuid\":\"%s\"}",
+  NODE_PREP_IDs(n);
+   prov_prep_taint(n->taint);
+  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:uuid\":\"%s\"}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
+    taint,
     uuid_to_str(n->uuid, uuid, UUID_STR_SIZE));
   return buffer;
 }
 
 char* msg_to_json(struct msg_msg_struct* n){
   char node_info[1024];
-  NODE_PREP_IDs(n)
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:type\":%ld}",
+  NODE_PREP_IDs(n);
+   prov_prep_taint(n->taint);
+  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:type\":%ld}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
+    taint,
     n->type);
   return buffer;
 }
 
 char* shm_to_json(struct shm_struct* n){
   char node_info[1024];
-  NODE_PREP_IDs(n)
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:mode\":\"0X%04hhX\"}",
+  NODE_PREP_IDs(n);
+   prov_prep_taint(n->taint);
+  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:mode\":\"0X%04hhX\"}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
+    taint,
     n->mode);
   return buffer;
 }
 
 char* sock_to_json(struct sock_struct* n){
   char node_info[1024];
-  NODE_PREP_IDs(n)
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:type\":%u, \"cf:family\":%u, \"cf:protocol\":%u}",
+  NODE_PREP_IDs(n);
+   prov_prep_taint(n->taint);
+  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:type\":%u, \"cf:family\":%u, \"cf:protocol\":%u}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
+    taint,
     n->type,
     n->family,
     n->protocol);
@@ -477,10 +556,12 @@ char* sock_to_json(struct sock_struct* n){
 
 char* str_msg_to_json(struct str_struct* n){
   char relation_info[1024];
-  NODE_PREP_IDs(n)
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:message\":\"%s\"}",
+  NODE_PREP_IDs(n);
+   prov_prep_taint(n->taint);
+  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:message\":\"%s\"}",
     id,
     relation_info_to_json(relation_info, &n->identifier.relation_id),
+    taint,
     n->str);
   return buffer;
 }
@@ -507,30 +588,36 @@ char* sockaddr_to_json(char* buf, struct sockaddr* addr, size_t length){
 char* addr_to_json(struct address_struct* n){
   char node_info[1024];
   char addr_info[PATH_MAX+1024];
-  NODE_PREP_IDs(n)
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:address\":%s}",
+  NODE_PREP_IDs(n);
+   prov_prep_taint(n->taint);
+  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:address\":%s}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
+    taint,
     sockaddr_to_json(addr_info, &n->addr, n->length));
   return buffer;
 }
 
 char* pathname_to_json(struct file_name_struct* n){
   char node_info[1024];
-  NODE_PREP_IDs(n)
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:pathname\":\"%s\"}",
+  NODE_PREP_IDs(n);
+   prov_prep_taint(n->taint);
+  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:pathname\":\"%s\"}",
     id,
     node_info_to_json(node_info, &n->identifier.node_id),
+    taint,
     n->name);
   return buffer;
 }
 
 char* ifc_to_json(struct ifc_context_struct* n){
   char node_info[1024];
-  NODE_PREP_IDs(n)
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:ifc\":\"TODO\"}",
+  NODE_PREP_IDs(n);
+   prov_prep_taint(n->taint);
+  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:ifc\":\"TODO\"}",
     id,
-    node_info_to_json(node_info, &n->identifier.node_id));
+    node_info_to_json(node_info, &n->identifier.node_id),
+    taint);
   return buffer;
 }
 
