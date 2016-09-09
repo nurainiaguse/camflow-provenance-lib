@@ -226,7 +226,7 @@ int provenance_taint_file(const char name[PATH_MAX], uint64_t taint){
   memset(&cfg, 0, sizeof(struct prov_file_config));
   realpath(name, cfg.name);
   cfg.op=PROV_SET_TAINT;
-  prov_bloom_add(node_kern(&(cfg.prov)).taint, taint);
+  prov_bloom_add(prov_taint(&(cfg.prov)), taint);
 
   rc = write(fd, &cfg, sizeof(struct prov_file_config));
   close(fd);
@@ -242,7 +242,7 @@ int provenance_taint(uint64_t taint){
   }
   memset(&cfg, 0, sizeof(struct prov_self_config));
   cfg.op=PROV_SET_TAINT;
-  prov_bloom_add(node_kern(&(cfg.prov)).taint, taint);
+  prov_bloom_add(prov_taint(&(cfg.prov)), taint);
 
   rc = write(fd, &cfg, sizeof(struct prov_file_config));
   close(fd);
