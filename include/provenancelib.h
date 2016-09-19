@@ -151,7 +151,7 @@ int provenance_flush(void);
 * @inode_info point to an inode_info structure
 * retrieve provenance information of the file associated with name.
 */
-int provenance_read_file(const char name[PATH_MAX], struct inode_prov_struct* inode_info);
+int provenance_read_file(const char name[PATH_MAX], prov_msg_t* inode_info);
 
 /*
 * @name file name
@@ -169,5 +169,7 @@ int provenance_track_file(const char name[PATH_MAX], bool track);
 int provenance_opaque_file(const char name[PATH_MAX], bool opaque);
 
 int provenance_propagate_file(const char name[PATH_MAX], bool opaque);
+
+int provenance_taint_file(const char name[PATH_MAX], uint64_t taint);
 
 #endif /* __PROVENANCELIB_H */
