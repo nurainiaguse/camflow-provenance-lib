@@ -282,6 +282,7 @@ static void ___read_relay( const int relay_file, const size_t prov_size, const v
       rc = read(relay_file, buf+size, prov_size-size);
 
       if(rc==0 && size==0){
+        free(buf);
         return;
       }
 
