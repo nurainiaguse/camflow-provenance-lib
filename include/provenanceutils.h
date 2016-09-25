@@ -186,5 +186,10 @@ static inline const int node_id(char* str){
   MATCH_AND_RETURN(str, MSG_STR_DISC_NODE, MSG_DISC_NODE);
   return 0;
 }
+#define DECIMAL 10
+#define OCTAL   8
+#define HEX     16
+char *ulltoa (uint64_t value, char *string, int radix);
+char *utoa (uint32_t value, char *string, int radix);
 
 #endif /* __PROVENANCEUTILS_H */

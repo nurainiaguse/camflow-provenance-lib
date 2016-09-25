@@ -106,7 +106,7 @@ int provenance_set_machine_id(uint32_t v){
 }
 
 int provenance_get_machine_id(uint32_t* v){
-  int fd = open(PROV_MACHINE_ID_FILE, O_WRONLY);
+  int fd = open(PROV_MACHINE_ID_FILE, O_RDONLY);
 
   if(fd<0)
   {

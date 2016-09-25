@@ -322,123 +322,113 @@ static void prov_prep_taint(const uint8_t bloom[PROV_N_BYTES]){
 
 
 char* node_info_to_json(char* buf, struct node_identifier* n){
-  sprintf(buf, "\"cf:type\": %u, \"cf:id\":%llu, \"cf:boot_id\":%u, \"cf:machine_id\":%u, \"cf:version\":%u", n->type, n->id, n->boot_id, n->machine_id, n->version);
+  char tmp[65];
+  buf[0]='\0';
+  strcat(buf, "\"cf:type\":");
+  strcat(buf, utoa(n->type, tmp, DECIMAL));
+  strcat(buf, ",\"cf:id\":");
+  strcat(buf, ulltoa(n->id, tmp, DECIMAL));
+  strcat(buf, ",\"cf:boot_id\":");
+  strcat(buf, utoa(n->boot_id, tmp, DECIMAL));
+  strcat(buf, ",\"cf:machine_id\":");
+  strcat(buf, utoa(n->machine_id, tmp, DECIMAL));
+  strcat(buf, ",\"cf:version\":");
+  strcat(buf, utoa(n->version, tmp, DECIMAL));
   return buf;
 }
 
 char* relation_info_to_json(char* buf, struct relation_identifier* e){
-  sprintf(buf, "\"cf:id\":%llu, \"cf:boot_id\":%u, \"cf:machine_id\":%u", e->id, e->boot_id, e->machine_id);
+  char tmp[65];
+  buf[0]='\0';
+  strcat(buf, "\"cf:id\":");
+  strcat(buf, ulltoa(e->id, tmp, DECIMAL));
+  strcat(buf, ",\"cf:boot_id\":");
+  strcat(buf, utoa(e->boot_id, tmp, DECIMAL));
+  strcat(buf, ",\"cf:machine_id\":");
+  strcat(buf, utoa(e->machine_id, tmp, DECIMAL));
   return buf;
 }
 
 static char* bool_str[] = {"false", "true"};
 
-char* relation_to_json(struct relation_struct* e){
+static inline char* __relation_to_json(struct relation_struct* e, const char* snd, const char* rcv){
   char relation_info[1024];
   RELATION_PREP_IDs(e);
-   prov_prep_taint(e->taint);
-  sprintf(buffer, "\"cf:%s\":{%s, \"cf:taint\":%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"cf:sender\":\"cf:%s\", \"cf:receiver\":\"cf:%s\"}",
-    id,
-    relation_info_to_json(relation_info, &e->identifier.relation_id),
-    taint,
-    relation_str(e->type),
-    bool_str[e->allowed],
-    sender,
-    receiver);
+  prov_prep_taint(e->taint);
+  buffer[0]='\0';
+  strcat(buffer, "\"cf:");
+  strcat(buffer, id);
+  strcat(buffer, "\":{");
+  strcat(buffer, relation_info_to_json(relation_info, &e->identifier.relation_id));
+  strcat(buffer, ",\"cf:taint\":");
+  strcat(buffer, taint);
+  strcat(buffer, ",\"cf:type\":\"");
+  strcat(buffer, relation_str(e->type));
+  strcat(buffer, "\",\"cf:allowed\":\"");
+  strcat(buffer, bool_str[e->allowed]);
+  strcat(buffer, "\",\"");
+  strcat(buffer, snd);
+  strcat(buffer, "\":\"cf:");
+  strcat(buffer, sender);
+  strcat(buffer, "\",\"");
+  strcat(buffer, rcv);
+  strcat(buffer, "\":\"cf:");
+  strcat(buffer, receiver);
+  strcat(buffer, "\"}");
   return buffer;
+}
+
+char* relation_to_json(struct relation_struct* e){
+  return __relation_to_json(e, "cf:sender", "cf:receiver");
 }
 
 char* used_to_json(struct relation_struct* e){
-  char relation_info[1024];
-  RELATION_PREP_IDs(e);
-   prov_prep_taint(e->taint);
-  sprintf(buffer, "\"cf:%s\":{%s, \"cf:taint\":%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:entity\":\"cf:%s\", \"prov:activity\":\"cf:%s\"}",
-    id,
-    relation_info_to_json(relation_info, &e->identifier.relation_id),
-    taint,
-    relation_str(e->type),
-    bool_str[e->allowed],
-    sender,
-    receiver);
-  return buffer;
+  return __relation_to_json(e, "prov:entity", "prov:activity");
 }
 
 char* generated_to_json(struct relation_struct* e){
-  char relation_info[1024];
-  RELATION_PREP_IDs(e);
-   prov_prep_taint(e->taint);
-  sprintf(buffer, "\"cf:%s\":{%s, \"cf:taint\":%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:activity\":\"cf:%s\", \"prov:entity\":\"cf:%s\"}",
-    id,
-    relation_info_to_json(relation_info, &e->identifier.relation_id),
-    taint,
-    relation_str(e->type),
-    bool_str[e->allowed],
-    sender,
-    receiver);
-  return buffer;
+  return __relation_to_json(e, "prov:activity", "prov:entity");
 }
 
 char* informed_to_json(struct relation_struct* e){
-  char relation_info[1024];
-  RELATION_PREP_IDs(e);
-   prov_prep_taint(e->taint);
-  sprintf(buffer, "\"cf:%s\":{%s, \"cf:taint\":%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:informant\":\"cf:%s\", \"prov:informed\":\"cf:%s\"}",
-    id,
-    relation_info_to_json(relation_info, &e->identifier.relation_id),
-    taint,
-    relation_str(e->type),
-    bool_str[e->allowed],
-    sender,
-    receiver);
-  return buffer;
+  return __relation_to_json(e, "prov:informant", "prov:informed");
 }
 
 char* derived_to_json(struct relation_struct* e){
-  char relation_info[1024];
-  RELATION_PREP_IDs(e);
-   prov_prep_taint(e->taint);
-  sprintf(buffer, "\"cf:%s\":{%s, \"cf:taint\":%s, \"cf:type\":\"%s\", \"cf:allowed\":%s, \"prov:usedEntity\":\"cf:%s\", \"prov:generatedEntity\":\"cf:%s\"}",
-    id,
-    relation_info_to_json(relation_info, &e->identifier.relation_id),
-    taint,
-    relation_str(e->type),
-    bool_str[e->allowed],
-    sender,
-    receiver);
-  return buffer;
+  return __relation_to_json(e, "prov:usedEntity", "prov:generatedEntity");
 }
+
+#define catnodestart(buffer, n) buffer[0]='\0';strcat(buffer, "\"cf:");strcat(buffer, id);strcat(buffer, "\":{");strcat(buffer, node_info_to_json(node_info, &n->identifier.node_id));strcat(buffer, ",\"cf:taint\":");strcat(buffer, taint);
 
 char* disc_to_json(struct disc_node_struct* n){
   char node_info[1024];
   DISC_PREP_IDs(n);
-   prov_prep_taint(n->taint);
+  prov_prep_taint(n->taint);
+  catnodestart(buffer, n);
+  strcat(buffer, ",\"cf:parent_id\":\"cf:");
+  strcat(buffer, parent_id);
   if(n->length > 0){
-    sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:parent_id\":\"cf:%s\", %s}",
-      id,
-      node_info_to_json(node_info, &n->identifier.node_id),
-      taint,
-      parent_id,
-      n->content);
+    strcat(buffer, "\",");
+    strcat(buffer, n->content);
+    strcat(buffer, "}");
   }else{
-    sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:parent_id\":\"cf:%s\"}",
-      id,
-      node_info_to_json(node_info, &n->identifier.node_id),
-      taint,
-      parent_id);
+    strcat(buffer, "\"}");
   }
   return buffer;
 }
 
+#define catuid(buffer, n_uid) strcat(buffer, ",\"cf:uid\":");strcat(buffer, utoa(n_uid, tmp, DECIMAL));
+#define catgid(buffer, n_gid) strcat(buffer, ",\"cf:gid\":");strcat(buffer, utoa(n_gid, tmp, DECIMAL));
+
 char* task_to_json(struct task_prov_struct* n){
   char node_info[1024];
+  char tmp[33];
   NODE_PREP_IDs(n);
-   prov_prep_taint(n->taint);
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:user_id\":%u, \"cf:group_id\":%u}",
-    id,
-    node_info_to_json(node_info, &n->identifier.node_id),
-    taint,
-    n->uid,
-    n->gid);
+  prov_prep_taint(n->taint);
+  catnodestart(buffer, n);
+  catuid(buffer, n->uid);
+  catgid(buffer, n->gid);
+  strcat(buffer, "}");
   return buffer;
 }
 
@@ -484,22 +474,26 @@ static inline const char* get_inode_type(mode_t mode){
   return STR_UNKNOWN;
 }
 
-char* inode_to_json(struct inode_prov_struct* n){
 
+#define catuuid(buffer, n_uuid) strcat(buffer, ",\"cf:uuid\":\"");strcat(buffer, uuid_to_str(n_uuid, uuid, UUID_STR_SIZE));strcat(buffer, "\"");
+#define catmode(buffer, n_mode) strcat(buffer, ",\"cf:mode\":\"0X");strcat(buffer, utoa(n->mode, tmp, HEX));strcat(buffer, "\"");
+
+char* inode_to_json(struct inode_prov_struct* n){
   char msg_info[1024];
   char node_info[1024];
   char uuid[UUID_STR_SIZE];
+  char tmp[65];
   NODE_PREP_IDs(n);
-   prov_prep_taint(n->taint);
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:user_id\":%u, \"cf:group_id\":%u, \"prov:type\":\"cf:%s\", \"cf:mode\":\"0X%04hhX\", \"cf:uuid\":\"%s\"}",
-    id,
-    node_info_to_json(node_info, &n->identifier.node_id),
-    taint,
-    n->uid,
-    n->gid,
-    get_inode_type(n->mode),
-    n->mode,
-    uuid_to_str(n->sb_uuid, uuid, UUID_STR_SIZE));
+  prov_prep_taint(n->taint);
+  catnodestart(buffer, n);
+  catuid(buffer, n->uid);
+  catgid(buffer, n->gid);
+  strcat(buffer, ",\"prov:type\":\"cf:");
+  strcat(buffer, get_inode_type(n->mode));
+  strcat(buffer, "\"");
+  catmode(buffer, n->mode);
+  catuuid(buffer, n->sb_uuid);
+  strcat(buffer, "}");
   return buffer;
 }
 
@@ -507,62 +501,60 @@ char* sb_to_json(struct sb_struct* n){
   char node_info[1024];
   char uuid[UUID_STR_SIZE];
   NODE_PREP_IDs(n);
-   prov_prep_taint(n->taint);
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:uuid\":\"%s\"}",
-    id,
-    node_info_to_json(node_info, &n->identifier.node_id),
-    taint,
-    uuid_to_str(n->uuid, uuid, UUID_STR_SIZE));
+  prov_prep_taint(n->taint);
+  catnodestart(buffer, n);
+  catuuid(buffer, n->uuid);
+  strcat(buffer, "}");
   return buffer;
 }
 
 char* msg_to_json(struct msg_msg_struct* n){
   char node_info[1024];
+  char tmp[65];
   NODE_PREP_IDs(n);
-   prov_prep_taint(n->taint);
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:type\":%ld}",
-    id,
-    node_info_to_json(node_info, &n->identifier.node_id),
-    taint,
-    n->type);
+  prov_prep_taint(n->taint);
+  catnodestart(buffer, n);
+  strcat(buffer, ",\"cf:type\":");
+  strcat(buffer, ulltoa(n->type, tmp, DECIMAL));
+  strcat(buffer, "}");
   return buffer;
 }
 
 char* shm_to_json(struct shm_struct* n){
   char node_info[1024];
+  char tmp[33];
   NODE_PREP_IDs(n);
-   prov_prep_taint(n->taint);
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:mode\":\"0X%04hhX\"}",
-    id,
-    node_info_to_json(node_info, &n->identifier.node_id),
-    taint,
-    n->mode);
+  prov_prep_taint(n->taint);
+  catnodestart(buffer, n);
+  catmode(buffer, n->mode);
+  strcat(buffer, "}");
   return buffer;
 }
 
 char* sock_to_json(struct sock_struct* n){
   char node_info[1024];
+  char tmp[33];
   NODE_PREP_IDs(n);
-   prov_prep_taint(n->taint);
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:type\":%u, \"cf:family\":%u, \"cf:protocol\":%u}",
-    id,
-    node_info_to_json(node_info, &n->identifier.node_id),
-    taint,
-    n->type,
-    n->family,
-    n->protocol);
+  prov_prep_taint(n->taint);
+  catnodestart(buffer, n);
+  strcat(buffer, ",\"cf:type\":");
+  strcat(buffer, utoa(n->type, tmp, DECIMAL));
+  strcat(buffer, ",\"cf:family\":");
+  strcat(buffer, utoa(n->family, tmp, DECIMAL));
+  strcat(buffer, ",\"cf:protocol\":");
+  strcat(buffer, utoa(n->protocol, tmp, DECIMAL));
+  strcat(buffer, "}");
   return buffer;
 }
 
 char* str_msg_to_json(struct str_struct* n){
-  char relation_info[1024];
+  char node_info[1024];
   NODE_PREP_IDs(n);
-   prov_prep_taint(n->taint);
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:message\":\"%s\"}",
-    id,
-    relation_info_to_json(relation_info, &n->identifier.relation_id),
-    taint,
-    n->str);
+  prov_prep_taint(n->taint);
+  catnodestart(buffer, n);
+  strcat(buffer, ",\"cf:message\":\"");
+  strcat(buffer, n->str);
+  strcat(buffer, "\"}");
   return buffer;
 }
 
@@ -589,35 +581,31 @@ char* addr_to_json(struct address_struct* n){
   char node_info[1024];
   char addr_info[PATH_MAX+1024];
   NODE_PREP_IDs(n);
-   prov_prep_taint(n->taint);
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:address\":%s}",
-    id,
-    node_info_to_json(node_info, &n->identifier.node_id),
-    taint,
-    sockaddr_to_json(addr_info, &n->addr, n->length));
+  prov_prep_taint(n->taint);
+  catnodestart(buffer, n);
+  strcat(buffer, ",\"cf:address\":");
+  strcat(buffer, sockaddr_to_json(addr_info, &n->addr, n->length));
+  strcat(buffer, "}");
   return buffer;
 }
 
 char* pathname_to_json(struct file_name_struct* n){
   char node_info[1024];
   NODE_PREP_IDs(n);
-   prov_prep_taint(n->taint);
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:pathname\":\"%s\"}",
-    id,
-    node_info_to_json(node_info, &n->identifier.node_id),
-    taint,
-    n->name);
+  prov_prep_taint(n->taint);
+  catnodestart(buffer, n);
+  strcat(buffer, ",\"cf:pathname\":\"");
+  strcat(buffer, n->name);
+  strcat(buffer, "\"}");
   return buffer;
 }
 
 char* ifc_to_json(struct ifc_context_struct* n){
   char node_info[1024];
   NODE_PREP_IDs(n);
-   prov_prep_taint(n->taint);
-  sprintf(buffer, "\"cf:%s\" : {%s, \"cf:taint\":%s, \"cf:ifc\":\"TODO\"}",
-    id,
-    node_info_to_json(node_info, &n->identifier.node_id),
-    taint);
+  prov_prep_taint(n->taint);
+  catnodestart(buffer, n);
+  strcat(buffer, ",\"cf:ifc\":\"TODO\"}");
   return buffer;
 }
 

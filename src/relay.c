@@ -187,7 +187,7 @@ void prov_record(prov_msg_t* msg){
         prov_ops.log_sock(&(msg->sock_info));
       break;
     default:
-      printf("Error: unknown message type %u\n", prov_type(msg));
+      record_error("Error: unknown message type %u\n", prov_type(msg));
       break;
   }
 }
@@ -241,7 +241,7 @@ void long_prov_record(long_prov_msg_t* msg){
         prov_ops.log_disc(&(msg->disc_node_info));
       break;
     default:
-      printf("Error: unknown message type %u\n", prov_type(msg));
+      record_error("Error: unknown message type %u\n", prov_type(msg));
       break;
   }
 }
