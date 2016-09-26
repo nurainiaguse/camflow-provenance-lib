@@ -36,12 +36,10 @@
 static pthread_mutex_t l_log =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
 void _init_logs( void ){
-  pthread_mutex_lock(&l_log);
   simplog.setLogFile(LOG_FILE);
   simplog.setLineWrap(false);
   simplog.setLogSilentMode(true);
   simplog.setLogDebugLevel(SIMPLOG_VERBOSE);
-  pthread_mutex_unlock(&l_log);
 }
 
 void init( void ){
