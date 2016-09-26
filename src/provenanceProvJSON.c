@@ -399,6 +399,7 @@ char* derived_to_json(struct relation_struct* e){
 }
 
 #define catnodestart(buffer, n) buffer[0]='\0';strcat(buffer, "\"cf:");strcat(buffer, id);strcat(buffer, "\":{");strcat(buffer, node_info_to_json(node_info, &n->identifier.node_id));strcat(buffer, ",\"cf:taint\":");strcat(buffer, taint);
+#define catlabel(type, content) strcat(buffer, ",\"prov:label\":\"[");strcat(buffer, type);strcat(buffer, "] ");strcat(buffer,content);strcat(buffer, "\"");
 
 char* disc_to_json(struct disc_node_struct* n){
   char node_info[1024];
@@ -428,6 +429,7 @@ char* task_to_json(struct task_prov_struct* n){
   catnodestart(buffer, n);
   catuid(buffer, n->uid);
   catgid(buffer, n->gid);
+  catlabel("task", utoa(n->identifier.node_id.version, tmp, DECIMAL));
   strcat(buffer, "}");
   return buffer;
 }
@@ -493,6 +495,7 @@ char* inode_to_json(struct inode_prov_struct* n){
   strcat(buffer, "\"");
   catmode(buffer, n->mode);
   catuuid(buffer, n->sb_uuid);
+  catlabel(get_inode_type(n->mode), utoa(n->identifier.node_id.version, tmp, DECIMAL));
   strcat(buffer, "}");
   return buffer;
 }
@@ -537,12 +540,13 @@ char* sock_to_json(struct sock_struct* n){
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   catnodestart(buffer, n);
-  strcat(buffer, ",\"cf:type\":");
+  strcat(buffer, ",\"cf:sock_type\":");
   strcat(buffer, utoa(n->type, tmp, DECIMAL));
   strcat(buffer, ",\"cf:family\":");
   strcat(buffer, utoa(n->family, tmp, DECIMAL));
   strcat(buffer, ",\"cf:protocol\":");
   strcat(buffer, utoa(n->protocol, tmp, DECIMAL));
+  catlabel("sock", "TODO");
   strcat(buffer, "}");
   return buffer;
 }
@@ -577,6 +581,25 @@ char* sockaddr_to_json(char* buf, struct sockaddr* addr, size_t length){
   return buf;
 }
 
+char* sockaddr_to_label(char* buf, struct sockaddr* addr, size_t length){
+  char host[NI_MAXHOST];
+  char serv[NI_MAXSERV];
+
+  if(addr->sa_family == AF_INET){
+    getnameinfo(addr, length, host, NI_MAXHOST, serv, NI_MAXSERV, 0);
+    sprintf(buf, "IPV4 %s", host);
+  }else if(addr->sa_family == AF_INET6){
+    getnameinfo(addr, length, host, NI_MAXHOST, serv, NI_MAXSERV, 0);
+    sprintf(buf, "IPV6 %s", host);
+  }else if(addr->sa_family == AF_UNIX){
+    sprintf(buf, "UNIX %s", ((struct sockaddr_un*)addr)->sun_path);
+  }else{
+    sprintf(buf, "OTHER");
+  }
+
+  return buf;
+}
+
 char* addr_to_json(struct address_struct* n){
   char node_info[1024];
   char addr_info[PATH_MAX+1024];
@@ -585,6 +608,7 @@ char* addr_to_json(struct address_struct* n){
   catnodestart(buffer, n);
   strcat(buffer, ",\"cf:address\":");
   strcat(buffer, sockaddr_to_json(addr_info, &n->addr, n->length));
+  catlabel("address", sockaddr_to_label(addr_info, &n->addr, n->length));
   strcat(buffer, "}");
   return buffer;
 }
@@ -596,7 +620,9 @@ char* pathname_to_json(struct file_name_struct* n){
   catnodestart(buffer, n);
   strcat(buffer, ",\"cf:pathname\":\"");
   strcat(buffer, n->name);
-  strcat(buffer, "\"}");
+  strcat(buffer, "\"");
+  catlabel("path", n->name);
+  strcat(buffer, "}");
   return buffer;
 }
 
