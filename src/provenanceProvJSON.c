@@ -364,6 +364,8 @@ static inline char* __relation_to_json(struct relation_struct* e, const char* sn
   strcat(buffer, taint);
   strcat(buffer, ",\"cf:type\":\"");
   strcat(buffer, relation_str(e->type));
+  strcat(buffer, "\",\"prov:label\":\"");
+  strcat(buffer, relation_str(e->type));
   strcat(buffer, "\",\"cf:allowed\":\"");
   strcat(buffer, bool_str[e->allowed]);
   strcat(buffer, "\",\"");
