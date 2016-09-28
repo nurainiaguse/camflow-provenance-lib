@@ -67,6 +67,11 @@ void all( const char* str ){
 
 void state( void ){
   uint32_t filter=0;
+  uint32_t machine_id;
+
+  provenance_get_machine_id(&machine_id);
+  printf("Machine id: %u\n", machine_id);
+
   printf("Provenance capture:\n");
   if(provenance_get_enable()){
     printf("- capture enabled;\n");
