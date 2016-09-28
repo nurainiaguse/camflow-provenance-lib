@@ -294,6 +294,8 @@ static __thread char taint[PATH_MAX];
 
 #define NODE_PREP_IDs(n) ID_ENCODE(n->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN)
 
+#define PACKET_PREP_IDs(p) ID_ENCODE(p->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN)
+
 #define PROV_PREP_TAINT(n) TAINT_ENCODE(n->taint, PROV_N_BYTES, taint, TAINT_STR_LEN)
 
 static void prov_prep_taint(const uint8_t bloom[PROV_N_BYTES]){
@@ -550,6 +552,57 @@ char* sock_to_json(struct sock_struct* n){
   strcat(buffer, utoa(n->protocol, tmp, DECIMAL));
   catlabel("sock", "TODO");
   strcat(buffer, "}");
+  return buffer;
+}
+
+char* format_ip(char* buffer, uint32_t ip){
+    char tmp[8];
+    unsigned char bytes[4];
+    bytes[0] = ip & 0xFF;
+    bytes[1] = (ip >> 8) & 0xFF;
+    bytes[2] = (ip >> 16) & 0xFF;
+    bytes[3] = (ip >> 24) & 0xFF;
+    buffer[0]='\0';
+    strcat(buffer, utoa(bytes[3], tmp, DECIMAL));
+    strcat(buffer, ".");
+    strcat(buffer, utoa(bytes[2], tmp, DECIMAL));
+    strcat(buffer, ".");
+    strcat(buffer, utoa(bytes[1], tmp, DECIMAL));
+    strcat(buffer, ".");
+    strcat(buffer, utoa(bytes[0], tmp, DECIMAL));
+    return buffer;
+}
+
+#define snd_addr(buffer, p) \
+  strcat(buffer, format_ip(tmp, p->identifier.packet_id.snd_ip));\
+  strcat(buffer, ":");\
+  strcat(buffer, utoa(p->identifier.packet_id.snd_port, tmp, DECIMAL));
+
+#define rcv_addr(buffer, p) \
+  strcat(buffer, format_ip(tmp, p->identifier.packet_id.rcv_ip));\
+  strcat(buffer, ":");\
+  strcat(buffer, utoa(p->identifier.packet_id.rcv_port, tmp, DECIMAL));
+
+char* packet_to_json(struct pck_struct* p){
+  char tmp[33];
+  PACKET_PREP_IDs(p);
+  buffer[0]='\0';
+  strcat(buffer, "\"cf:");
+  strcat(buffer, id);
+  strcat(buffer, "\":{");
+  strcat(buffer, "\"cf:id\":");
+  strcat(buffer, utoa(p->identifier.packet_id.id, tmp, DECIMAL));
+  strcat(buffer, ",\"cf:sender\":\"");
+  snd_addr(buffer, p);
+  strcat(buffer, "\",\"cf:receiver\":\"");
+  rcv_addr(buffer, p);
+  strcat(buffer, "\",\"prov:label\":\"[packet] ");
+  snd_addr(buffer, p);
+  strcat(buffer, "->");
+  rcv_addr(buffer, p);
+  strcat(buffer, " (");
+  strcat(buffer, utoa(p->identifier.packet_id.id, tmp, DECIMAL));
+  strcat(buffer, ")\"}");
   return buffer;
 }
 

@@ -31,6 +31,7 @@ struct provenance_ops{
   void (*log_msg)(struct msg_msg_struct*);
   void (*log_shm)(struct shm_struct*);
   void (*log_sock)(struct sock_struct*);
+  void (*log_packet)(struct pck_struct*);
   void (*log_address)(struct address_struct*);
   void (*log_file_name)(struct file_name_struct*);
   void (*log_ifc)(struct ifc_context_struct*);

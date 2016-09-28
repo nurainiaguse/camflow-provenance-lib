@@ -186,6 +186,10 @@ void prov_record(prov_msg_t* msg){
       if(prov_ops.log_sock!=NULL)
         prov_ops.log_sock(&(msg->sock_info));
       break;
+    case MSG_PACKET:
+      if(prov_ops.log_packet!=NULL)
+        prov_ops.log_packet(&(msg->pck_info));
+      break;
     default:
       record_error("Error: unknown message type %u\n", prov_type(msg));
       break;
