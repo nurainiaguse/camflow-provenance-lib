@@ -563,13 +563,13 @@ char* format_ip(char* buffer, uint32_t ip){
     bytes[2] = (ip >> 16) & 0xFF;
     bytes[3] = (ip >> 24) & 0xFF;
     buffer[0]='\0';
-    strcat(buffer, utoa(bytes[3], tmp, DECIMAL));
-    strcat(buffer, ".");
-    strcat(buffer, utoa(bytes[2], tmp, DECIMAL));
+    strcat(buffer, utoa(bytes[0], tmp, DECIMAL));
     strcat(buffer, ".");
     strcat(buffer, utoa(bytes[1], tmp, DECIMAL));
     strcat(buffer, ".");
-    strcat(buffer, utoa(bytes[0], tmp, DECIMAL));
+    strcat(buffer, utoa(bytes[2], tmp, DECIMAL));
+    strcat(buffer, ".");
+    strcat(buffer, utoa(bytes[3], tmp, DECIMAL));
     return buffer;
 }
 
