@@ -16,6 +16,8 @@
 
 ### v0.1.8
 ```
+- Changed attribute name cf:parent_id -> cf:hasParent.
+- Add infrastructure to deal with IPv4 packet provenance.
 - Added prov:label elements.
 ```
 

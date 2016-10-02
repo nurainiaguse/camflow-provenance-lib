@@ -410,7 +410,7 @@ char* disc_to_json(struct disc_node_struct* n){
   DISC_PREP_IDs(n);
   prov_prep_taint(n->taint);
   catnodestart(buffer, n);
-  strcat(buffer, ",\"cf:parent_id\":\"cf:");
+  strcat(buffer, ",\"cf:hasParent\":\"cf:");
   strcat(buffer, parent_id);
   if(n->length > 0){
     strcat(buffer, "\",");
