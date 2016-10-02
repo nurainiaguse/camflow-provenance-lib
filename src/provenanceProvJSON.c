@@ -592,6 +592,8 @@ char* packet_to_json(struct pck_struct* p){
   strcat(buffer, "\":{");
   strcat(buffer, "\"cf:id\":");
   strcat(buffer, utoa(p->identifier.packet_id.id, tmp, DECIMAL));
+  strcat(buffer, ",\"cf:seq\":");
+  strcat(buffer, utoa(p->identifier.packet_id.seq, tmp, DECIMAL));
   strcat(buffer, ",\"cf:sender\":\"");
   snd_addr(buffer, p);
   strcat(buffer, "\",\"cf:receiver\":\"");
