@@ -148,7 +148,7 @@ int main(void){
     simplog.writeLog(SIMPLOG_ERROR, "Failed registering audit operation (%d).", rc);
     exit(rc);
   }
-  simplog.writeLog(SIMPLOG_ERROR, machine_description_json(json));
+  simplog.writeLog(SIMPLOG_INFO, machine_description_json(json));
 
   set_ProvJSON_callback(print_json);
   while(1){
