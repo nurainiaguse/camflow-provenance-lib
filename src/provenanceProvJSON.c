@@ -22,8 +22,11 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <netdb.h>
 #include <pthread.h>
+#include <time.h>
+#include <math.h>
 
 #include "provenancelib.h"
 #include "provenancePovJSON.h"
@@ -322,9 +325,33 @@ static void prov_prep_taint(const uint8_t bloom[PROV_N_BYTES]){
   }
 }
 
+static char* time_info_to_json(char* buf){
+  int millisec;
+  struct tm* tm;
+  struct timeval tv;
+  char str[256];
 
-char* node_info_to_json(char* buf, struct node_identifier* n){
-  char tmp[65];
+  gettimeofday(&tv, NULL);
+  millisec = (int)(tv.tv_usec/1000.0);
+  if (millisec>=1000) { // Allow for rounding up to nearest second
+    millisec -=1000;
+    tv.tv_sec++;
+  }
+
+  buf[0]='\0';
+  strcat(buf, ",\"cf:date\":\"");
+  tm = gmtime(&tv.tv_sec);
+  strftime(str, 30,"%Y:%m:%dT%H:%M:%S", tm);
+  strcat(buf, str);
+  strcat(buf, ".");
+  sprintf(str,"%03d",millisec);
+  strcat(buf, str);
+  strcat(buf, "\"");
+  return buf;
+}
+
+static char* node_info_to_json(char* buf, struct node_identifier* n){
+  char tmp[256];
   buf[0]='\0';
   strcat(buf, "\"cf:type\":");
   strcat(buf, utoa(n->type, tmp, DECIMAL));
@@ -336,11 +363,12 @@ char* node_info_to_json(char* buf, struct node_identifier* n){
   strcat(buf, utoa(n->machine_id, tmp, DECIMAL));
   strcat(buf, ",\"cf:version\":");
   strcat(buf, utoa(n->version, tmp, DECIMAL));
+  strcat(buf, time_info_to_json(tmp));
   return buf;
 }
 
-char* relation_info_to_json(char* buf, struct relation_identifier* e){
-  char tmp[65];
+static char* relation_info_to_json(char* buf, struct relation_identifier* e){
+  char tmp[256];
   buf[0]='\0';
   strcat(buf, "\"cf:id\":");
   strcat(buf, ulltoa(e->id, tmp, DECIMAL));
@@ -348,12 +376,13 @@ char* relation_info_to_json(char* buf, struct relation_identifier* e){
   strcat(buf, utoa(e->boot_id, tmp, DECIMAL));
   strcat(buf, ",\"cf:machine_id\":");
   strcat(buf, utoa(e->machine_id, tmp, DECIMAL));
+  strcat(buf, time_info_to_json(tmp));
   return buf;
 }
 
 static char* bool_str[] = {"false", "true"};
 
-static inline char* __relation_to_json(struct relation_struct* e, const char* snd, const char* rcv){
+static char* __relation_to_json(struct relation_struct* e, const char* snd, const char* rcv){
   char relation_info[1024];
   RELATION_PREP_IDs(e);
   prov_prep_taint(e->taint);
@@ -584,7 +613,7 @@ char* format_ip(char* buffer, uint32_t ip){
   strcat(buffer, utoa(p->identifier.packet_id.rcv_port, tmp, DECIMAL));
 
 char* packet_to_json(struct pck_struct* p){
-  char tmp[33];
+  char tmp[256];
   PACKET_PREP_IDs(p);
   buffer[0]='\0';
   strcat(buffer, "\"cf:");
@@ -594,6 +623,7 @@ char* packet_to_json(struct pck_struct* p){
   strcat(buffer, utoa(p->identifier.packet_id.id, tmp, DECIMAL));
   strcat(buffer, ",\"cf:seq\":");
   strcat(buffer, utoa(p->identifier.packet_id.seq, tmp, DECIMAL));
+  strcat(buffer, time_info_to_json(tmp));
   strcat(buffer, ",\"cf:sender\":\"");
   snd_addr(buffer, p);
   strcat(buffer, "\",\"cf:receiver\":\"");
