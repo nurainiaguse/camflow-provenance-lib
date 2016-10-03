@@ -27,6 +27,8 @@
 #include <pthread.h>
 #include <time.h>
 #include <math.h>
+#include <linux/camflow.h>
+#include <sys/utsname.h>
 
 #include "provenancelib.h"
 #include "provenancePovJSON.h"
@@ -724,4 +726,37 @@ char* ifc_to_json(struct ifc_context_struct* n){
 
 char* prefix_json(){
   return "\"prov\" : \"http://www.w3.org/ns/prov\", \"cf\":\"http://www.camflow.org\"";
+}
+
+char* machine_description_json(char* buffer){
+  char tmp[64];
+  uint32_t machine_id;
+  struct utsname machine_info;
+
+  provenance_get_machine_id(&machine_id);
+  uname(&machine_info);
+  //strcat(buffer, utoa(machine_id, tmp, DECIMAL))
+
+  buffer[0]='\0';
+  strcat(buffer, "{\"prefix\":{");
+  strcat(buffer, prefix_json());
+  strcat(buffer, "}");
+  strcat(buffer, ",\"entity\":{");
+  strcat(buffer, "\"");
+  strcat(buffer, utoa(machine_id, tmp, DECIMAL));
+  strcat(buffer, "\":{");
+  strcat(buffer, "\"CamFlow\":\"");
+  strcat(buffer, CAMFLOW_VERSION_STR);
+  strcat(buffer, "\", \"sysname\":\"");
+  strcat(buffer, machine_info.sysname);
+  strcat(buffer, "\", \"nodename\":\"");
+  strcat(buffer, machine_info.nodename);
+  strcat(buffer, "\", \"release\":\"");
+  strcat(buffer, machine_info.release);
+  strcat(buffer, "\", \"version\":\"");
+  strcat(buffer, machine_info.version);
+  strcat(buffer, "\", \"machine\":\"");
+  strcat(buffer, machine_info.machine);
+  strcat(buffer, "\"}}}");
+  return buffer;
 }

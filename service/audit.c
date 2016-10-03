@@ -140,7 +140,7 @@ void print_json(char* json){
 
 int main(void){
   int rc;
-  //hostid = gethostid();
+  char json[4096];
 	_init_logs();
   simplog.writeLog(SIMPLOG_INFO, "audit service pid: %ld", getpid());
   rc = provenance_register(&ops);
@@ -148,6 +148,8 @@ int main(void){
     simplog.writeLog(SIMPLOG_ERROR, "Failed registering audit operation (%d).", rc);
     exit(rc);
   }
+  simplog.writeLog(SIMPLOG_ERROR, machine_description_json(json));
+
   set_ProvJSON_callback(print_json);
   while(1){
     sleep(1);

@@ -55,5 +55,6 @@ char* addr_to_json(struct address_struct* n);
 char* pathname_to_json(struct file_name_struct* n);
 char* ifc_to_json(struct ifc_context_struct* n);
 char* prefix_json();
+char* machine_description_json(char* buffer);
 
 #endif /* __PROVENANCEPROVJSON_H */
