@@ -49,11 +49,13 @@ static const char RL_STR_LINK []                  = "link";
 static const char RL_STR_NAMED []                 = "named";
 static const char RL_STR_IFC []                   = "ifc";
 static const char RL_STR_EXEC []                  = "exec";
-static const char RL_STR_FORK []                  = "fork";
+static const char RL_STR_CLONE []                 = "clone";
 static const char RL_STR_VERSION_PROCESS []       = "version";
 static const char RL_STR_SEARCH []                = "search";
 static const char RL_STR_MMAP_READ []             = "mmap_read";
 static const char RL_STR_MMAP_EXEC []             = "mmap_exec";
+static const char RL_STR_SND []                   = "send";
+static const char RL_STR_RCV []                   = "receive";
 
 static inline const char* relation_str(uint32_t type){
   switch(type){
@@ -95,8 +97,8 @@ static inline const char* relation_str(uint32_t type){
       return RL_STR_IFC;
     case RL_EXEC:
       return RL_STR_EXEC;
-    case RL_FORK:
-      return RL_STR_FORK;
+    case RL_CLONE:
+      return RL_STR_CLONE;
     case RL_VERSION_PROCESS:
       return RL_STR_VERSION_PROCESS;
     case RL_SEARCH:
@@ -105,6 +107,10 @@ static inline const char* relation_str(uint32_t type){
       return RL_STR_MMAP_READ;
     case RL_MMAP_EXEC:
       return RL_STR_MMAP_EXEC;
+    case RL_SND:
+      return RL_STR_SND;
+    case RL_RCV:
+      return RL_STR_RCV;
     default:
       return RL_STR_UNKNOWN;
   }
@@ -132,11 +138,13 @@ static inline const int relation_id(char* str){
   MATCH_AND_RETURN(str, RL_STR_NAMED, RL_NAMED);
   MATCH_AND_RETURN(str, RL_STR_IFC, RL_IFC);
   MATCH_AND_RETURN(str, RL_STR_EXEC, RL_EXEC);
-  MATCH_AND_RETURN(str, RL_STR_FORK, RL_FORK);
+  MATCH_AND_RETURN(str, RL_STR_CLONE, RL_CLONE);
   MATCH_AND_RETURN(str, RL_STR_VERSION_PROCESS, RL_VERSION_PROCESS);
   MATCH_AND_RETURN(str, RL_STR_SEARCH, RL_SEARCH);
   MATCH_AND_RETURN(str, RL_STR_MMAP_READ, RL_MMAP_READ);
   MATCH_AND_RETURN(str, RL_STR_MMAP_EXEC, RL_MMAP_EXEC);
+  MATCH_AND_RETURN(str, RL_STR_SND, RL_SND);
+  MATCH_AND_RETURN(str, RL_STR_RCV, RL_RCV);
   return 0;
 }
 
@@ -186,5 +194,10 @@ static inline const int node_id(char* str){
   MATCH_AND_RETURN(str, MSG_STR_DISC_NODE, MSG_DISC_NODE);
   return 0;
 }
+#define DECIMAL 10
+#define OCTAL   8
+#define HEX     16
+char *ulltoa (uint64_t value, char *string, int radix);
+char *utoa (uint32_t value, char *string, int radix);
 
 #endif /* __PROVENANCEUTILS_H */

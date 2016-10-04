@@ -136,3 +136,56 @@ int compress64encode(const char* in, size_t inlen, char* out, size_t outlen){
 
   return 0;
 }
+
+
+#include <stdlib.h>
+
+char *ulltoa (uint64_t value, char *string, int radix)
+{
+  char *dst;
+  char digits[65];
+  int i, n;
+
+  dst = string;
+  if (radix < 2 || radix > 36)
+    {
+      *dst = 0;
+      return (string);
+    }
+  i = 0;
+  do
+    {
+      n = value % radix;
+      digits[i++] = (n < 10 ? (char)n+'0' : (char)n-10+'a');
+      value /= radix;
+    } while (value != 0);
+  while (i > 0)
+    *dst++ = digits[--i];
+  *dst = 0;
+  return (string);
+}
+
+char *utoa (uint32_t value, char *string, int radix)
+{
+  char *dst;
+  char digits[33];
+  int i, n;
+
+  dst = string;
+  if (radix < 2 || radix > 36)
+    {
+      *dst = 0;
+      return (string);
+    }
+  i = 0;
+  do
+    {
+      n = value % radix;
+      digits[i++] = (n < 10 ? (char)n+'0' : (char)n-10+'a');
+      value /= radix;
+    } while (value != 0);
+  while (i > 0)
+    *dst++ = digits[--i];
+  *dst = 0;
+  return (string);
+}

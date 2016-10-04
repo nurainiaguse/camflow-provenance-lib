@@ -36,12 +36,10 @@
 static pthread_mutex_t l_log =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
 void _init_logs( void ){
-  pthread_mutex_lock(&l_log);
   simplog.setLogFile(LOG_FILE);
   simplog.setLineWrap(false);
   simplog.setLogSilentMode(true);
   simplog.setLogDebugLevel(SIMPLOG_VERBOSE);
-  pthread_mutex_unlock(&l_log);
 }
 
 void init( void ){
@@ -85,6 +83,10 @@ void log_sock(struct sock_struct* sock){
   append_entity(sock_to_json(sock));
 }
 
+void log_packet(struct pck_struct* pck){
+  append_entity(packet_to_json(pck));
+}
+
 void log_address(struct address_struct* address){
   append_entity(addr_to_json(address));
 }
@@ -123,6 +125,7 @@ struct provenance_ops ops = {
   .log_msg=log_msg,
   .log_shm=log_shm,
   .log_sock=log_sock,
+  .log_packet=log_packet,
   .log_address=log_address,
   .log_file_name=log_file_name,
   .log_ifc=log_ifc,
@@ -137,7 +140,7 @@ void print_json(char* json){
 
 int main(void){
   int rc;
-  //hostid = gethostid();
+  char json[4096];
 	_init_logs();
   simplog.writeLog(SIMPLOG_INFO, "audit service pid: %ld", getpid());
   rc = provenance_register(&ops);
@@ -145,6 +148,8 @@ int main(void){
     simplog.writeLog(SIMPLOG_ERROR, "Failed registering audit operation (%d).", rc);
     exit(rc);
   }
+  simplog.writeLog(SIMPLOG_INFO, machine_description_json(json));
+
   set_ProvJSON_callback(print_json);
   while(1){
     sleep(1);

@@ -13,7 +13,7 @@ all: static
 static: $(OUT)
 
 .c.o:
-	$(CCC) $(INCLUDES) $(CCFLAGS) $(EXTRACCFLAGS) -c $< -o $@
+	$(CCC) $(INCLUDES) $(CCFLAGS) -c $< -o $@
 
 $(OUT): $(OBJ)
 	ar rcs provenance.a $(OBJ)

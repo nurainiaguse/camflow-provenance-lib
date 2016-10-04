@@ -4,6 +4,7 @@
 
 | Library version | Date       |
 | --------------- | ---------- |
+| 0.1.8           | 04/10/2016 |
 | 0.1.7           | 19/09/2016 |
 | 0.1.6           | 02/09/2016 |
 | 0.1.5           | 18/08/2016 |
@@ -12,6 +13,13 @@
 | 0.1.2           | 26/05/2016 |
 | 0.1.1           | 03/04/2016 |
 | 0.1.0           | 28/03/2016 |
+
+### v0.1.8
+```
+- Changed attribute name cf:parent_id -> cf:hasParent.
+- Add infrastructure to deal with IPv4 packet provenance.
+- Added prov:label elements.
+```
 
 ### v0.1.7
 ```

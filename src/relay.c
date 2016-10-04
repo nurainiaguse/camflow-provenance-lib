@@ -186,8 +186,12 @@ void prov_record(prov_msg_t* msg){
       if(prov_ops.log_sock!=NULL)
         prov_ops.log_sock(&(msg->sock_info));
       break;
+    case MSG_PACKET:
+      if(prov_ops.log_packet!=NULL)
+        prov_ops.log_packet(&(msg->pck_info));
+      break;
     default:
-      printf("Error: unknown message type %u\n", prov_type(msg));
+      record_error("Error: unknown message type %u\n", prov_type(msg));
       break;
   }
 }
@@ -241,7 +245,7 @@ void long_prov_record(long_prov_msg_t* msg){
         prov_ops.log_disc(&(msg->disc_node_info));
       break;
     default:
-      printf("Error: unknown message type %u\n", prov_type(msg));
+      record_error("Error: unknown message type %u\n", prov_type(msg));
       break;
   }
 }
@@ -282,6 +286,7 @@ static void ___read_relay( const int relay_file, const size_t prov_size, const v
       rc = read(relay_file, buf+size, prov_size-size);
 
       if(rc==0 && size==0){
+        free(buf);
         return;
       }
 
