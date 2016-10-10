@@ -17,7 +17,7 @@
 
 ### v0.1.9
 ```
-- 
+- Jiffies attribute in JSON output.
 ```
 
 ### v0.1.8
