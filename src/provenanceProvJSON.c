@@ -327,6 +327,7 @@ static void prov_prep_taint(const uint8_t bloom[PROV_N_BYTES]){
   }
 }
 
+// ideally should be derived from jiffies
 static char* time_info_to_json(char* buf){
   int millisec;
   struct tm* tm;
@@ -395,6 +396,8 @@ static char* __relation_to_json(struct relation_struct* e, const char* snd, cons
   strcat(buffer, relation_info_to_json(relation_info, &e->identifier.relation_id));
   strcat(buffer, ",\"cf:taint\":");
   strcat(buffer, taint);
+  strcat(buffer, ",\"cf:jiffies\":");
+  strcat(buffer, ulltoa(e->jiffies, relation_info, DECIMAL));
   strcat(buffer, ",\"cf:type\":\"");
   strcat(buffer, relation_str(e->type));
   strcat(buffer, "\",\"prov:label\":\"");
@@ -433,7 +436,7 @@ char* derived_to_json(struct relation_struct* e){
   return __relation_to_json(e, "prov:usedEntity", "prov:generatedEntity");
 }
 
-#define catnodestart(buffer, n) buffer[0]='\0';strcat(buffer, "\"cf:");strcat(buffer, id);strcat(buffer, "\":{");strcat(buffer, node_info_to_json(node_info, &n->identifier.node_id));strcat(buffer, ",\"cf:taint\":");strcat(buffer, taint);
+#define catnodestart(buffer, n) buffer[0]='\0';strcat(buffer, "\"cf:");strcat(buffer, id);strcat(buffer, "\":{");strcat(buffer, node_info_to_json(node_info, &n->identifier.node_id));strcat(buffer, ",\"cf:taint\":");strcat(buffer, taint);strcat(buffer, ",\"cf:jiffies\":");strcat(buffer, ulltoa(n->jiffies, node_info, DECIMAL));
 #define catlabel(type, content) strcat(buffer, ",\"prov:label\":\"[");strcat(buffer, type);strcat(buffer, "] ");strcat(buffer,content);strcat(buffer, "\"");
 
 char* disc_to_json(struct disc_node_struct* n){
