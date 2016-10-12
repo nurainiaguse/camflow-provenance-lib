@@ -17,6 +17,7 @@
 
 ### v0.1.9
 ```
+- Add offset to relation if file info is set.
 - Jiffies attribute in JSON output.
 ```
 
