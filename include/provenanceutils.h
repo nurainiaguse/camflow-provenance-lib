@@ -199,5 +199,7 @@ static inline const int node_id(char* str){
 #define HEX     16
 char *ulltoa (uint64_t value, char *string, int radix);
 char *utoa (uint32_t value, char *string, int radix);
+char *itoa(int32_t a, char *string, int radix);
+char *lltoa(int64_t a, char *string, int radix);
 
 #endif /* __PROVENANCEUTILS_H */

@@ -343,6 +343,13 @@ static inline void __add_uint32_attribute(char* buffer, const char* name, const 
   strcat(buffer, utoa(value, tmp, DECIMAL));
 }
 
+
+static inline void __add_int32_attribute(char* buffer, const char* name, const int32_t value, bool comma){
+  char tmp[32];
+  __add_attribute(buffer, name, comma);
+  strcat(buffer, itoa(value, tmp, DECIMAL));
+}
+
 static inline void __add_uint32hex_attribute(char* buffer, const char* name, const uint32_t value, bool comma){
   char tmp[32];
   __add_attribute(buffer, name, comma);
@@ -355,6 +362,12 @@ static inline void __add_uint64_attribute(char* buffer, const char* name, const 
   char tmp[64];
   __add_attribute(buffer, name, comma);
   strcat(buffer, ulltoa(value, tmp, DECIMAL));
+}
+
+static inline void __add_int64_attribute(char* buffer, const char* name, const int64_t value, bool comma){
+  char tmp[64];
+  __add_attribute(buffer, name, comma);
+  strcat(buffer, lltoa(value, tmp, DECIMAL));
 }
 
 static inline void __add_string_attribute(char* buffer, const char* name, const char* value, bool comma){
@@ -491,6 +504,9 @@ static char* __relation_to_json(struct relation_struct* e, const char* snd, cons
   __add_string_attribute(buffer, "cf:allowed", bool_str[e->allowed], true);
   __add_string_attribute(buffer, snd, sender, true);
   __add_string_attribute(buffer, rcv, receiver, true);
+  if(e->set==FILE_INFO_SET){ // if file related info were set
+    __add_int64_attribute(buffer, "cf:offset", e->offset, true); // just offset for now
+  }
   __close_json_entry(buffer);
   return buffer;
 }
