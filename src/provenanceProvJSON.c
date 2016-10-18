@@ -607,10 +607,10 @@ char* inode_to_json(struct inode_prov_struct* n){
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
   __add_uint32_attribute(buffer, "cf:uid", n->uid, true);
   __add_uint32_attribute(buffer, "cf:gid", n->gid, true);
-  __add_string_attribute(buffer, "prov:type", get_inode_type(n->mode), true);
+  __add_string_attribute(buffer, "prov:type", node_str(n->identifier.node_id.type), true);
   __add_uint32hex_attribute(buffer, "cf:mode", n->mode, true);
   __add_string_attribute(buffer, "cf:uuid", uuid_to_str(n->sb_uuid, uuid, UUID_STR_SIZE), true);
-  __add_label_attribute(buffer, get_inode_type(n->mode), utoa(n->identifier.node_id.version, tmp, DECIMAL), true);
+  __add_label_attribute(buffer, node_str(n->identifier.node_id.type), utoa(n->identifier.node_id.version, tmp, DECIMAL), true);
   __close_json_entry(buffer);
   return buffer;
 }
