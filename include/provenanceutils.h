@@ -56,6 +56,9 @@ static const char RL_STR_MMAP_READ []             = "mmap_read";
 static const char RL_STR_MMAP_EXEC []             = "mmap_exec";
 static const char RL_STR_SND []                   = "send";
 static const char RL_STR_RCV []                   = "receive";
+static const char RL_STR_PERM_READ[]              = "perm_read";
+static const char RL_STR_PERM_WRITE[]             = "perm_write";
+static const char RL_STR_PERM_EXEC[]              = "perm_exec";
 
 static inline const char* relation_str(uint32_t type){
   switch(type){
@@ -111,6 +114,12 @@ static inline const char* relation_str(uint32_t type){
       return RL_STR_SND;
     case RL_RCV:
       return RL_STR_RCV;
+    case RL_PERM_READ:
+      return RL_STR_PERM_READ;
+    case RL_PERM_WRITE:
+      return RL_STR_PERM_WRITE;
+    case RL_PERM_EXEC:
+      return RL_STR_PERM_EXEC;
     default:
       return RL_STR_UNKNOWN;
   }
@@ -145,6 +154,9 @@ static inline const int relation_id(char* str){
   MATCH_AND_RETURN(str, RL_STR_MMAP_EXEC, RL_MMAP_EXEC);
   MATCH_AND_RETURN(str, RL_STR_SND, RL_SND);
   MATCH_AND_RETURN(str, RL_STR_RCV, RL_RCV);
+  MATCH_AND_RETURN(str, RL_STR_PERM_READ, RL_PERM_READ);
+  MATCH_AND_RETURN(str, RL_STR_PERM_WRITE, RL_PERM_WRITE);
+  MATCH_AND_RETURN(str, RL_STR_PERM_EXEC, RL_PERM_EXEC);
   return 0;
 }
 
