@@ -171,6 +171,7 @@ void prov_record(prov_msg_t* msg){
     case MSG_INODE_BLOCK:
     case MSG_INODE_FIFO:
     case MSG_INODE_SOCKET:
+    case MSG_INODE_MMAP:
       if(prov_ops.log_inode!=NULL)
         prov_ops.log_inode(&(msg->inode_info));
       break;

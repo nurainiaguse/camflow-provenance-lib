@@ -56,6 +56,9 @@ static const char RL_STR_MMAP_READ []             = "mmap_read";
 static const char RL_STR_MMAP_EXEC []             = "mmap_exec";
 static const char RL_STR_SND []                   = "send";
 static const char RL_STR_RCV []                   = "receive";
+static const char RL_STR_PERM_READ[]              = "perm_read";
+static const char RL_STR_PERM_WRITE[]             = "perm_write";
+static const char RL_STR_PERM_EXEC[]              = "perm_exec";
 
 static inline const char* relation_str(uint32_t type){
   switch(type){
@@ -111,6 +114,12 @@ static inline const char* relation_str(uint32_t type){
       return RL_STR_SND;
     case RL_RCV:
       return RL_STR_RCV;
+    case RL_PERM_READ:
+      return RL_STR_PERM_READ;
+    case RL_PERM_WRITE:
+      return RL_STR_PERM_WRITE;
+    case RL_PERM_EXEC:
+      return RL_STR_PERM_EXEC;
     default:
       return RL_STR_UNKNOWN;
   }
@@ -145,31 +154,37 @@ static inline const int relation_id(char* str){
   MATCH_AND_RETURN(str, RL_STR_MMAP_EXEC, RL_MMAP_EXEC);
   MATCH_AND_RETURN(str, RL_STR_SND, RL_SND);
   MATCH_AND_RETURN(str, RL_STR_RCV, RL_RCV);
+  MATCH_AND_RETURN(str, RL_STR_PERM_READ, RL_PERM_READ);
+  MATCH_AND_RETURN(str, RL_STR_PERM_WRITE, RL_PERM_WRITE);
+  MATCH_AND_RETURN(str, RL_STR_PERM_EXEC, RL_PERM_EXEC);
   return 0;
 }
 
-#define MSG_STR_STR               "string"
-#define MSG_STR_RELATION          "relation"
-#define MSG_STR_TASK              "task"
-#define MSG_STR_INODE_UNKNOWN     "inode_unknown"
-#define MSG_STR_INODE_LINK        "link"
-#define MSG_STR_INODE_FILE        "file"
-#define MSG_STR_INODE_DIRECTORY   "directory"
-#define MSG_STR_INODE_CHAR        "char"
-#define MSG_STR_INODE_BLOCK       "block"
-#define MSG_STR_INODE_FIFO        "fifo"
-#define MSG_STR_INODE_SOCKET      "socket"
-#define MSG_STR_MSG               "msg"
-#define MSG_STR_SHM               "shm"
-#define MSG_STR_SOCK              "sock"
-#define MSG_STR_ADDR              "address"
-#define MSG_STR_SB                "sb"
-#define MSG_STR_FILE_NAME         "file_name"
-#define MSG_STR_IFC               "ifc"
-#define MSG_STR_DISC_ENTITY       "disc_entity"
-#define MSG_STR_DISC_ACTIVITY     "disc_activity"
-#define MSG_STR_DISC_AGENT        "disc_agent"
-#define MSG_STR_DISC_NODE         "disc_node"
+static const char MSG_STR_UNKNOWN[]=           "unknown";
+static const char MSG_STR_STR[]=               "string";
+static const char MSG_STR_RELATION[]=          "relation";
+static const char MSG_STR_TASK[]=              "task";
+static const char MSG_STR_INODE_UNKNOWN[]=     "inode_unknown";
+static const char MSG_STR_INODE_LINK[]=        "link";
+static const char MSG_STR_INODE_FILE[]=        "file";
+static const char MSG_STR_INODE_DIRECTORY[]=   "directory";
+static const char MSG_STR_INODE_CHAR[]=        "char";
+static const char MSG_STR_INODE_BLOCK[]=       "block";
+static const char MSG_STR_INODE_FIFO[]=        "fifo";
+static const char MSG_STR_INODE_SOCKET[]=      "socket";
+static const char MSG_STR_MSG[]=               "msg";
+static const char MSG_STR_SHM[]=               "shm";
+static const char MSG_STR_SOCK[]=              "sock";
+static const char MSG_STR_ADDR[]=              "address";
+static const char MSG_STR_SB[]=                "sb";
+static const char MSG_STR_FILE_NAME[]=         "file_name";
+static const char MSG_STR_IFC[]=               "ifc";
+static const char MSG_STR_DISC_ENTITY[]=       "disc_entity";
+static const char MSG_STR_DISC_ACTIVITY[]=     "disc_activity";
+static const char MSG_STR_DISC_AGENT[]=         "disc_agent";
+static const char MSG_STR_DISC_NODE[]=         "disc_node";
+static const char MSG_STR_PACKET[]=            "packet";
+static const char MSG_STR_INODE_MMAP[]=        "mmaped_file";
 
 static inline const int node_id(char* str){
   MATCH_AND_RETURN(str, MSG_STR_TASK, MSG_TASK);
@@ -192,12 +207,70 @@ static inline const int node_id(char* str){
   MATCH_AND_RETURN(str, MSG_STR_DISC_ACTIVITY, MSG_DISC_ACTIVITY);
   MATCH_AND_RETURN(str, MSG_STR_DISC_AGENT, MSG_DISC_AGENT);
   MATCH_AND_RETURN(str, MSG_STR_DISC_NODE, MSG_DISC_NODE);
+  MATCH_AND_RETURN(str, MSG_STR_PACKET, MSG_PACKET);
+  MATCH_AND_RETURN(str, MSG_STR_INODE_MMAP, MSG_INODE_MMAP);
   return 0;
 }
+
+static inline const char* node_str(uint32_t type){
+  switch(type){
+    case MSG_STR:
+      return MSG_STR_STR;
+    case MSG_TASK:
+      return MSG_STR_TASK;
+    case MSG_INODE_UNKNOWN:
+      return MSG_STR_INODE_UNKNOWN;
+    case MSG_INODE_LINK:
+      return MSG_STR_INODE_LINK;
+    case MSG_INODE_FILE:
+      return MSG_STR_INODE_FILE;
+    case MSG_INODE_DIRECTORY:
+      return MSG_STR_INODE_DIRECTORY;
+    case MSG_INODE_CHAR:
+      return MSG_STR_INODE_CHAR;
+    case MSG_INODE_BLOCK:
+      return MSG_STR_INODE_BLOCK;
+    case MSG_INODE_FIFO:
+      return MSG_STR_INODE_FIFO;
+    case MSG_INODE_SOCKET:
+      return MSG_STR_INODE_SOCKET;
+    case MSG_MSG:
+      return MSG_STR_MSG;
+    case MSG_SHM:
+      return MSG_STR_SHM;
+    case MSG_SOCK:
+      return MSG_STR_SOCK;
+    case MSG_ADDR:
+      return MSG_STR_ADDR;
+    case MSG_SB:
+      return MSG_STR_SB;
+    case MSG_FILE_NAME:
+      return MSG_STR_FILE_NAME;
+    case MSG_IFC:
+      return MSG_STR_IFC;
+    case MSG_DISC_ENTITY:
+      return MSG_STR_DISC_ENTITY;
+    case MSG_DISC_ACTIVITY:
+      return MSG_STR_DISC_ACTIVITY;
+    case MSG_DISC_AGENT:
+      return MSG_STR_DISC_AGENT;
+    case MSG_DISC_NODE:
+      return MSG_STR_DISC_NODE;
+    case MSG_PACKET:
+      return MSG_STR_PACKET;
+    case MSG_INODE_MMAP:
+      return MSG_STR_INODE_MMAP;
+    default:
+      return MSG_STR_UNKNOWN;
+  }
+}
+
 #define DECIMAL 10
 #define OCTAL   8
 #define HEX     16
 char *ulltoa (uint64_t value, char *string, int radix);
 char *utoa (uint32_t value, char *string, int radix);
+char *itoa(int32_t a, char *string, int radix);
+char *lltoa(int64_t a, char *string, int radix);
 
 #endif /* __PROVENANCEUTILS_H */

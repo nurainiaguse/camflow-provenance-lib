@@ -4,6 +4,7 @@
 
 | Library version | Date       |
 | --------------- | ---------- |
+| 0.1.9           | 19/10/2016 |
 | 0.1.8           | 04/10/2016 |
 | 0.1.7           | 19/09/2016 |
 | 0.1.6           | 02/09/2016 |
@@ -13,6 +14,13 @@
 | 0.1.2           | 26/05/2016 |
 | 0.1.1           | 03/04/2016 |
 | 0.1.0           | 28/03/2016 |
+
+### v0.1.9
+```
+- Private mmaped files now appear as separate nodes, connected to the mmaped file by a create relationship.
+- Add offset to relation if file info is set.
+- Jiffies attribute in JSON output.
+```
 
 ### v0.1.8
 ```
