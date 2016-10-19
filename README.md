@@ -17,6 +17,7 @@
 
 ### v0.1.9
 ```
+- Private mmaped files now appear as separate nodes, connected to the mmaped file by a create relationship.
 - Add offset to relation if file info is set.
 - Jiffies attribute in JSON output.
 ```
