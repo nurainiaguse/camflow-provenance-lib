@@ -18,7 +18,7 @@
 
 ### v0.1.10
 ```
--
+- Add pid and vpid attribute to task JSON serialisation.
 ```
 
 ### v0.1.9
