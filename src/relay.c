@@ -39,6 +39,8 @@ static int relay_file[NUMBER_CPUS];
 static int long_relay_file[NUMBER_CPUS];
 /* worker pool */
 static threadpool worker_thpool=NULL;
+/* machine_id */
+static uint32_t machine_id=0;
 
 /* internal functions */
 static int open_files(void);
@@ -64,6 +66,9 @@ static inline void record_error(const char* fmt, ...){
 int provenance_register(struct provenance_ops* ops)
 {
   int err;
+
+  provenance_get_machine_id(&machine_id);
+
   /* the provenance usher will not appear in trace */
   err = provenance_set_opaque(true);
   if(err)
@@ -201,6 +206,9 @@ void prov_record(prov_msg_t* msg){
 static void callback_job(void* data)
 {
   prov_msg_t* msg = (prov_msg_t*)data;
+  if(prov_type(msg)!=MSG_PACKET){
+    node_identifier(msg).machine_id = machine_id;
+  }
 
   /* initialise per worker thread */
   if(!initialised && prov_ops.init!=NULL){
@@ -255,6 +263,7 @@ void long_prov_record(long_prov_msg_t* msg){
 static void long_callback_job(void* data)
 {
   long_prov_msg_t* msg = (long_prov_msg_t*)data;
+  node_identifier(msg).machine_id = machine_id;
 
   /* initialise per worker thread */
   if(!initialised && prov_ops.init!=NULL){

@@ -18,6 +18,7 @@
 
 ### v0.1.10
 ```
+- Guarantee machine id is properly set.
 - Add pid and vpid attribute to task JSON serialisation.
 ```
 

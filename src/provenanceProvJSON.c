@@ -770,7 +770,6 @@ char* machine_description_json(char* buffer){
 
   provenance_get_machine_id(&machine_id);
   uname(&machine_info);
-  //strcat(buffer, utoa(machine_id, tmp, DECIMAL))
 
   buffer[0]='\0';
   strcat(buffer, "{\"prefix\":{");
