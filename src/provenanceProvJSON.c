@@ -34,7 +34,8 @@
 #include "provenancePovJSON.h"
 #include "provenanceutils.h"
 
-#define MAX_PROVJSON_BUFFER_LENGTH PATH_MAX*2
+#define MAX_PROVJSON_BUFFER_EXP     14
+#define MAX_PROVJSON_BUFFER_LENGTH  ((1 << MAX_PROVJSON_BUFFER_EXP)*sizeof(uint8_t))
 
 struct taint_entry{
   uint64_t taint_id;
