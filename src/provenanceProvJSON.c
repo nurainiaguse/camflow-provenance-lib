@@ -34,7 +34,8 @@
 #include "provenancePovJSON.h"
 #include "provenanceutils.h"
 
-#define MAX_PROVJSON_BUFFER_LENGTH PATH_MAX*2
+#define MAX_PROVJSON_BUFFER_EXP     14
+#define MAX_PROVJSON_BUFFER_LENGTH  ((1 << MAX_PROVJSON_BUFFER_EXP)*sizeof(uint8_t))
 
 struct taint_entry{
   uint64_t taint_id;
@@ -551,6 +552,8 @@ char* task_to_json(struct task_prov_struct* n){
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
   __add_uint32_attribute(buffer, "cf:uid", n->uid, true);
   __add_uint32_attribute(buffer, "cf:gid", n->gid, true);
+  __add_uint32_attribute(buffer, "cf:pid", n->pid, true);
+  __add_uint32_attribute(buffer, "cf:vpid", n->vpid, true);
   __add_label_attribute(buffer, "task", utoa(n->identifier.node_id.version, tmp, DECIMAL), true);
   __close_json_entry(buffer);
   return buffer;
@@ -768,7 +771,6 @@ char* machine_description_json(char* buffer){
 
   provenance_get_machine_id(&machine_id);
   uname(&machine_info);
-  //strcat(buffer, utoa(machine_id, tmp, DECIMAL))
 
   buffer[0]='\0';
   strcat(buffer, "{\"prefix\":{");

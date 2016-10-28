@@ -4,6 +4,7 @@
 
 | Library version | Date       |
 | --------------- | ---------- |
+| 0.1.10          | 28/10/2016 |
 | 0.1.9           | 19/10/2016 |
 | 0.1.8           | 04/10/2016 |
 | 0.1.7           | 19/09/2016 |
@@ -14,6 +15,12 @@
 | 0.1.2           | 26/05/2016 |
 | 0.1.1           | 03/04/2016 |
 | 0.1.0           | 28/03/2016 |
+
+### v0.1.10
+```
+- Guarantee machine id is properly set.
+- Add pid and vpid attribute to task JSON serialisation.
+```
 
 ### v0.1.9
 ```
