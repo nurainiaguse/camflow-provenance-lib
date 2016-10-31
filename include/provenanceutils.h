@@ -33,17 +33,13 @@ static const char RL_STR_UNKNOWN []               = "unknown";
 static const char RL_STR_READ []                  = "read";
 static const char RL_STR_WRITE []                 = "write";
 static const char RL_STR_CREATE []                = "create";
-static const char RL_STR_PASS []                  = "pass";
 static const char RL_STR_CHANGE []                = "change";
 static const char RL_STR_MMAP_WRITE []            = "mmap_write";
-static const char RL_STR_ATTACH []                = "attach";
-static const char RL_STR_ASSOCIATE []             = "associate";
 static const char RL_STR_BIND []                  = "bind";
 static const char RL_STR_CONNECT []               = "connect";
 static const char RL_STR_LISTEN []                = "listen";
 static const char RL_STR_ACCEPT []                = "accept";
 static const char RL_STR_OPEN []                  = "open";
-static const char RL_STR_PARENT []                = "parent";
 static const char RL_STR_VERSION []               = "version";
 static const char RL_STR_LINK []                  = "link";
 static const char RL_STR_NAMED []                 = "named";
@@ -60,7 +56,7 @@ static const char RL_STR_PERM_READ[]              = "perm_read";
 static const char RL_STR_PERM_WRITE[]             = "perm_write";
 static const char RL_STR_PERM_EXEC[]              = "perm_exec";
 
-static inline const char* relation_str(uint32_t type){
+static inline const char* relation_str(uint64_t type){
   switch(type){
     case RL_READ:
       return RL_STR_READ;
@@ -68,16 +64,10 @@ static inline const char* relation_str(uint32_t type){
       return RL_STR_WRITE;
     case RL_CREATE:
       return RL_STR_CREATE;
-    case RL_PASS:
-      return RL_STR_PASS;
     case RL_CHANGE:
       return RL_STR_CHANGE;
     case RL_MMAP_WRITE:
       return RL_STR_MMAP_WRITE;
-    case RL_ATTACH:
-      return RL_STR_ATTACH;
-    case RL_ASSOCIATE:
-      return RL_STR_ASSOCIATE;
     case RL_BIND:
       return RL_STR_BIND;
     case RL_CONNECT:
@@ -88,8 +78,6 @@ static inline const char* relation_str(uint32_t type){
       return RL_STR_ACCEPT;
     case RL_OPEN:
       return RL_STR_OPEN;
-    case RL_PARENT:
-      return RL_STR_PARENT;
     case RL_VERSION:
       return RL_STR_VERSION;
     case RL_LINK:
@@ -127,21 +115,17 @@ static inline const char* relation_str(uint32_t type){
 
 #define MATCH_AND_RETURN(str1, str2, v) if(strcmp(str1, str2)==0) return v
 
-static inline const int relation_id(char* str){
+static inline const uint64_t relation_id(char* str){
   MATCH_AND_RETURN(str, RL_STR_READ, RL_READ);
   MATCH_AND_RETURN(str, RL_STR_WRITE, RL_WRITE);
   MATCH_AND_RETURN(str, RL_STR_CREATE, RL_CREATE);
-  MATCH_AND_RETURN(str, RL_STR_PASS, RL_PASS);
   MATCH_AND_RETURN(str, RL_STR_CHANGE, RL_CHANGE);
   MATCH_AND_RETURN(str, RL_STR_MMAP_WRITE, RL_MMAP_WRITE);
-  MATCH_AND_RETURN(str, RL_STR_ATTACH, RL_ATTACH);
-  MATCH_AND_RETURN(str, RL_STR_ASSOCIATE, RL_ASSOCIATE);
   MATCH_AND_RETURN(str, RL_STR_BIND, RL_BIND);
   MATCH_AND_RETURN(str, RL_STR_CONNECT, RL_CONNECT);
   MATCH_AND_RETURN(str, RL_STR_LISTEN, RL_LISTEN);
   MATCH_AND_RETURN(str, RL_STR_ACCEPT, RL_ACCEPT);
   MATCH_AND_RETURN(str, RL_STR_OPEN, RL_OPEN);
-  MATCH_AND_RETURN(str, RL_STR_PARENT, RL_PARENT);
   MATCH_AND_RETURN(str, RL_STR_VERSION, RL_VERSION);
   MATCH_AND_RETURN(str, RL_STR_LINK, RL_LINK);
   MATCH_AND_RETURN(str, RL_STR_NAMED, RL_NAMED);
@@ -186,80 +170,74 @@ static const char MSG_STR_DISC_NODE[]=         "disc_node";
 static const char MSG_STR_PACKET[]=            "packet";
 static const char MSG_STR_INODE_MMAP[]=        "mmaped_file";
 
-static inline const int node_id(char* str){
-  MATCH_AND_RETURN(str, MSG_STR_TASK, MSG_TASK);
-  MATCH_AND_RETURN(str, MSG_STR_INODE_UNKNOWN, MSG_INODE_UNKNOWN);
-  MATCH_AND_RETURN(str, MSG_STR_INODE_LINK, MSG_INODE_LINK);
-  MATCH_AND_RETURN(str, MSG_STR_INODE_FILE, MSG_INODE_FILE);
-  MATCH_AND_RETURN(str, MSG_STR_INODE_DIRECTORY, MSG_INODE_DIRECTORY);
-  MATCH_AND_RETURN(str, MSG_STR_INODE_CHAR, MSG_INODE_CHAR);
-  MATCH_AND_RETURN(str, MSG_STR_INODE_BLOCK, MSG_INODE_BLOCK);
-  MATCH_AND_RETURN(str, MSG_STR_INODE_FIFO, MSG_INODE_FIFO);
-  MATCH_AND_RETURN(str, MSG_STR_INODE_SOCKET, MSG_INODE_SOCKET);
-  MATCH_AND_RETURN(str, MSG_STR_MSG, MSG_MSG);
-  MATCH_AND_RETURN(str, MSG_STR_SHM, MSG_SHM);
-  MATCH_AND_RETURN(str, MSG_STR_SOCK, MSG_SOCK);
-  MATCH_AND_RETURN(str, MSG_STR_ADDR, MSG_ADDR);
-  MATCH_AND_RETURN(str, MSG_STR_SB, MSG_SB);
-  MATCH_AND_RETURN(str, MSG_STR_FILE_NAME, MSG_FILE_NAME);
-  MATCH_AND_RETURN(str, MSG_STR_IFC, MSG_IFC);
-  MATCH_AND_RETURN(str, MSG_STR_DISC_ENTITY, MSG_DISC_ENTITY);
-  MATCH_AND_RETURN(str, MSG_STR_DISC_ACTIVITY, MSG_DISC_ACTIVITY);
-  MATCH_AND_RETURN(str, MSG_STR_DISC_AGENT, MSG_DISC_AGENT);
-  MATCH_AND_RETURN(str, MSG_STR_DISC_NODE, MSG_DISC_NODE);
-  MATCH_AND_RETURN(str, MSG_STR_PACKET, MSG_PACKET);
-  MATCH_AND_RETURN(str, MSG_STR_INODE_MMAP, MSG_INODE_MMAP);
+static inline const uint64_t node_id(char* str){
+  MATCH_AND_RETURN(str, MSG_STR_TASK, ACT_TASK);
+  MATCH_AND_RETURN(str, MSG_STR_INODE_UNKNOWN, ENT_INODE_UNKNOWN);
+  MATCH_AND_RETURN(str, MSG_STR_INODE_LINK, ENT_INODE_LINK);
+  MATCH_AND_RETURN(str, MSG_STR_INODE_FILE, ENT_INODE_FILE);
+  MATCH_AND_RETURN(str, MSG_STR_INODE_DIRECTORY, ENT_INODE_DIRECTORY);
+  MATCH_AND_RETURN(str, MSG_STR_INODE_CHAR, ENT_INODE_CHAR);
+  MATCH_AND_RETURN(str, MSG_STR_INODE_BLOCK, ENT_INODE_BLOCK);
+  MATCH_AND_RETURN(str, MSG_STR_INODE_FIFO, ENT_INODE_FIFO);
+  MATCH_AND_RETURN(str, MSG_STR_INODE_SOCKET, ENT_INODE_SOCKET);
+  MATCH_AND_RETURN(str, MSG_STR_INODE_MMAP, ENT_INODE_MMAP);
+  MATCH_AND_RETURN(str, MSG_STR_MSG, ENT_MSG);
+  MATCH_AND_RETURN(str, MSG_STR_SHM, ENT_SHM);
+  MATCH_AND_RETURN(str, MSG_STR_ADDR, ENT_ADDR);
+  MATCH_AND_RETURN(str, MSG_STR_SB, ENT_SBLCK);
+  MATCH_AND_RETURN(str, MSG_STR_FILE_NAME, ENT_FILE_NAME);
+  MATCH_AND_RETURN(str, MSG_STR_IFC, ENT_IFC);
+  MATCH_AND_RETURN(str, MSG_STR_DISC_ENTITY, ENT_DISC);
+  MATCH_AND_RETURN(str, MSG_STR_DISC_ACTIVITY, ACT_DISC);
+  MATCH_AND_RETURN(str, MSG_STR_DISC_AGENT, AGT_DISC);
+  MATCH_AND_RETURN(str, MSG_STR_PACKET, ENT_PACKET);
   return 0;
 }
 
-static inline const char* node_str(uint32_t type){
+static inline const char* node_str(uint64_t type){
   switch(type){
-    case MSG_STR:
+    case ENT_STR:
       return MSG_STR_STR;
-    case MSG_TASK:
+    case ACT_TASK:
       return MSG_STR_TASK;
-    case MSG_INODE_UNKNOWN:
+    case ENT_INODE_UNKNOWN:
       return MSG_STR_INODE_UNKNOWN;
-    case MSG_INODE_LINK:
+    case ENT_INODE_LINK:
       return MSG_STR_INODE_LINK;
-    case MSG_INODE_FILE:
+    case ENT_INODE_FILE:
       return MSG_STR_INODE_FILE;
-    case MSG_INODE_DIRECTORY:
+    case ENT_INODE_DIRECTORY:
       return MSG_STR_INODE_DIRECTORY;
-    case MSG_INODE_CHAR:
+    case ENT_INODE_CHAR:
       return MSG_STR_INODE_CHAR;
-    case MSG_INODE_BLOCK:
+    case ENT_INODE_BLOCK:
       return MSG_STR_INODE_BLOCK;
-    case MSG_INODE_FIFO:
+    case ENT_INODE_FIFO:
       return MSG_STR_INODE_FIFO;
-    case MSG_INODE_SOCKET:
+    case ENT_INODE_SOCKET:
       return MSG_STR_INODE_SOCKET;
-    case MSG_MSG:
-      return MSG_STR_MSG;
-    case MSG_SHM:
-      return MSG_STR_SHM;
-    case MSG_SOCK:
-      return MSG_STR_SOCK;
-    case MSG_ADDR:
-      return MSG_STR_ADDR;
-    case MSG_SB:
-      return MSG_STR_SB;
-    case MSG_FILE_NAME:
-      return MSG_STR_FILE_NAME;
-    case MSG_IFC:
-      return MSG_STR_IFC;
-    case MSG_DISC_ENTITY:
-      return MSG_STR_DISC_ENTITY;
-    case MSG_DISC_ACTIVITY:
-      return MSG_STR_DISC_ACTIVITY;
-    case MSG_DISC_AGENT:
-      return MSG_STR_DISC_AGENT;
-    case MSG_DISC_NODE:
-      return MSG_STR_DISC_NODE;
-    case MSG_PACKET:
-      return MSG_STR_PACKET;
-    case MSG_INODE_MMAP:
+    case ENT_INODE_MMAP:
       return MSG_STR_INODE_MMAP;
+    case ENT_MSG:
+      return MSG_STR_MSG;
+    case ENT_SHM:
+      return MSG_STR_SHM;
+    case ENT_ADDR:
+      return MSG_STR_ADDR;
+    case ENT_SBLCK:
+      return MSG_STR_SB;
+    case ENT_FILE_NAME:
+      return MSG_STR_FILE_NAME;
+    case ENT_IFC:
+      return MSG_STR_IFC;
+    case ENT_DISC:
+      return MSG_STR_DISC_ENTITY;
+    case ACT_DISC:
+      return MSG_STR_DISC_ACTIVITY;
+    case AGT_DISC:
+      return MSG_STR_DISC_AGENT;
+    case ENT_PACKET:
+      return MSG_STR_PACKET;
     default:
       return MSG_STR_UNKNOWN;
   }

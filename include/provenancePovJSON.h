@@ -28,12 +28,12 @@ void append_informed(char* json_element);
 void append_derived(char* json_element);
 
 /* disclosing nodes and relations for provjson */
-#define disclose_entity_ProvJSON(content, identifier) disclose_node_ProvJSON(MSG_DISC_ENTITY, content, identifier)
-#define disclose_activity_ProvJSON(content, identifier) disclose_node_ProvJSON(MSG_DISC_ACTIVITY, content, identifier)
-#define disclose_agent_ProvJSON(content, identifier) disclose_node_ProvJSON(MSG_DISC_AGENT, content, identifier)
+#define disclose_entity_ProvJSON(content, identifier) disclose_node_ProvJSON(ENT_DISC, content, identifier)
+#define disclose_activity_ProvJSON(content, identifier) disclose_node_ProvJSON(ACT_DISC, content, identifier)
+#define disclose_agent_ProvJSON(content, identifier) disclose_node_ProvJSON(AGT_DISC, content, identifier)
 
-int disclose_node_ProvJSON(uint32_t type, const char* content, prov_identifier_t* identifier);
-int disclose_relation_ProvJSON(uint32_t type, prov_identifier_t* sender, prov_identifier_t* receiver);
+int disclose_node_ProvJSON(uint64_t type, const char* content, prov_identifier_t* identifier);
+int disclose_relation_ProvJSON(uint64_t type, prov_identifier_t* sender, prov_identifier_t* receiver);
 
 /* struct to json functions */
 /* TODO provide clean implementation? right now probably highly inneficient */

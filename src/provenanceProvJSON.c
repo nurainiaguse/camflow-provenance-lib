@@ -103,7 +103,7 @@ bool writing_out = false;
 
 static void (*print_json)(char* json);
 
-int disclose_node_ProvJSON(uint32_t type, const char* content, prov_identifier_t* identifier){
+int disclose_node_ProvJSON(uint64_t type, const char* content, prov_identifier_t* identifier){
   int err;
   struct disc_node_struct node;
 
@@ -118,9 +118,9 @@ int disclose_node_ProvJSON(uint32_t type, const char* content, prov_identifier_t
   return err;
 }
 
-int disclose_relation_ProvJSON(uint32_t type, prov_identifier_t* sender, prov_identifier_t* receiver){
+int disclose_relation_ProvJSON(uint64_t type, prov_identifier_t* sender, prov_identifier_t* receiver){
   struct relation_struct relation;
-  relation.type=type;
+  relation.identifier.relation_id.type=type;
   relation.allowed=true;
   memcpy(&relation.snd, sender, sizeof(prov_identifier_t));
   memcpy(&relation.rcv, receiver, sizeof(prov_identifier_t));
@@ -466,7 +466,7 @@ static void prov_prep_taint(const uint8_t bloom[PROV_N_BYTES]){
 
 static inline void __node_identifier(char* buffer, const struct node_identifier* n){
   __add_uint64_attribute(buffer, "cf:id", n->id, false);
-  __add_uint32_attribute(buffer, "cf:type", n->type, true);
+  __add_uint64_attribute(buffer, "cf:type", n->type, true);
   __add_uint32_attribute(buffer, "cf:boot_id", n->boot_id, true);
   __add_uint32_attribute(buffer, "cf:machine_id", n->machine_id, true);
   __add_uint32_attribute(buffer, "cf:version", n->version, true);
@@ -486,6 +486,7 @@ static inline void __node_start(char* buffer,
 
 static inline void __relation_identifier(char* buffer, const struct relation_identifier* e){
   __add_uint64_attribute(buffer, "cf:id", e->id, false);
+  __add_uint64_attribute(buffer, "cf:type", e->type, true);
   __add_uint32_attribute(buffer, "cf:boot_id", e->boot_id, true);
   __add_uint32_attribute(buffer, "cf:machine_id", e->machine_id, true);
 }
@@ -500,8 +501,8 @@ static char* __relation_to_json(struct relation_struct* e, const char* snd, cons
   __add_date_attribute(buffer, true);
   __add_string_attribute(buffer, "cf:taint", taint, true);
   __add_uint64_attribute(buffer, "cf:jiffies", e->jiffies, true);
-  __add_string_attribute(buffer, "cf:type", relation_str(e->type), true);
-  __add_label_attribute(buffer, NULL, relation_str(e->type), true);
+  __add_string_attribute(buffer, "cf:type_name", relation_str(e->identifier.relation_id.type), true);
+  __add_label_attribute(buffer, NULL, relation_str(e->identifier.relation_id.type), true);
   __add_string_attribute(buffer, "cf:allowed", bool_str[e->allowed], true);
   __add_string_attribute(buffer, snd, sender, true);
   __add_string_attribute(buffer, rcv, receiver, true);
@@ -644,18 +645,6 @@ char* shm_to_json(struct shm_struct* n){
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
   __add_uint32hex_attribute(buffer, "cf:mode", n->mode, true);
-  __close_json_entry(buffer);
-  return buffer;
-}
-
-char* sock_to_json(struct sock_struct* n){
-  char tmp[33];
-  NODE_PREP_IDs(n);
-  prov_prep_taint(n->taint);
-  __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
-  __add_uint32_attribute(buffer, "cf:sock_type", n->type, true);
-  __add_uint32_attribute(buffer, "cf:family", n->family, true);
-  __add_uint32_attribute(buffer, "cf:protocol", n->protocol, true);
   __close_json_entry(buffer);
   return buffer;
 }

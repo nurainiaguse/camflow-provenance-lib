@@ -66,7 +66,7 @@ void all( const char* str ){
 }
 
 void state( void ){
-  uint32_t filter=0;
+  uint64_t filter=0;
   uint32_t machine_id;
 
   provenance_get_machine_id(&machine_id);
@@ -143,7 +143,7 @@ void file( const char* path){
 
 int main(int argc, char *argv[]){
   int err;
-  uint32_t id;
+  uint64_t id;
   tag_t tag;
 
   CHECK_ATTR_NB(argc, 2);

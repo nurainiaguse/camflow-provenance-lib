@@ -23,18 +23,24 @@ struct provenance_ops{
   void (*init)(void);
   bool (*filter)(prov_msg_t* msg);
   bool (*long_filter)(long_prov_msg_t* msg);
-  void (*log_relation)(struct relation_struct*);
+  /* relation callback */
+  void (*log_unknown_relation)(struct relation_struct*);
+  void (*log_derived)(struct relation_struct*);
+  void (*log_generated)(struct relation_struct*);
+  void (*log_used)(struct relation_struct*);
+  void (*log_informed)(struct relation_struct*);
+  /* nodes callback */
   void (*log_task)(struct task_prov_struct*);
   void (*log_inode)(struct inode_prov_struct*);
   void (*log_str)(struct str_struct*);
   void (*log_disc)(struct disc_node_struct*);
   void (*log_msg)(struct msg_msg_struct*);
   void (*log_shm)(struct shm_struct*);
-  void (*log_sock)(struct sock_struct*);
   void (*log_packet)(struct pck_struct*);
   void (*log_address)(struct address_struct*);
   void (*log_file_name)(struct file_name_struct*);
   void (*log_ifc)(struct ifc_context_struct*);
+  /* callback for library erros */
   void (*log_error)(char*);
 };
 
