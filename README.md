@@ -19,8 +19,10 @@
 
 ### v0.1.11
 ```
+- Clarify command line tool.
+- Add interface to set process tracking options.
 - 64 bits integers as string in the JSON.
-- Added a callback per relation types (none for agents related thing at this point).
+- Add a callback per relation types (none for agents related thing at this point).
 - Rework for 64 bits types.
 ```
 

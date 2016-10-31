@@ -25,20 +25,56 @@
 #include "provenancefilter.h"
 #include "provenanceutils.h"
 
+#define ARG_HELP                        "-h"
+#define ARG_VERSION                     "-v"
+#define ARG_STATE                       "-s"
+#define ARG_ENABLE                      "-e"
+#define ARG_ALL                         "-a"
+#define ARG_FILE                        "--file"
+#define ARG_TRACK_FILE                  "--track-file"
+#define ARG_TAINT_FILE                  "--taint-file"
+#define ARG_OPAQUE_FILE                 "--opaque-file"
+#define ARG_PROCESS                     "--process"
+#define ARG_TRACK_PROCESS               "--track-process"
+#define ARG_TAINT_PROCESS               "--taint-process"
+#define ARG_OPAQUE_PROCESS              "--opaque-process"
+#define ARG_FILTER_NODE                 "--node-filter"
+#define ARG_FILTER_EDGE                 "--edge-filter"
+#define ARG_PROPAGATE_FILTER_NODE       "--node-propagate-filter"
+#define ARG_PROPAGATE_FILTER_EDGE       "--edge-propagate-filter"
+#define ARG_FILTER_RESET                "--reset-filter"
+
+
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
+#define CMD_COLORED ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET
+#define CMD_PARAMETER(str) " " ANSI_COLOR_YELLOW "<" str ">" ANSI_COLOR_RESET
+
 void usage( void ){
-  printf("-h usage.\n");
-  printf("-s print provenance capture state.\n");
-  printf("-e <bool> enable/disable provenance capture.\n");
-  printf("-a <bool> activate/deactivate whole-system provenance capture.\n");
-  printf("-f <filename> display provenance info of a file.\n");
-  printf("-t <filename> false/true/propagate deactivate/activate/propagate tracking.\n");
-  printf("-u <filename> <uint64> applies taint to the file.\n");
-  printf("-o <filename> <bool> mark/unmark a file as opaque.\n");
-  printf("-p <type> <bool> filter/unfilter propagation to node type.\n");
-  printf("-q <type> <bool> filter/unfilter propagation through edge type.\n");
-  printf("-i <type> <bool> filter/unfilter capture of node type.\n");
-  printf("-j <type> <bool> filter/unfilter capture of edge type.\n");
-  printf("-r reset filters.\n");
+  printf(CMD_COLORED " usage.\n", ARG_HELP);
+  printf(CMD_COLORED " version.\n", ARG_VERSION);
+  printf(CMD_COLORED " print provenance capture state.\n", ARG_STATE);
+  printf(CMD_COLORED CMD_PARAMETER("bool") " enable/disable provenance capture.\n", ARG_ENABLE);
+  printf(CMD_COLORED CMD_PARAMETER("bool") " activate/deactivate whole-system provenance capture.\n", ARG_ALL);
+  printf(CMD_COLORED CMD_PARAMETER("filename") " display provenance info of a file.\n", ARG_FILE);
+  printf(CMD_COLORED CMD_PARAMETER("filename") CMD_PARAMETER("false/true/propagate") " set tracking.\n", ARG_TRACK_FILE);
+  printf(CMD_COLORED CMD_PARAMETER("filename") CMD_PARAMETER("uint64") " applies taint to the file.\n", ARG_TAINT_FILE);
+  printf(CMD_COLORED CMD_PARAMETER("filename") CMD_PARAMETER("bool") " mark/unmark the file as opaque.\n", ARG_OPAQUE_FILE);
+  printf(CMD_COLORED CMD_PARAMETER("pid") " display provenance info of a process.\n", ARG_PROCESS);
+  printf(CMD_COLORED CMD_PARAMETER("pid") CMD_PARAMETER("false/true/propagate") " set tracking.\n", ARG_TRACK_PROCESS);
+  printf(CMD_COLORED CMD_PARAMETER("pid") CMD_PARAMETER("uint64") " applies taint to the process.\n", ARG_TAINT_PROCESS);
+  printf(CMD_COLORED CMD_PARAMETER("pid") CMD_PARAMETER("bool") " mark/unmark the process as opaque.\n", ARG_OPAQUE_PROCESS);
+  printf(CMD_COLORED CMD_PARAMETER("type") CMD_PARAMETER("bool") " set node filter.\n", ARG_FILTER_NODE);
+  printf(CMD_COLORED CMD_PARAMETER("type") CMD_PARAMETER("bool") " set edge filter.\n", ARG_FILTER_EDGE);
+  printf(CMD_COLORED CMD_PARAMETER("type") CMD_PARAMETER("bool") " set propagate node filter.\n", ARG_PROPAGATE_FILTER_NODE);
+  printf(CMD_COLORED CMD_PARAMETER("type") CMD_PARAMETER("bool") " set propagate edge filter.\n", ARG_PROPAGATE_FILTER_EDGE);
+  printf(CMD_COLORED " reset filters.\n", ARG_FILTER_RESET);
 }
 
 #define is_str_propagate(str) ( strcmp (str, "propagate") == 0)
@@ -136,10 +172,47 @@ void file( const char* path){
   }else{
     printf("File is not propagating tracking.\n");
   }
+}
 
+void process(uint32_t pid){
+  prov_msg_t process_info;
+  char id[PROV_ID_STR_LEN];
+  char taint[TAINT_STR_LEN];
+  int err;
+
+  err = provenance_read_process(pid, &process_info);
+  if(err < 0){
+    perror("Could not read process provenance information.\n");
+  }
+
+  ID_ENCODE(prov_id_buffer(&process_info), PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN);
+  printf("Identifier: %s\n", id);
+  printf("Type: %u\n", node_identifier(&process_info).type);
+  printf("ID: %lu\n", node_identifier(&process_info).id);
+  printf("Boot ID: %u\n", node_identifier(&process_info).boot_id);
+  printf("Machine ID: %u\n", node_identifier(&process_info).machine_id);
+  TAINT_ENCODE(prov_taint(&(process_info)), PROV_N_BYTES, taint, TAINT_STR_LEN);
+  printf("Taint: %s\n", taint);
+  printf("\n");
+  if( provenance_is_tracked(&process_info) ){
+    printf("Process is tracked.\n");
+  }else{
+    printf("Process is not tracked.\n");
+  }
+  if( provenance_is_opaque(&process_info) ){
+    printf("Process is opaque.\n");
+  }else{
+    printf("Process is not opaque.\n");
+  }
+  if( provenance_propagate(&process_info) ){
+    printf("Process propagates tracking.\n");
+  }else{
+    printf("Process is not propagating tracking.\n");
+  }
 }
 
 #define CHECK_ATTR_NB(argc, min) if(argc < min){ usage();exit(-1);}
+#define MATCH_ARGS(str1, str2) if(strcmp(str1, str2 )==0)
 
 int main(int argc, char *argv[]){
   int err;
@@ -148,131 +221,184 @@ int main(int argc, char *argv[]){
 
   CHECK_ATTR_NB(argc, 2);
   // do it properly, but that will do for now
-  switch(argv[1][1]){
-    case 'h':
-      usage();
-      break;
-    case 'v':
-      print_version();
-      break;
-    case 's':
-      state();
-      break;
-    case 'e':
-      CHECK_ATTR_NB(argc, 3);
-      enable(argv[2]);
-      break;
-    case 'a':
-      CHECK_ATTR_NB(argc, 3);
-      all(argv[2]);
-      break;
-    case 'f':
-      CHECK_ATTR_NB(argc, 3);
-      file(argv[2]);
-      break;
-    case 't':
-      CHECK_ATTR_NB(argc, 4);
-      if( is_str_propagate(argv[3]) ){
-        err = provenance_track_file(argv[2], true);
-        err |= provenance_propagate_file(argv[2], true);
-      }else {
-        err = provenance_track_file(argv[2], is_str_true(argv[3]));
-        err |= provenance_propagate_file(argv[2], false);
-      }
 
-      if(err < 0){
-        perror("Could not change tracking settings for this file.\n");
-      }
-      break;
-    case 'u':
-      CHECK_ATTR_NB(argc, 4);
-      err = provenance_taint_file(argv[2], strtoul(argv[3], NULL, 0));
-      if(err < 0){
-        perror("Could not change taint settings for this file.\n");
-      }
-      break;
-    case 'o':
-      CHECK_ATTR_NB(argc, 4);
-      err = provenance_opaque_file(argv[2], is_str_true(argv[3]));
-      if(err < 0){
-        perror("Could not change opacity settings for this file.\n");
-      }
-      break;
-    case 'p':
-      CHECK_ATTR_NB(argc, 4);
-      id = node_id(argv[2]);
-      if(id == 0){
-        printf("Error invalid node type\n");
-        exit(-1);
-      }
-      if(is_str_true(argv[3])){
-        err = provenance_add_propagate_node_filter(id);
-      }else{
-        err = provenance_remove_propagate_node_filter(id);
-      }
-      if(err < 0){
-        perror("Could not change propagation settings for this file.\n");
-      }
-      break;
-    case 'q':
-      CHECK_ATTR_NB(argc, 4);
-      id = relation_id(argv[2]);
-      if(id == 0){
-        printf("Error invalid relation type\n");
-        exit(-1);
-      }
-      if(is_str_true(argv[3])){
-        err = provenance_add_propagate_relation_filter(id);
-      }else{
-        err = provenance_remove_propagate_relation_filter(id);
-      }
-      if(err < 0){
-        perror("Could not change propagation settings for this file.\n");
-      }
-      break;
-    case 'i':
-      CHECK_ATTR_NB(argc, 4);
-      id = node_id(argv[2]);
-      if(id == 0){
-        printf("Error invalid node type\n");
-        exit(-1);
-      }
-      if(is_str_true(argv[3])){
-        err = provenance_add_node_filter(id);
-      }else{
-        err = provenance_remove_node_filter(id);
-      }
-      if(err < 0){
-        perror("Could not change filter settings for this file.\n");
-      }
-      break;
-    case 'j':
-      CHECK_ATTR_NB(argc, 4);
-      id = relation_id(argv[2]);
-      if(id == 0){
-        printf("Error invalid relation type\n");
-        exit(-1);
-      }
-      if(is_str_true(argv[3])){
-        err = provenance_add_relation_filter(id);
-      }else{
-        err = provenance_remove_relation_filter(id);
-      }
-      if(err < 0){
-        perror("Could not change filter settings for this file.\n");
-      }
-      break;
-    case 'r':
-      err = provenance_reset_node_filter();
-      err |= provenance_reset_propagate_node_filter();
-      err |= provenance_reset_relation_filter();
-      err |= provenance_reset_propagate_relation_filter();
-      if(err < 0){
-        perror("Could not reset filters.\n");
-      }
-      break;
-    default:
-      usage();
+  MATCH_ARGS(argv[1], ARG_HELP){
+    usage();
+    return 0;
   }
+  MATCH_ARGS(argv[1], ARG_VERSION){
+    print_version();
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_STATE){
+    state();
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_ENABLE){
+    CHECK_ATTR_NB(argc, 3);
+    enable(argv[2]);
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_ALL){
+    CHECK_ATTR_NB(argc, 3);
+    all(argv[2]);
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_ALL){
+    CHECK_ATTR_NB(argc, 3);
+    all(argv[2]);
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_FILE){
+    CHECK_ATTR_NB(argc, 3);
+    file(argv[2]);
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_TRACK_FILE){
+    CHECK_ATTR_NB(argc, 4);
+    if( is_str_propagate(argv[3]) ){
+      err = provenance_track_file(argv[2], true);
+      err |= provenance_propagate_file(argv[2], true);
+    }else {
+      err = provenance_track_file(argv[2], is_str_true(argv[3]));
+      err |= provenance_propagate_file(argv[2], false);
+    }
+
+    if(err < 0){
+      perror("Could not change tracking settings for this file.\n");
+    }
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_TAINT_FILE){
+    CHECK_ATTR_NB(argc, 4);
+    err = provenance_taint_file(argv[2], strtoul(argv[3], NULL, 0));
+    if(err < 0){
+      perror("Could not change taint settings for this file.\n");
+    }
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_OPAQUE_FILE){
+    CHECK_ATTR_NB(argc, 4);
+    err = provenance_opaque_file(argv[2], is_str_true(argv[3]));
+    if(err < 0){
+      perror("Could not change opacity settings for this file.\n");
+    }
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_PROCESS){
+    CHECK_ATTR_NB(argc, 3);
+    process(atoi(argv[2]));
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_TRACK_PROCESS){
+    CHECK_ATTR_NB(argc, 4);
+    if( is_str_propagate(argv[3]) ){
+      err = provenance_track_process(atoi(argv[2]), true);
+      err |= provenance_propagate_process(atoi(argv[2]), true);
+    }else {
+      err = provenance_track_process(atoi(argv[2]), is_str_true(argv[3]));
+      err |= provenance_propagate_process(atoi(argv[2]), false);
+    }
+
+    if(err < 0){
+      perror("Could not change tracking settings for this process.\n");
+    }
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_TAINT_PROCESS){
+    CHECK_ATTR_NB(argc, 4);
+    err = provenance_taint_process(atoi(argv[2]), strtoul(argv[3], NULL, 0));
+    if(err < 0){
+      perror("Could not change taint settings for this process.\n");
+    }
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_OPAQUE_PROCESS){
+    CHECK_ATTR_NB(argc, 4);
+    err = provenance_opaque_process(atoi(argv[2]), is_str_true(argv[3]));
+    if(err < 0){
+      perror("Could not change opacity settings for this process.\n");
+    }
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_FILTER_NODE){
+    CHECK_ATTR_NB(argc, 4);
+    id = node_id(argv[2]);
+    if(id == 0){
+      printf("Error invalid node type\n");
+      exit(-1);
+    }
+    if(is_str_true(argv[3])){
+      err = provenance_add_node_filter(id);
+    }else{
+      err = provenance_remove_node_filter(id);
+    }
+    if(err < 0){
+      perror("Could not change filter settings for this file.\n");
+    }
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_FILTER_EDGE){
+    CHECK_ATTR_NB(argc, 4);
+    id = relation_id(argv[2]);
+    if(id == 0){
+      printf("Error invalid relation type\n");
+      exit(-1);
+    }
+    if(is_str_true(argv[3])){
+      err = provenance_add_relation_filter(id);
+    }else{
+      err = provenance_remove_relation_filter(id);
+    }
+    if(err < 0){
+      perror("Could not change filter settings for this file.\n");
+    }
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_PROPAGATE_FILTER_NODE){
+    CHECK_ATTR_NB(argc, 4);
+    id = node_id(argv[2]);
+    if(id == 0){
+      printf("Error invalid node type\n");
+      exit(-1);
+    }
+    if(is_str_true(argv[3])){
+      err = provenance_add_propagate_node_filter(id);
+    }else{
+      err = provenance_remove_propagate_node_filter(id);
+    }
+    if(err < 0){
+      perror("Could not change propagation settings for this file.\n");
+    }
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_PROPAGATE_FILTER_EDGE){
+    CHECK_ATTR_NB(argc, 4);
+    id = relation_id(argv[2]);
+    if(id == 0){
+      printf("Error invalid relation type\n");
+      exit(-1);
+    }
+    if(is_str_true(argv[3])){
+      err = provenance_add_propagate_relation_filter(id);
+    }else{
+      err = provenance_remove_propagate_relation_filter(id);
+    }
+    if(err < 0){
+      perror("Could not change propagation settings for this file.\n");
+    }
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_FILTER_RESET){
+    err = provenance_reset_node_filter();
+    err |= provenance_reset_propagate_node_filter();
+    err |= provenance_reset_relation_filter();
+    err |= provenance_reset_propagate_relation_filter();
+    if(err < 0){
+      perror("Could not reset the filters.\n");
+    }
+    return 0;
+  }
+  usage();
   return 0;
 }

@@ -248,3 +248,59 @@ int provenance_taint(uint64_t taint){
   close(fd);
   return rc;
 }
+
+int provenance_read_process(uint32_t pid, prov_msg_t* process_info){
+  struct prov_process_config cfg;
+  int rc;
+  int fd = open(PROV_PROCESS_FILE, O_RDONLY);
+
+  if( fd < 0 ){
+    return fd;
+  }
+  cfg.vpid = pid;
+
+  rc = read(fd, &cfg, sizeof(struct prov_process_config));
+  close(fd);
+  memcpy(process_info, &(cfg.prov), sizeof(prov_msg_t));
+  return rc;
+}
+
+#define declare_set_process_fcn(fcn_name, element, operation) int fcn_name (uint32_t pid, bool v){\
+    struct prov_process_config cfg;\
+    int rc;\
+    int fd = open(PROV_PROCESS_FILE, O_WRONLY);\
+    if( fd < 0 ){\
+      return fd;\
+    }\
+    cfg.vpid = pid;\
+    cfg.op=operation;\
+    if(v){\
+      prov_set_flag(&cfg.prov, element);\
+    }else{\
+      prov_clear_flag(&cfg.prov, element);\
+    }\
+    rc = write(fd, &cfg, sizeof(struct prov_process_config));\
+    close(fd);\
+    return rc;\
+  }
+
+declare_set_process_fcn(provenance_track_process, TRACKED_BIT, PROV_SET_TRACKED);
+declare_set_process_fcn(provenance_opaque_process, OPAQUE_BIT, PROV_SET_OPAQUE);
+declare_set_process_fcn(provenance_propagate_process, PROPAGATE_BIT, PROV_SET_PROPAGATE);
+
+int provenance_taint_process(uint32_t pid, uint64_t taint){
+  struct prov_process_config cfg;
+  int rc;
+  int fd = open(PROV_PROCESS_FILE, O_WRONLY);
+  if( fd < 0 ){
+    return fd;
+  }
+  memset(&cfg, 0, sizeof(struct prov_process_config));
+  cfg.vpid=pid;
+  cfg.op=PROV_SET_TAINT;
+  prov_bloom_add(prov_taint(&(cfg.prov)), taint);
+
+  rc = write(fd, &cfg, sizeof(struct prov_process_config));
+  close(fd);
+  return rc;
+}
