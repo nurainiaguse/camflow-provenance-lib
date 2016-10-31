@@ -19,6 +19,7 @@
 
 ### v0.1.11
 ```
+- 64 bits integers as string in the JSON.
 - Added a callback per relation types (none for agents related thing at this point).
 - Rework for 64 bits types.
 ```

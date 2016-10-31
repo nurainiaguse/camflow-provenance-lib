@@ -362,13 +362,17 @@ static inline void __add_uint32hex_attribute(char* buffer, const char* name, con
 static inline void __add_uint64_attribute(char* buffer, const char* name, const uint64_t value, bool comma){
   char tmp[64];
   __add_attribute(buffer, name, comma);
+  strcat(buffer, "\"");
   strcat(buffer, ulltoa(value, tmp, DECIMAL));
+  strcat(buffer, "\"");
 }
 
 static inline void __add_int64_attribute(char* buffer, const char* name, const int64_t value, bool comma){
   char tmp[64];
   __add_attribute(buffer, name, comma);
+  strcat(buffer, "\"");
   strcat(buffer, lltoa(value, tmp, DECIMAL));
+  strcat(buffer, "\"");
 }
 
 static inline void __add_string_attribute(char* buffer, const char* name, const char* value, bool comma){
