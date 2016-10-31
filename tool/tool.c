@@ -146,6 +146,7 @@ void file( const char* path){
   err = provenance_read_file(path, &inode_info);
   if(err < 0){
     perror("Could not read file provenance information.\n");
+    exit(-1);
   }
 
   ID_ENCODE(prov_id_buffer(&inode_info), PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN);
@@ -183,6 +184,7 @@ void process(uint32_t pid){
   err = provenance_read_process(pid, &process_info);
   if(err < 0){
     perror("Could not read process provenance information.\n");
+    exit(-1);
   }
 
   ID_ENCODE(prov_id_buffer(&process_info), PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN);
