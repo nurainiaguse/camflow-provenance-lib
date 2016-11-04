@@ -414,18 +414,10 @@ static inline void __add_label_attribute(char* buffer, const char* type, const c
 static inline char* __format_ipv4(char* buffer, uint32_t ip, uint32_t port){
     char tmp[8];
     unsigned char bytes[4];
-    bytes[0] = ip & 0xFF;
-    bytes[1] = (ip >> 8) & 0xFF;
-    bytes[2] = (ip >> 16) & 0xFF;
-    bytes[3] = (ip >> 24) & 0xFF;
+    ip = htonl(ip);
+    port = htons(port);
     buffer[0]='\0';
-    strcat(buffer, utoa(bytes[0], tmp, DECIMAL));
-    strcat(buffer, ".");
-    strcat(buffer, utoa(bytes[1], tmp, DECIMAL));
-    strcat(buffer, ".");
-    strcat(buffer, utoa(bytes[2], tmp, DECIMAL));
-    strcat(buffer, ".");
-    strcat(buffer, utoa(bytes[3], tmp, DECIMAL));
+    strcat(buffer, uint32_to_ipv4str(ip));
     strcat(buffer, ":");
     strcat(buffer, utoa(port, tmp, DECIMAL));
     return buffer;

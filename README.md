@@ -19,6 +19,8 @@
 
 ### v0.1.11
 ```
+- Add support for tracking on socket connect and bind.
+- Propagate always imply track.
 - Clarify command line tool.
 - Add interface to set process tracking options.
 - 64 bits integers as string in the JSON.

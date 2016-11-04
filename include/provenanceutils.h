@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <linux/provenance.h>
 #include <zlib.h>
+#include <arpa/inet.h>
 
 #define hexifyBound(in) (in*2+1)
 size_t hexify(uint8_t *in, size_t in_size, char *out, size_t out_size);
@@ -250,5 +251,40 @@ char *ulltoa (uint64_t value, char *string, int radix);
 char *utoa (uint32_t value, char *string, int radix);
 char *itoa(int32_t a, char *string, int radix);
 char *lltoa(int64_t a, char *string, int radix);
+
+// just wrap inet_pton
+static inline uint32_t ipv4str_to_uint32(const char* str){
+  struct in_addr addr;
+  inet_pton(AF_INET, str, &addr);
+  return (uint32_t)addr.s_addr;
+}
+
+static __thread char __addr[INET_ADDRSTRLEN];
+// just wrap inet_ntop
+static inline const char* uint32_to_ipv4str(uint32_t v){
+  inet_ntop(AF_INET, &v, __addr, INET_ADDRSTRLEN);
+  return __addr;
+}
+
+union mask{
+  uint32_t value;
+  uint8_t buffer[4];
+};
+
+#define reverse_byte(b) (b * 0x0202020202ULL & 0x010884422010ULL) % 1023
+
+static inline uint32_t uint32_to_ipv4mask(uint32_t n){
+  int i;
+  union mask m;
+  if(n>32){
+    return 0xFFFFFFFF;
+  }
+
+  m.value = (uint32_t)(((uint64_t)1 << n) - 1);
+  for(i=0; i<4; i++){
+    m.buffer[i] = reverse_byte(m.buffer[i]);
+  }
+  return m.value;
+}
 
 #endif /* __PROVENANCEUTILS_H */

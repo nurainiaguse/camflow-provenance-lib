@@ -203,4 +203,9 @@ int provenance_propagate_process(uint32_t pid, bool opaque);
 
 int provenance_taint_process(uint32_t pid, uint64_t taint);
 
+int provenance_ingress_ipv4_track(const char* param);
+int provenance_ingress_ipv4_propagate(const char* param);
+int provenance_egress_ipv4_track(const char* param);
+int provenance_egress_ipv4_propagate(const char* param);
+
 #endif /* __PROVENANCELIB_H */

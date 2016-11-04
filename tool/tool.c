@@ -38,6 +38,8 @@
 #define ARG_TRACK_PROCESS               "--track-process"
 #define ARG_TAINT_PROCESS               "--taint-process"
 #define ARG_OPAQUE_PROCESS              "--opaque-process"
+#define ARG_TRACK_IPV4_INGRESS          "--track-ipv4-ingress"
+#define ARG_TRACK_IPV4_EGRESS           "--track-ipv4-egress"
 #define ARG_FILTER_NODE                 "--node-filter"
 #define ARG_FILTER_EDGE                 "--edge-filter"
 #define ARG_PROPAGATE_FILTER_NODE       "--node-propagate-filter"
@@ -70,6 +72,8 @@ void usage( void ){
   printf(CMD_COLORED CMD_PARAMETER("pid") CMD_PARAMETER("false/true/propagate") " set tracking.\n", ARG_TRACK_PROCESS);
   printf(CMD_COLORED CMD_PARAMETER("pid") CMD_PARAMETER("uint64") " applies taint to the process.\n", ARG_TAINT_PROCESS);
   printf(CMD_COLORED CMD_PARAMETER("pid") CMD_PARAMETER("bool") " mark/unmark the process as opaque.\n", ARG_OPAQUE_PROCESS);
+  printf(CMD_COLORED CMD_PARAMETER("ip/mask:port") CMD_PARAMETER("track/propagate") " track/propagate for bind matching.\n", ARG_TRACK_IPV4_INGRESS);
+  printf(CMD_COLORED CMD_PARAMETER("ip/mask:port") CMD_PARAMETER("track/propagate") " track/propagate for connect matching.\n", ARG_TRACK_IPV4_EGRESS);
   printf(CMD_COLORED CMD_PARAMETER("type") CMD_PARAMETER("bool") " set node filter.\n", ARG_FILTER_NODE);
   printf(CMD_COLORED CMD_PARAMETER("type") CMD_PARAMETER("bool") " set edge filter.\n", ARG_FILTER_EDGE);
   printf(CMD_COLORED CMD_PARAMETER("type") CMD_PARAMETER("bool") " set propagate node filter.\n", ARG_PROPAGATE_FILTER_NODE);
@@ -246,11 +250,6 @@ int main(int argc, char *argv[]){
     all(argv[2]);
     return 0;
   }
-  MATCH_ARGS(argv[1], ARG_ALL){
-    CHECK_ATTR_NB(argc, 3);
-    all(argv[2]);
-    return 0;
-  }
   MATCH_ARGS(argv[1], ARG_FILE){
     CHECK_ATTR_NB(argc, 3);
     file(argv[2]);
@@ -259,8 +258,7 @@ int main(int argc, char *argv[]){
   MATCH_ARGS(argv[1], ARG_TRACK_FILE){
     CHECK_ATTR_NB(argc, 4);
     if( is_str_propagate(argv[3]) ){
-      err = provenance_track_file(argv[2], true);
-      err |= provenance_propagate_file(argv[2], true);
+      err = provenance_propagate_file(argv[2], true);
     }else {
       err = provenance_track_file(argv[2], is_str_true(argv[3]));
       err |= provenance_propagate_file(argv[2], false);
@@ -295,8 +293,7 @@ int main(int argc, char *argv[]){
   MATCH_ARGS(argv[1], ARG_TRACK_PROCESS){
     CHECK_ATTR_NB(argc, 4);
     if( is_str_propagate(argv[3]) ){
-      err = provenance_track_process(atoi(argv[2]), true);
-      err |= provenance_propagate_process(atoi(argv[2]), true);
+      err = provenance_propagate_process(atoi(argv[2]), true);
     }else {
       err = provenance_track_process(atoi(argv[2]), is_str_true(argv[3]));
       err |= provenance_propagate_process(atoi(argv[2]), false);
@@ -320,6 +317,32 @@ int main(int argc, char *argv[]){
     err = provenance_opaque_process(atoi(argv[2]), is_str_true(argv[3]));
     if(err < 0){
       perror("Could not change opacity settings for this process.\n");
+    }
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_TRACK_IPV4_INGRESS){
+    CHECK_ATTR_NB(argc, 4);
+    if( is_str_propagate( argv[3]) ){
+      err = provenance_ingress_ipv4_propagate(argv[2]);
+    }else {
+      err = provenance_ingress_ipv4_track(argv[2]);
+    }
+
+    if(err < 0){
+      perror("Could not change ipv4 ingress.\n");
+    }
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_TRACK_IPV4_EGRESS){
+    CHECK_ATTR_NB(argc, 4);
+    if( is_str_propagate( argv[3]) ){
+      err = provenance_egress_ipv4_propagate(argv[2]);
+    }else {
+      err = provenance_egress_ipv4_track(argv[2]);
+    }
+
+    if(err < 0){
+      perror("Could not change ipv4 egress.\n");
     }
     return 0;
   }
