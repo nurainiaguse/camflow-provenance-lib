@@ -174,7 +174,7 @@ int provenance_track_file(const char name[PATH_MAX], bool track);
 */
 int provenance_opaque_file(const char name[PATH_MAX], bool opaque);
 
-int provenance_propagate_file(const char name[PATH_MAX], bool opaque);
+int provenance_propagate_file(const char name[PATH_MAX], bool propagate);
 
 int provenance_taint_file(const char name[PATH_MAX], uint64_t taint);
 
@@ -199,7 +199,7 @@ int provenance_track_process(uint32_t pid, bool track);
 */
 int provenance_opaque_process(uint32_t pid, bool opaque);
 
-int provenance_propagate_process(uint32_t pid, bool opaque);
+int provenance_propagate_process(uint32_t pid, bool propagate);
 
 int provenance_taint_process(uint32_t pid, uint64_t taint);
 

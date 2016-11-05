@@ -93,8 +93,17 @@ declare_self_get_flag(provenance_get_tracked, TRACKED_BIT);
 declare_self_set_flag(provenance_set_opaque, OPAQUE_BIT, PROV_SET_OPAQUE);
 declare_self_get_flag(provenance_get_opaque, OPAQUE_BIT);
 
-declare_self_set_flag(provenance_set_propagate, PROPAGATE_BIT, PROV_SET_TRACKED|PROV_SET_PROPAGATE);
+declare_self_set_flag(__provenance_set_propagate, PROPAGATE_BIT, PROV_SET_PROPAGATE);
 declare_self_get_flag(provenance_get_propagate, PROPAGATE_BIT);
+
+int provenance_set_propagate(bool v){
+  int err;
+  err = __provenance_set_propagate(v);
+  if(err < 0){
+    return err;
+  }
+  return provenance_set_tracked(v);
+}
 
 int provenance_set_machine_id(uint32_t v){
   int fd = open(PROV_MACHINE_ID_FILE, O_WRONLY);
@@ -217,7 +226,16 @@ int provenance_read_file(const char name[PATH_MAX], prov_msg_t* inode_info){
 
 declare_set_file_fcn(provenance_track_file, TRACKED_BIT, PROV_SET_TRACKED);
 declare_set_file_fcn(provenance_opaque_file, OPAQUE_BIT, PROV_SET_OPAQUE);
-declare_set_file_fcn(provenance_propagate_file, PROPAGATE_BIT, PROV_SET_TRACKED|PROV_SET_PROPAGATE);
+declare_set_file_fcn(__provenance_propagate_file, PROPAGATE_BIT, PROV_SET_PROPAGATE);
+
+int provenance_propagate_file(const char name[PATH_MAX], bool propagate){
+  int err;
+  err = __provenance_propagate_file(name, propagate);
+  if(err < 0){
+    return err;
+  }
+  return provenance_track_file(name, propagate);
+}
 
 int provenance_taint_file(const char name[PATH_MAX], uint64_t taint){
   struct prov_file_config cfg;
@@ -289,7 +307,16 @@ int provenance_read_process(uint32_t pid, prov_msg_t* process_info){
 
 declare_set_process_fcn(provenance_track_process, TRACKED_BIT, PROV_SET_TRACKED);
 declare_set_process_fcn(provenance_opaque_process, OPAQUE_BIT, PROV_SET_OPAQUE);
-declare_set_process_fcn(provenance_propagate_process, PROPAGATE_BIT, PROV_SET_TRACKED|PROV_SET_PROPAGATE);
+declare_set_process_fcn(__provenance_propagate_process, PROPAGATE_BIT, PROV_SET_PROPAGATE);
+
+int provenance_propagate_process(uint32_t pid, bool propagate){
+  int err;
+  err = __provenance_propagate_process(pid, propagate);
+  if(err < 0){
+    return err;
+  }
+  return provenance_track_process(pid, propagate);
+}
 
 int provenance_taint_process(uint32_t pid, uint64_t taint){
   struct prov_process_config cfg;
@@ -351,6 +378,25 @@ static int __param_to_ipv4_filter(const char* param, struct prov_ipv4_filter* fi
 }
 
 declare_set_ipv4_fcn(provenance_ingress_ipv4_track, PROV_IPV4_INGRESS_FILE, PROV_SET_TRACKED);
-declare_set_ipv4_fcn(provenance_ingress_ipv4_propagate, PROV_IPV4_INGRESS_FILE, PROV_SET_TRACKED|PROV_SET_PROPAGATE);
+declare_set_ipv4_fcn(__provenance_ingress_ipv4_propagate, PROV_IPV4_INGRESS_FILE, PROV_SET_PROPAGATE);
+
+int provenance_ingress_ipv4_propagate(const char* param){
+  int err;
+  err = __provenance_ingress_ipv4_propagate(param);
+  if(err<0){
+    return err;
+  }
+  return provenance_ingress_ipv4_track(param);
+}
+
 declare_set_ipv4_fcn(provenance_egress_ipv4_track, PROV_IPV4_EGRESS_FILE, PROV_SET_TRACKED);
-declare_set_ipv4_fcn(provenance_egress_ipv4_propagate, PROV_IPV4_EGRESS_FILE, PROV_SET_TRACKED|PROV_SET_PROPAGATE);
+declare_set_ipv4_fcn(__provenance_egress_ipv4_propagate, PROV_IPV4_EGRESS_FILE, PROV_SET_PROPAGATE);
+
+int provenance_egress_ipv4_propagate(const char* param){
+  int err;
+  __provenance_egress_ipv4_propagate(param);
+  if(err<0){
+    return err;
+  }
+  return provenance_egress_ipv4_track(param);
+}
