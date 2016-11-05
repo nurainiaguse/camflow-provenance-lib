@@ -168,6 +168,7 @@ int main(void){
   char json[4096];
 	_init_logs();
   simplog.writeLog(SIMPLOG_INFO, "audit service pid: %ld", getpid());
+  set_ProvJSON_callback(print_json);
   rc = provenance_register(&ops);
   if(rc<0){
     simplog.writeLog(SIMPLOG_ERROR, "Failed registering audit operation (%d).", rc);
@@ -175,7 +176,6 @@ int main(void){
   }
   simplog.writeLog(SIMPLOG_INFO, machine_description_json(json));
 
-  set_ProvJSON_callback(print_json);
   while(1){
     sleep(1);
     flush_json();

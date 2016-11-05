@@ -34,7 +34,7 @@
 #include "provenancePovJSON.h"
 #include "provenanceutils.h"
 
-#define MAX_PROVJSON_BUFFER_EXP     14
+#define MAX_PROVJSON_BUFFER_EXP     12
 #define MAX_PROVJSON_BUFFER_LENGTH  ((1 << MAX_PROVJSON_BUFFER_EXP)*sizeof(uint8_t))
 
 struct taint_entry{
@@ -89,15 +89,27 @@ static pthread_mutex_t l_informed =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_derived =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_message =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
-static char activity[MAX_PROVJSON_BUFFER_LENGTH];
-static char agent[MAX_PROVJSON_BUFFER_LENGTH];
-static char entity[MAX_PROVJSON_BUFFER_LENGTH];
-static char relation[MAX_PROVJSON_BUFFER_LENGTH];
-static char used[MAX_PROVJSON_BUFFER_LENGTH];
-static char generated[MAX_PROVJSON_BUFFER_LENGTH];
-static char informed[MAX_PROVJSON_BUFFER_LENGTH];
-static char derived[MAX_PROVJSON_BUFFER_LENGTH];
-static char message[MAX_PROVJSON_BUFFER_LENGTH];
+static char* activity;
+static char* agent;
+static char* entity;
+static char* relation;
+static char* used;
+static char* generated;
+static char* informed;
+static char* derived;
+static char* message;
+
+void init_buffers(void){
+  activity = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  agent = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  entity = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  relation = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  used = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  generated = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  informed = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  derived = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  message = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+}
 
 bool writing_out = false;
 
@@ -128,6 +140,7 @@ int disclose_relation_ProvJSON(uint64_t type, prov_identifier_t* sender, prov_id
 }
 
 void set_ProvJSON_callback( void (*fcn)(char* json) ){
+  init_buffers();
   print_json = fcn;
 }
 
