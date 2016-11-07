@@ -101,14 +101,23 @@ static char* message;
 
 void init_buffers(void){
   activity = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  activity[0]='\0';
   agent = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  agent[0]='\0';
   entity = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  entity[0]='\0';
   relation = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  relation[0]='\0';
   used = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  used[0]='\0';
   generated = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  generated[0]='\0';
   informed = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  informed[0]='\0';
   derived = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  derived[0]='\0';
   message = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  message[0]='\0';
 }
 
 bool writing_out = false;
