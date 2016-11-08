@@ -472,10 +472,10 @@ static inline void __close_json_entry(char* buffer)
 static void prov_prep_taint(const uint8_t bloom[PROV_N_BYTES]){
   struct taint_entry* tmp = &taint_list;
   bool first=true;
+  taint[0]='\0';
   if(prov_bloom_empty(bloom)){
-    taint[0]='\0';
+    return;
   }else{
-    taint[0]='\0';
     strcat(taint, "[");
     do{
       if( prov_bloom_in(bloom, tmp->taint_id) ){
