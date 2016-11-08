@@ -389,6 +389,14 @@ static inline void __add_uint64_attribute(char* buffer, const char* name, const 
   strcat(buffer, "\"");
 }
 
+static inline void __add_uint64hex_attribute(char* buffer, const char* name, const uint64_t value, bool comma){
+  char tmp[64];
+  __add_attribute(buffer, name, comma);
+  strcat(buffer, "\"");
+  strcat(buffer, ulltoa(value, tmp, HEX));
+  strcat(buffer, "\"");
+}
+
 static inline void __add_int64_attribute(char* buffer, const char* name, const int64_t value, bool comma){
   char tmp[64];
   __add_attribute(buffer, name, comma);
@@ -399,6 +407,9 @@ static inline void __add_int64_attribute(char* buffer, const char* name, const i
 
 static inline void __add_string_attribute(char* buffer, const char* name, const char* value, bool comma){
   char tmp[64];
+  if(value[0]=='\0'){ // value is not set
+    return;
+  }
   __add_attribute(buffer, name, comma);
   strcat(buffer, "\"");
   strcat(buffer, value);
@@ -462,7 +473,7 @@ static void prov_prep_taint(const uint8_t bloom[PROV_N_BYTES]){
   struct taint_entry* tmp = &taint_list;
   bool first=true;
   if(prov_bloom_empty(bloom)){
-    strncpy(taint, "[]", PATH_MAX);
+    taint[0]='\0';
   }else{
     taint[0]='\0';
     strcat(taint, "[");
@@ -484,7 +495,7 @@ static void prov_prep_taint(const uint8_t bloom[PROV_N_BYTES]){
 
 static inline void __node_identifier(char* buffer, const struct node_identifier* n){
   __add_uint64_attribute(buffer, "cf:id", n->id, false);
-  __add_uint64_attribute(buffer, "cf:type", n->type, true);
+  __add_string_attribute(buffer, "cf:type", node_str(n->type), true);
   __add_uint32_attribute(buffer, "cf:boot_id", n->boot_id, true);
   __add_uint32_attribute(buffer, "cf:machine_id", n->machine_id, true);
   __add_uint32_attribute(buffer, "cf:version", n->version, true);
@@ -504,7 +515,7 @@ static inline void __node_start(char* buffer,
 
 static inline void __relation_identifier(char* buffer, const struct relation_identifier* e){
   __add_uint64_attribute(buffer, "cf:id", e->id, false);
-  __add_uint64_attribute(buffer, "cf:type", e->type, true);
+  __add_string_attribute(buffer, "cf:type", relation_str(e->type), true);
   __add_uint32_attribute(buffer, "cf:boot_id", e->boot_id, true);
   __add_uint32_attribute(buffer, "cf:machine_id", e->machine_id, true);
 }
@@ -519,7 +530,6 @@ static char* __relation_to_json(struct relation_struct* e, const char* snd, cons
   __add_date_attribute(buffer, true);
   __add_string_attribute(buffer, "cf:taint", taint, true);
   __add_uint64_attribute(buffer, "cf:jiffies", e->jiffies, true);
-  __add_string_attribute(buffer, "cf:type_name", relation_str(e->identifier.relation_id.type), true);
   __add_label_attribute(buffer, NULL, relation_str(e->identifier.relation_id.type), true);
   __add_string_attribute(buffer, "cf:allowed", bool_str[e->allowed], true);
   __add_string_attribute(buffer, snd, sender, true);

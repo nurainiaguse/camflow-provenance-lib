@@ -21,6 +21,7 @@ $(OUT): $(OBJ)
 
 clean:
 	rm -f $(OBJ) $(OUT)
+	rm -f *.a
 
 install:
 	cp --force ./provenancelib.a /usr/local/lib/provenancelib.a

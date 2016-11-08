@@ -19,6 +19,8 @@
 
 ### v0.1.11
 ```
+- Does not taint attribute if no taint is set.
+- Relation and node types recorded as string.
 - Add support for tracking on socket connect and bind.
 - Propagate always imply track.
 - Clarify command line tool.
