@@ -172,7 +172,7 @@ void file( const char* path){
   }else{
     printf("File is not opaque.\n");
   }
-  if( provenance_propagate(&inode_info) ){
+  if( provenance_does_propagate(&inode_info) ){
     printf("File propagates tracking.\n");
   }else{
     printf("File is not propagating tracking.\n");
@@ -210,7 +210,7 @@ void process(uint32_t pid){
   }else{
     printf("Process is not opaque.\n");
   }
-  if( provenance_propagate(&process_info) ){
+  if( provenance_does_propagate(&process_info) ){
     printf("Process propagates tracking.\n");
   }else{
     printf("Process is not propagating tracking.\n");
