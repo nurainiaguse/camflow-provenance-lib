@@ -378,25 +378,7 @@ static int __param_to_ipv4_filter(const char* param, struct prov_ipv4_filter* fi
 }
 
 declare_set_ipv4_fcn(provenance_ingress_ipv4_track, PROV_IPV4_INGRESS_FILE, PROV_SET_TRACKED);
-declare_set_ipv4_fcn(__provenance_ingress_ipv4_propagate, PROV_IPV4_INGRESS_FILE, PROV_SET_PROPAGATE);
-
-int provenance_ingress_ipv4_propagate(const char* param){
-  int err;
-  err = __provenance_ingress_ipv4_propagate(param);
-  if(err<0){
-    return err;
-  }
-  return provenance_ingress_ipv4_track(param);
-}
+declare_set_ipv4_fcn(provenance_ingress_ipv4_propagate, PROV_IPV4_INGRESS_FILE, PROV_SET_TRACKED|PROV_SET_PROPAGATE);
 
 declare_set_ipv4_fcn(provenance_egress_ipv4_track, PROV_IPV4_EGRESS_FILE, PROV_SET_TRACKED);
-declare_set_ipv4_fcn(__provenance_egress_ipv4_propagate, PROV_IPV4_EGRESS_FILE, PROV_SET_PROPAGATE);
-
-int provenance_egress_ipv4_propagate(const char* param){
-  int err;
-  __provenance_egress_ipv4_propagate(param);
-  if(err<0){
-    return err;
-  }
-  return provenance_egress_ipv4_track(param);
-}
+declare_set_ipv4_fcn(provenance_egress_ipv4_propagate, PROV_IPV4_EGRESS_FILE, PROV_SET_TRACKED|PROV_SET_PROPAGATE);
