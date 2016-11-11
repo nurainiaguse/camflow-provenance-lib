@@ -353,10 +353,12 @@ static int __param_to_ipv4_filter(const char* param, struct prov_ipv4_filter* fi
   ip.buffer[2]=c;
   ip.buffer[3]=c;
   if(err < 6){
+    errno=-EINVAL;
     return -EINVAL;
   }
 
   if(port > 65535 || mask > 32){
+    errno=-EINVAL;
     return -EINVAL;
   }
   mask = uint32_to_ipv4mask(mask);
