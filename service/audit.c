@@ -54,8 +54,24 @@ void log_str(struct str_struct* data){
   append_message(str_msg_to_json(data));
 }
 
-void log_relation(struct relation_struct* relation){
+void log_unknown_relation(struct relation_struct* relation){
   append_relation(relation_to_json(relation));
+}
+
+void log_derived(struct relation_struct* relation){
+  append_derived(derived_to_json(relation));
+}
+
+void log_generated(struct relation_struct* relation){
+  append_generated(generated_to_json(relation));
+}
+
+void log_used(struct relation_struct* relation){
+  append_used(used_to_json(relation));
+}
+
+void log_informed(struct relation_struct* relation){
+  append_informed(informed_to_json(relation));
 }
 
 void log_task(struct task_prov_struct* task){
@@ -67,7 +83,18 @@ void log_inode(struct inode_prov_struct* inode){
 }
 
 void log_disc(struct disc_node_struct* node){
-  append_entity(disc_to_json(node));
+  switch(node->identifier.node_id.type){
+    case ACT_DISC:
+      append_activity(disc_to_json(node));
+      break;
+    case AGT_DISC:
+      append_agent(disc_to_json(node));
+      break;
+    case ENT_DISC:
+    default:
+      append_entity(disc_to_json(node));
+      break;
+  }
 }
 
 void log_msg(struct msg_msg_struct* msg){
@@ -76,11 +103,6 @@ void log_msg(struct msg_msg_struct* msg){
 
 void log_shm(struct shm_struct* shm){
   append_entity(shm_to_json(shm));
-}
-
-
-void log_sock(struct sock_struct* sock){
-  append_entity(sock_to_json(sock));
 }
 
 void log_packet(struct pck_struct* pck){
@@ -117,14 +139,17 @@ struct provenance_ops ops = {
   .init=init,
   .filter=filter,
   .long_filter=long_filter,
-  .log_relation=log_relation,
+  .log_unknown_relation=log_unknown_relation,
+  .log_derived=log_derived,
+  .log_generated=log_generated,
+  .log_used=log_used,
+  .log_informed=log_informed,
   .log_task=log_task,
   .log_inode=log_inode,
   .log_str=log_str,
   .log_disc=log_disc,
   .log_msg=log_msg,
   .log_shm=log_shm,
-  .log_sock=log_sock,
   .log_packet=log_packet,
   .log_address=log_address,
   .log_file_name=log_file_name,
@@ -143,6 +168,7 @@ int main(void){
   char json[4096];
 	_init_logs();
   simplog.writeLog(SIMPLOG_INFO, "audit service pid: %ld", getpid());
+  set_ProvJSON_callback(print_json);
   rc = provenance_register(&ops);
   if(rc<0){
     simplog.writeLog(SIMPLOG_ERROR, "Failed registering audit operation (%d).", rc);
@@ -150,7 +176,6 @@ int main(void){
   }
   simplog.writeLog(SIMPLOG_INFO, machine_description_json(json));
 
-  set_ProvJSON_callback(print_json);
   while(1){
     sleep(1);
     flush_json();

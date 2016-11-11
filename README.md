@@ -4,6 +4,7 @@
 
 | Library version | Date       |
 | --------------- | ---------- |
+| 0.1.11          | 11/11/2016 |
 | 0.1.10          | 28/10/2016 |
 | 0.1.9           | 19/10/2016 |
 | 0.1.8           | 04/10/2016 |
@@ -15,6 +16,19 @@
 | 0.1.2           | 26/05/2016 |
 | 0.1.1           | 03/04/2016 |
 | 0.1.0           | 28/03/2016 |
+
+### v0.1.11
+```
+- Does not taint attribute if no taint is set.
+- Relation and node types recorded as string.
+- Add support for tracking on socket connect and bind.
+- Propagate always imply track.
+- Clarify command line tool.
+- Add interface to set process tracking options.
+- 64 bits integers as string in the JSON.
+- Add a callback per relation types (none for agents related thing at this point).
+- Rework for 64 bits types.
+```
 
 ### v0.1.10
 ```

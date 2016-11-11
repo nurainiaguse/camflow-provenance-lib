@@ -34,7 +34,7 @@
 #include "provenancePovJSON.h"
 #include "provenanceutils.h"
 
-#define MAX_PROVJSON_BUFFER_EXP     14
+#define MAX_PROVJSON_BUFFER_EXP     12
 #define MAX_PROVJSON_BUFFER_LENGTH  ((1 << MAX_PROVJSON_BUFFER_EXP)*sizeof(uint8_t))
 
 struct taint_entry{
@@ -89,21 +89,42 @@ static pthread_mutex_t l_informed =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_derived =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_message =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
-static char activity[MAX_PROVJSON_BUFFER_LENGTH];
-static char agent[MAX_PROVJSON_BUFFER_LENGTH];
-static char entity[MAX_PROVJSON_BUFFER_LENGTH];
-static char relation[MAX_PROVJSON_BUFFER_LENGTH];
-static char used[MAX_PROVJSON_BUFFER_LENGTH];
-static char generated[MAX_PROVJSON_BUFFER_LENGTH];
-static char informed[MAX_PROVJSON_BUFFER_LENGTH];
-static char derived[MAX_PROVJSON_BUFFER_LENGTH];
-static char message[MAX_PROVJSON_BUFFER_LENGTH];
+static char* activity;
+static char* agent;
+static char* entity;
+static char* relation;
+static char* used;
+static char* generated;
+static char* informed;
+static char* derived;
+static char* message;
+
+void init_buffers(void){
+  activity = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  activity[0]='\0';
+  agent = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  agent[0]='\0';
+  entity = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  entity[0]='\0';
+  relation = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  relation[0]='\0';
+  used = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  used[0]='\0';
+  generated = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  generated[0]='\0';
+  informed = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  informed[0]='\0';
+  derived = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  derived[0]='\0';
+  message = (char*)malloc(MAX_PROVJSON_BUFFER_LENGTH*sizeof(char));
+  message[0]='\0';
+}
 
 bool writing_out = false;
 
 static void (*print_json)(char* json);
 
-int disclose_node_ProvJSON(uint32_t type, const char* content, prov_identifier_t* identifier){
+int disclose_node_ProvJSON(uint64_t type, const char* content, prov_identifier_t* identifier){
   int err;
   struct disc_node_struct node;
 
@@ -118,9 +139,9 @@ int disclose_node_ProvJSON(uint32_t type, const char* content, prov_identifier_t
   return err;
 }
 
-int disclose_relation_ProvJSON(uint32_t type, prov_identifier_t* sender, prov_identifier_t* receiver){
+int disclose_relation_ProvJSON(uint64_t type, prov_identifier_t* sender, prov_identifier_t* receiver){
   struct relation_struct relation;
-  relation.type=type;
+  relation.identifier.relation_id.type=type;
   relation.allowed=true;
   memcpy(&relation.snd, sender, sizeof(prov_identifier_t));
   memcpy(&relation.rcv, receiver, sizeof(prov_identifier_t));
@@ -128,6 +149,7 @@ int disclose_relation_ProvJSON(uint32_t type, prov_identifier_t* sender, prov_id
 }
 
 void set_ProvJSON_callback( void (*fcn)(char* json) ){
+  init_buffers();
   print_json = fcn;
 }
 
@@ -362,17 +384,32 @@ static inline void __add_uint32hex_attribute(char* buffer, const char* name, con
 static inline void __add_uint64_attribute(char* buffer, const char* name, const uint64_t value, bool comma){
   char tmp[64];
   __add_attribute(buffer, name, comma);
+  strcat(buffer, "\"");
   strcat(buffer, ulltoa(value, tmp, DECIMAL));
+  strcat(buffer, "\"");
+}
+
+static inline void __add_uint64hex_attribute(char* buffer, const char* name, const uint64_t value, bool comma){
+  char tmp[64];
+  __add_attribute(buffer, name, comma);
+  strcat(buffer, "\"");
+  strcat(buffer, ulltoa(value, tmp, HEX));
+  strcat(buffer, "\"");
 }
 
 static inline void __add_int64_attribute(char* buffer, const char* name, const int64_t value, bool comma){
   char tmp[64];
   __add_attribute(buffer, name, comma);
+  strcat(buffer, "\"");
   strcat(buffer, lltoa(value, tmp, DECIMAL));
+  strcat(buffer, "\"");
 }
 
 static inline void __add_string_attribute(char* buffer, const char* name, const char* value, bool comma){
   char tmp[64];
+  if(value[0]=='\0'){ // value is not set
+    return;
+  }
   __add_attribute(buffer, name, comma);
   strcat(buffer, "\"");
   strcat(buffer, value);
@@ -410,18 +447,10 @@ static inline void __add_label_attribute(char* buffer, const char* type, const c
 static inline char* __format_ipv4(char* buffer, uint32_t ip, uint32_t port){
     char tmp[8];
     unsigned char bytes[4];
-    bytes[0] = ip & 0xFF;
-    bytes[1] = (ip >> 8) & 0xFF;
-    bytes[2] = (ip >> 16) & 0xFF;
-    bytes[3] = (ip >> 24) & 0xFF;
+    ip = htonl(ip);
+    port = htons(port);
     buffer[0]='\0';
-    strcat(buffer, utoa(bytes[0], tmp, DECIMAL));
-    strcat(buffer, ".");
-    strcat(buffer, utoa(bytes[1], tmp, DECIMAL));
-    strcat(buffer, ".");
-    strcat(buffer, utoa(bytes[2], tmp, DECIMAL));
-    strcat(buffer, ".");
-    strcat(buffer, utoa(bytes[3], tmp, DECIMAL));
+    strcat(buffer, uint32_to_ipv4str(ip));
     strcat(buffer, ":");
     strcat(buffer, utoa(port, tmp, DECIMAL));
     return buffer;
@@ -443,10 +472,10 @@ static inline void __close_json_entry(char* buffer)
 static void prov_prep_taint(const uint8_t bloom[PROV_N_BYTES]){
   struct taint_entry* tmp = &taint_list;
   bool first=true;
+  taint[0]='\0';
   if(prov_bloom_empty(bloom)){
-    strncpy(taint, "[]", PATH_MAX);
+    return;
   }else{
-    taint[0]='\0';
     strcat(taint, "[");
     do{
       if( prov_bloom_in(bloom, tmp->taint_id) ){
@@ -466,7 +495,7 @@ static void prov_prep_taint(const uint8_t bloom[PROV_N_BYTES]){
 
 static inline void __node_identifier(char* buffer, const struct node_identifier* n){
   __add_uint64_attribute(buffer, "cf:id", n->id, false);
-  __add_uint32_attribute(buffer, "cf:type", n->type, true);
+  __add_string_attribute(buffer, "cf:type", node_str(n->type), true);
   __add_uint32_attribute(buffer, "cf:boot_id", n->boot_id, true);
   __add_uint32_attribute(buffer, "cf:machine_id", n->machine_id, true);
   __add_uint32_attribute(buffer, "cf:version", n->version, true);
@@ -486,6 +515,7 @@ static inline void __node_start(char* buffer,
 
 static inline void __relation_identifier(char* buffer, const struct relation_identifier* e){
   __add_uint64_attribute(buffer, "cf:id", e->id, false);
+  __add_string_attribute(buffer, "cf:type", relation_str(e->type), true);
   __add_uint32_attribute(buffer, "cf:boot_id", e->boot_id, true);
   __add_uint32_attribute(buffer, "cf:machine_id", e->machine_id, true);
 }
@@ -500,8 +530,7 @@ static char* __relation_to_json(struct relation_struct* e, const char* snd, cons
   __add_date_attribute(buffer, true);
   __add_string_attribute(buffer, "cf:taint", taint, true);
   __add_uint64_attribute(buffer, "cf:jiffies", e->jiffies, true);
-  __add_string_attribute(buffer, "cf:type", relation_str(e->type), true);
-  __add_label_attribute(buffer, NULL, relation_str(e->type), true);
+  __add_label_attribute(buffer, NULL, relation_str(e->identifier.relation_id.type), true);
   __add_string_attribute(buffer, "cf:allowed", bool_str[e->allowed], true);
   __add_string_attribute(buffer, snd, sender, true);
   __add_string_attribute(buffer, rcv, receiver, true);
@@ -644,18 +673,6 @@ char* shm_to_json(struct shm_struct* n){
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
   __add_uint32hex_attribute(buffer, "cf:mode", n->mode, true);
-  __close_json_entry(buffer);
-  return buffer;
-}
-
-char* sock_to_json(struct sock_struct* n){
-  char tmp[33];
-  NODE_PREP_IDs(n);
-  prov_prep_taint(n->taint);
-  __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
-  __add_uint32_attribute(buffer, "cf:sock_type", n->type, true);
-  __add_uint32_attribute(buffer, "cf:family", n->family, true);
-  __add_uint32_attribute(buffer, "cf:protocol", n->protocol, true);
   __close_json_entry(buffer);
   return buffer;
 }

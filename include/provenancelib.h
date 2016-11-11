@@ -23,18 +23,24 @@ struct provenance_ops{
   void (*init)(void);
   bool (*filter)(prov_msg_t* msg);
   bool (*long_filter)(long_prov_msg_t* msg);
-  void (*log_relation)(struct relation_struct*);
+  /* relation callback */
+  void (*log_unknown_relation)(struct relation_struct*);
+  void (*log_derived)(struct relation_struct*);
+  void (*log_generated)(struct relation_struct*);
+  void (*log_used)(struct relation_struct*);
+  void (*log_informed)(struct relation_struct*);
+  /* nodes callback */
   void (*log_task)(struct task_prov_struct*);
   void (*log_inode)(struct inode_prov_struct*);
   void (*log_str)(struct str_struct*);
   void (*log_disc)(struct disc_node_struct*);
   void (*log_msg)(struct msg_msg_struct*);
   void (*log_shm)(struct shm_struct*);
-  void (*log_sock)(struct sock_struct*);
   void (*log_packet)(struct pck_struct*);
   void (*log_address)(struct address_struct*);
   void (*log_file_name)(struct file_name_struct*);
   void (*log_ifc)(struct ifc_context_struct*);
+  /* callback for library erros */
   void (*log_error)(char*);
 };
 
@@ -157,7 +163,6 @@ int provenance_read_file(const char name[PATH_MAX], prov_msg_t* inode_info);
 /*
 * @name file name
 * @track boolean either to track or not the file
-* @depth how many removed node should be tracked
 * set tracking option corresponding to the file associated with name
 */
 int provenance_track_file(const char name[PATH_MAX], bool track);
@@ -165,12 +170,45 @@ int provenance_track_file(const char name[PATH_MAX], bool track);
 /*
 * @name file name
 * @opaque boolean either to make opaque or not the file
-* Make the file opaque to provenance tracking.
+* make the file opaque to provenance tracking.
 */
 int provenance_opaque_file(const char name[PATH_MAX], bool opaque);
 
-int provenance_propagate_file(const char name[PATH_MAX], bool opaque);
+int provenance_propagate_file(const char name[PATH_MAX], bool propagate);
 
 int provenance_taint_file(const char name[PATH_MAX], uint64_t taint);
+
+/*
+* @pid process pid
+* @inode_info point to an inode_info structure
+* retrieve provenance information of the process associated with pid.
+*/
+int provenance_read_process(uint32_t pid, prov_msg_t* process_info);
+
+/*
+* @pid process pid
+* @track boolean either to track or not the file
+* set tracking option corresponding to the proccess associated with pid
+*/
+int provenance_track_process(uint32_t pid, bool track);
+
+/*
+* @pid process pid
+* @opaque boolean either to make opaque or not the file
+* make the process opaque to provenance tracking.
+*/
+int provenance_opaque_process(uint32_t pid, bool opaque);
+
+int provenance_propagate_process(uint32_t pid, bool propagate);
+
+int provenance_taint_process(uint32_t pid, uint64_t taint);
+
+int provenance_ingress_ipv4_track(const char* param);
+int provenance_ingress_ipv4_propagate(const char* param);
+int provenance_egress_ipv4_track(const char* param);
+int provenance_egress_ipv4_propagate(const char* param);
+
+int provenance_ingress_ipv4( struct prov_ipv4_filter* filters, size_t length );
+int provenance_egress_ipv4( struct prov_ipv4_filter* filters, size_t length );
 
 #endif /* __PROVENANCELIB_H */

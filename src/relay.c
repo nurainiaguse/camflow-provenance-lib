@@ -159,46 +159,65 @@ static int destroy_worker_pool(void)
 static __thread int initialised=0;
 
 void prov_record(prov_msg_t* msg){
-  switch(prov_type(msg)){
-    case MSG_RELATION:
-      if(prov_ops.log_relation!=NULL)
-        prov_ops.log_relation(&(msg->relation_info));
-      break;
-    case MSG_TASK:
-      if(prov_ops.log_task!=NULL)
-        prov_ops.log_task(&(msg->task_info));
-      break;
-    case MSG_INODE_UNKNOWN:
-    case MSG_INODE_LINK:
-    case MSG_INODE_FILE:
-    case MSG_INODE_DIRECTORY:
-    case MSG_INODE_CHAR:
-    case MSG_INODE_BLOCK:
-    case MSG_INODE_FIFO:
-    case MSG_INODE_SOCKET:
-    case MSG_INODE_MMAP:
-      if(prov_ops.log_inode!=NULL)
-        prov_ops.log_inode(&(msg->inode_info));
-      break;
-    case MSG_MSG:
-      if(prov_ops.log_msg!=NULL)
-        prov_ops.log_msg(&(msg->msg_msg_info));
-      break;
-    case MSG_SHM:
-      if(prov_ops.log_shm!=NULL)
-        prov_ops.log_shm(&(msg->shm_info));
-      break;
-    case MSG_SOCK:
-      if(prov_ops.log_sock!=NULL)
-        prov_ops.log_sock(&(msg->sock_info));
-      break;
-    case MSG_PACKET:
-      if(prov_ops.log_packet!=NULL)
-        prov_ops.log_packet(&(msg->pck_info));
-      break;
-    default:
-      record_error("Error: unknown message type %u\n", prov_type(msg));
-      break;
+  uint64_t w3c_type;
+  if(prov_is_relation(msg)){
+    w3c_type = W3C_TYPE(prov_type(msg));
+    switch(w3c_type){
+      case RL_DERIVED:
+        if(prov_ops.log_derived!=NULL)
+          prov_ops.log_derived(&(msg->relation_info));
+        break;
+      case RL_GENERATED:
+        if(prov_ops.log_generated!=NULL)
+          prov_ops.log_generated(&(msg->relation_info));
+        break;
+      case RL_USED:
+        if(prov_ops.log_used!=NULL)
+          prov_ops.log_used(&(msg->relation_info));
+        break;
+      case RL_INFORMED:
+        if(prov_ops.log_informed!=NULL)
+          prov_ops.log_informed(&(msg->relation_info));
+        break;
+      default:
+        if(prov_ops.log_unknown_relation!=NULL)
+          prov_ops.log_unknown_relation(&(msg->relation_info));
+        break;
+    }
+  }else{
+    switch(prov_type(msg)){
+      case ACT_TASK:
+        if(prov_ops.log_task!=NULL)
+          prov_ops.log_task(&(msg->task_info));
+        break;
+      case ENT_INODE_UNKNOWN:
+      case ENT_INODE_LINK:
+      case ENT_INODE_FILE:
+      case ENT_INODE_DIRECTORY:
+      case ENT_INODE_CHAR:
+      case ENT_INODE_BLOCK:
+      case ENT_INODE_FIFO:
+      case ENT_INODE_SOCKET:
+      case ENT_INODE_MMAP:
+        if(prov_ops.log_inode!=NULL)
+          prov_ops.log_inode(&(msg->inode_info));
+        break;
+      case ENT_MSG:
+        if(prov_ops.log_msg!=NULL)
+          prov_ops.log_msg(&(msg->msg_msg_info));
+        break;
+      case ENT_SHM:
+        if(prov_ops.log_shm!=NULL)
+          prov_ops.log_shm(&(msg->shm_info));
+        break;
+      case ENT_PACKET:
+        if(prov_ops.log_packet!=NULL)
+          prov_ops.log_packet(&(msg->pck_info));
+        break;
+      default:
+        record_error("Error: unknown type %llu\n", prov_type(msg));
+        break;
+    }
   }
 }
 
@@ -206,7 +225,7 @@ void prov_record(prov_msg_t* msg){
 static void callback_job(void* data)
 {
   prov_msg_t* msg = (prov_msg_t*)data;
-  if(prov_type(msg)!=MSG_PACKET){
+  if(prov_type(msg)!=ENT_PACKET){
     node_identifier(msg).machine_id = machine_id;
   }
 
@@ -230,31 +249,30 @@ out:
 
 void long_prov_record(long_prov_msg_t* msg){
   switch(prov_type(msg)){
-    case MSG_STR:
+    case ENT_STR:
       if(prov_ops.log_str!=NULL)
         prov_ops.log_str(&(msg->str_info));
       break;
-    case MSG_FILE_NAME:
+    case ENT_FILE_NAME:
       if(prov_ops.log_file_name!=NULL)
         prov_ops.log_file_name(&(msg->file_name_info));
       break;
-    case MSG_ADDR:
+    case ENT_ADDR:
       if(prov_ops.log_address!=NULL)
         prov_ops.log_address(&(msg->address_info));
       break;
-    case MSG_IFC:
+    case ENT_IFC:
       if(prov_ops.log_ifc!=NULL)
         prov_ops.log_ifc(&(msg->ifc_info));
       break;
-    case MSG_DISC_ENTITY:
-    case MSG_DISC_ACTIVITY:
-    case MSG_DISC_AGENT:
-    case MSG_DISC_NODE:
+    case ENT_DISC:
+    case ACT_DISC:
+    case AGT_DISC:
       if(prov_ops.log_disc!=NULL)
         prov_ops.log_disc(&(msg->disc_node_info));
       break;
     default:
-      record_error("Error: unknown message type %u\n", prov_type(msg));
+      record_error("Error: unknown long type %llu\n", prov_type(msg));
       break;
   }
 }

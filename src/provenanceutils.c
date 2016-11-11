@@ -137,9 +137,6 @@ int compress64encode(const char* in, size_t inlen, char* out, size_t outlen){
   return 0;
 }
 
-
-#include <stdlib.h>
-
 char *ulltoa (uint64_t value, char *string, int radix)
 {
   char *dst;
