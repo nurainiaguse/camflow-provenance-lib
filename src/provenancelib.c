@@ -343,9 +343,15 @@ union ipaddr{
 static int __param_to_ipv4_filter(const char* param, struct prov_ipv4_filter* filter){
   int err;
   union ipaddr ip;
+  uint8_t a,b,c,d;
   uint32_t mask;
   uint16_t port;
-  err = sscanf(param, "%u.%u.%u.%u/%u:%u", &ip.buffer[0], &ip.buffer[1], &ip.buffer[2], &ip.buffer[3], &mask, &port);
+
+  err = sscanf(param, "%u.%u.%u.%u/%u:%u", &a, &b, &c, &d, &mask, &port);
+  ip.buffer[0]=a;
+  ip.buffer[1]=b;
+  ip.buffer[2]=c;
+  ip.buffer[3]=c;
   if(err < 6){
     return -EINVAL;
   }
@@ -377,8 +383,22 @@ static int __param_to_ipv4_filter(const char* param, struct prov_ipv4_filter* fi
   return rc;\
 }
 
+#define declare_get_ipv4_fcn(fcn_name, file) int fcn_name ( struct prov_ipv4_filter* filters, size_t length ){\
+  int rc;\
+  int fd = open(file, O_RDONLY);\
+  if( fd < 0 ){\
+    return fd;\
+  }\
+  rc = read(fd, filters, length);\
+  close(fd);\
+  return rc;\
+}
+
 declare_set_ipv4_fcn(provenance_ingress_ipv4_track, PROV_IPV4_INGRESS_FILE, PROV_SET_TRACKED);
 declare_set_ipv4_fcn(provenance_ingress_ipv4_propagate, PROV_IPV4_INGRESS_FILE, PROV_SET_TRACKED|PROV_SET_PROPAGATE);
 
 declare_set_ipv4_fcn(provenance_egress_ipv4_track, PROV_IPV4_EGRESS_FILE, PROV_SET_TRACKED);
 declare_set_ipv4_fcn(provenance_egress_ipv4_propagate, PROV_IPV4_EGRESS_FILE, PROV_SET_TRACKED|PROV_SET_PROPAGATE);
+
+declare_get_ipv4_fcn(provenance_ingress_ipv4, PROV_IPV4_INGRESS_FILE);
+declare_get_ipv4_fcn(provenance_egress_ipv4, PROV_IPV4_EGRESS_FILE);

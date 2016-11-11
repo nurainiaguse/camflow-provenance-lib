@@ -107,7 +107,10 @@ void all( const char* str ){
 
 void state( void ){
   uint64_t filter=0;
+  struct prov_ipv4_filter filters[100];
+  int size;
   uint32_t machine_id;
+  int i;
 
   provenance_get_machine_id(&machine_id);
   printf("Machine id: %u\n", machine_id);
@@ -135,6 +138,32 @@ void state( void ){
 
   provenance_get_propagate_relation_filter(&filter);
   printf("Propagate relation filter (%0x):\n", filter);
+
+  size = provenance_ingress_ipv4(filters, 100*sizeof(struct prov_ipv4_filter));
+  printf("IPv4 ingress filter (%d).\n", size/sizeof(struct prov_ipv4_filter));
+  for(i = 0; i < size/sizeof(struct prov_ipv4_filter); i++){
+    printf("%s", uint32_to_ipv4str(filters[i].ip));
+    printf("/%d", count_set_bits(filters[i].mask));
+    printf(":%d ", ntohs(filters[i].port));
+    if(filters[i].op == PROV_SET_TRACKED){
+      printf("track\n");
+    }else{
+      printf("propagate\n");
+    }
+  }
+
+  size = provenance_egress_ipv4(filters, 100*sizeof(struct prov_ipv4_filter));
+  printf("IPv4 egress filter (%d).\n", size/sizeof(struct prov_ipv4_filter));
+  for(i = 0; i < size/sizeof(struct prov_ipv4_filter); i++){
+    printf("%s", uint32_to_ipv4str(filters[i].ip));
+    printf("/%d", count_set_bits(filters[i].mask));
+    printf(":%d ", ntohs(filters[i].port));
+    if(filters[i].op == PROV_SET_TRACKED){
+      printf("track\n");
+    }else{
+      printf("propagate\n");
+    }
+  }
 }
 
 void print_version(){

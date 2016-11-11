@@ -287,4 +287,14 @@ static inline uint32_t uint32_to_ipv4mask(uint32_t n){
   return m.value;
 }
 
+static inline uint8_t count_set_bits(uint32_t n){
+  uint8_t count = 0;
+  while(n)
+  {
+    count += n & 1;
+    n >>= 1;
+  }
+  return count;
+}
+
 #endif /* __PROVENANCEUTILS_H */
