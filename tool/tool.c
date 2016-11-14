@@ -290,7 +290,9 @@ int main(int argc, char *argv[]){
       err = provenance_propagate_file(argv[2], true);
     }else {
       err = provenance_track_file(argv[2], is_str_true(argv[3]));
-      err |= provenance_propagate_file(argv[2], false);
+      if(!is_str_true(argv[3])){
+        err |= provenance_propagate_file(argv[2], false);
+      }      
     }
 
     if(err < 0){
@@ -325,7 +327,9 @@ int main(int argc, char *argv[]){
       err = provenance_propagate_process(atoi(argv[2]), true);
     }else {
       err = provenance_track_process(atoi(argv[2]), is_str_true(argv[3]));
-      err |= provenance_propagate_process(atoi(argv[2]), false);
+      if(!is_str_true(argv[3])){
+        err |= provenance_propagate_process(atoi(argv[2]), false);
+      }
     }
 
     if(err < 0){
