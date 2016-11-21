@@ -145,9 +145,9 @@ void state( void ){
     printf("%s", uint32_to_ipv4str(filters[i].ip));
     printf("/%d", count_set_bits(filters[i].mask));
     printf(":%d ", ntohs(filters[i].port));
-    if(filters[i].op == PROV_SET_TRACKED){
+    if(filters[i].op == PROV_NET_TRACKED){
       printf("track\n");
-    }else{
+    }else if(filters[i].op == PROV_NET_PROPAGATE){
       printf("propagate\n");
     }
   }
@@ -158,9 +158,9 @@ void state( void ){
     printf("%s", uint32_to_ipv4str(filters[i].ip));
     printf("/%d", count_set_bits(filters[i].mask));
     printf(":%d ", ntohs(filters[i].port));
-    if(filters[i].op == PROV_SET_TRACKED){
+    if(filters[i].op == PROV_NET_TRACKED){
       printf("track\n");
-    }else{
+    }else if(filters[i].op == PROV_NET_PROPAGATE){
       printf("propagate\n");
     }
   }
@@ -292,7 +292,7 @@ int main(int argc, char *argv[]){
       err = provenance_track_file(argv[2], is_str_true(argv[3]));
       if(!is_str_true(argv[3])){
         err |= provenance_propagate_file(argv[2], false);
-      }      
+      }
     }
 
     if(err < 0){

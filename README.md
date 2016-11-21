@@ -21,7 +21,7 @@
 
 ### v0.1.13
 ```
--
+- Replace "version" by "version_activity" and "version_entity".
 ```
 
 ### v0.1.12
