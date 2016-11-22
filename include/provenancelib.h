@@ -205,10 +205,12 @@ int provenance_taint_process(uint32_t pid, uint64_t taint);
 
 int provenance_ingress_ipv4_track(const char* param);
 int provenance_ingress_ipv4_propagate(const char* param);
+int provenance_ingress_ipv4_delete(const char* param);
+int provenance_ingress_ipv4( struct prov_ipv4_filter* filters, size_t length );
+
 int provenance_egress_ipv4_track(const char* param);
 int provenance_egress_ipv4_propagate(const char* param);
-
-int provenance_ingress_ipv4( struct prov_ipv4_filter* filters, size_t length );
+int provenance_egress_ipv4_delete(const char* param);
 int provenance_egress_ipv4( struct prov_ipv4_filter* filters, size_t length );
 
 #endif /* __PROVENANCELIB_H */

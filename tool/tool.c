@@ -72,8 +72,8 @@ void usage( void ){
   printf(CMD_COLORED CMD_PARAMETER("pid") CMD_PARAMETER("false/true/propagate") " set tracking.\n", ARG_TRACK_PROCESS);
   printf(CMD_COLORED CMD_PARAMETER("pid") CMD_PARAMETER("uint64") " applies taint to the process.\n", ARG_TAINT_PROCESS);
   printf(CMD_COLORED CMD_PARAMETER("pid") CMD_PARAMETER("bool") " mark/unmark the process as opaque.\n", ARG_OPAQUE_PROCESS);
-  printf(CMD_COLORED CMD_PARAMETER("ip/mask:port") CMD_PARAMETER("track/propagate") " track/propagate on bind.\n", ARG_TRACK_IPV4_INGRESS);
-  printf(CMD_COLORED CMD_PARAMETER("ip/mask:port") CMD_PARAMETER("track/propagate") " track/propagate on connect.\n", ARG_TRACK_IPV4_EGRESS);
+  printf(CMD_COLORED CMD_PARAMETER("ip/mask:port") CMD_PARAMETER("track/propagate/delete") " track/propagate on bind.\n", ARG_TRACK_IPV4_INGRESS);
+  printf(CMD_COLORED CMD_PARAMETER("ip/mask:port") CMD_PARAMETER("track/propagate/delete") " track/propagate on connect.\n", ARG_TRACK_IPV4_EGRESS);
   printf(CMD_COLORED CMD_PARAMETER("type") CMD_PARAMETER("bool") " set node filter.\n", ARG_FILTER_NODE);
   printf(CMD_COLORED CMD_PARAMETER("type") CMD_PARAMETER("bool") " set edge filter.\n", ARG_FILTER_EDGE);
   printf(CMD_COLORED CMD_PARAMETER("type") CMD_PARAMETER("bool") " set propagate node filter.\n", ARG_PROPAGATE_FILTER_NODE);
@@ -81,6 +81,8 @@ void usage( void ){
   printf(CMD_COLORED " reset filters.\n", ARG_FILTER_RESET);
 }
 
+#define is_str_track(str) ( strcmp (str, "track") == 0)
+#define is_str_delete(str) ( strcmp (str, "delete") == 0)
 #define is_str_propagate(str) ( strcmp (str, "propagate") == 0)
 #define is_str_true(str) ( strcmp (str, "true") == 0)
 #define is_str_false(str) ( strcmp (str, "false") == 0)
@@ -145,11 +147,13 @@ void state( void ){
     printf("%s", uint32_to_ipv4str(filters[i].ip));
     printf("/%d", count_set_bits(filters[i].mask));
     printf(":%d ", ntohs(filters[i].port));
-    if(filters[i].op == PROV_NET_TRACKED){
-      printf("track\n");
-    }else if(filters[i].op == PROV_NET_PROPAGATE){
-      printf("propagate\n");
+
+    if((filters[i].op&PROV_NET_PROPAGATE) == PROV_NET_PROPAGATE){
+      printf("propagate");
+    }else if((filters[i].op&PROV_NET_TRACKED) == PROV_NET_TRACKED){
+      printf("track");
     }
+    printf("\n");
   }
 
   size = provenance_egress_ipv4(filters, 100*sizeof(struct prov_ipv4_filter));
@@ -158,11 +162,13 @@ void state( void ){
     printf("%s", uint32_to_ipv4str(filters[i].ip));
     printf("/%d", count_set_bits(filters[i].mask));
     printf(":%d ", ntohs(filters[i].port));
-    if(filters[i].op == PROV_NET_TRACKED){
-      printf("track\n");
-    }else if(filters[i].op == PROV_NET_PROPAGATE){
-      printf("propagate\n");
+
+    if((filters[i].op&PROV_NET_PROPAGATE) == PROV_NET_PROPAGATE){
+      printf("propagate");
+    }else if((filters[i].op&PROV_NET_TRACKED) == PROV_NET_TRACKED){
+      printf("track");
     }
+    printf("\n");
   }
 }
 
@@ -357,8 +363,10 @@ int main(int argc, char *argv[]){
     CHECK_ATTR_NB(argc, 4);
     if( is_str_propagate( argv[3]) ){
       err = provenance_ingress_ipv4_propagate(argv[2]);
-    }else {
+    }else if( is_str_track(argv[3])){
       err = provenance_ingress_ipv4_track(argv[2]);
+    }else if( is_str_delete(argv[3])){
+      err = provenance_ingress_ipv4_delete(argv[2]);
     }
 
     if(err < 0){
@@ -370,8 +378,10 @@ int main(int argc, char *argv[]){
     CHECK_ATTR_NB(argc, 4);
     if( is_str_propagate( argv[3]) ){
       err = provenance_egress_ipv4_propagate(argv[2]);
-    }else {
+    }else if( is_str_track(argv[3])){
       err = provenance_egress_ipv4_track(argv[2]);
+    }else if( is_str_delete(argv[3])){
+      err = provenance_egress_ipv4_delete(argv[2]);
     }
 
     if(err < 0){

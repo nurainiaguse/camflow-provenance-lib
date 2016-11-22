@@ -21,6 +21,8 @@
 
 ### v0.1.13
 ```
+- Add command line option to delete ingress and egress ipv4 filter.
+- Add provenance_ingress_ipv4_delete and provenance_egress_ipv4_delete.
 - Replace "version" by "version_activity" and "version_entity".
 ```
 
