@@ -660,7 +660,7 @@ char* iattr_to_json(struct iattr_prov_struct* n){
   __add_int64_attribute(buffer, "cf:atime", n->atime, true);
   __add_int64_attribute(buffer, "cf:ctime", n->ctime, true);
   __add_int64_attribute(buffer, "cf:mtime", n->mtime, true);
-  __add_label_attribute(buffer, "iattr", utoa(n->identifier.node_id.version, tmp, DECIMAL), true);
+  __add_label_attribute(buffer, "iattr", utoa(n->identifier.node_id.id, tmp, DECIMAL), true);
   __close_json_entry(buffer);
   return buffer;
 }
