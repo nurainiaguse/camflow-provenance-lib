@@ -639,7 +639,6 @@ char* inode_to_json(struct inode_prov_struct* n){
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
   __add_uint32_attribute(buffer, "cf:uid", n->uid, true);
   __add_uint32_attribute(buffer, "cf:gid", n->gid, true);
-  __add_string_attribute(buffer, "prov:type", node_str(n->identifier.node_id.type), true);
   __add_uint32hex_attribute(buffer, "cf:mode", n->mode, true);
   __add_string_attribute(buffer, "cf:uuid", uuid_to_str(n->sb_uuid, uuid, UUID_STR_SIZE), true);
   __add_label_attribute(buffer, node_str(n->identifier.node_id.type), utoa(n->identifier.node_id.version, tmp, DECIMAL), true);
@@ -680,7 +679,6 @@ char* msg_to_json(struct msg_msg_struct* n){
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
-  __add_uint64_attribute(buffer, "cf:type", n->type, true);
   __close_json_entry(buffer);
   return buffer;
 }
