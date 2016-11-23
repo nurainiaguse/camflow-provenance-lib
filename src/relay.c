@@ -214,6 +214,10 @@ void prov_record(prov_msg_t* msg){
         if(prov_ops.log_packet!=NULL)
           prov_ops.log_packet(&(msg->pck_info));
         break;
+      case ENT_IATTR:
+        if(prov_ops.log_iattr!=NULL)
+          prov_ops.log_iattr(&(msg->iattr_info));
+        break;
       default:
         record_error("Error: unknown type %llu\n", prov_type(msg));
         break;
