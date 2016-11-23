@@ -21,6 +21,7 @@
 
 ### v0.1.13
 ```
+- Add new relations, and nodes based on LSM changes.
 - Fixed duplicated node attribute type.
 - Add command line option to delete ingress and egress ipv4 filter.
 - Add provenance_ingress_ipv4_delete and provenance_egress_ipv4_delete.

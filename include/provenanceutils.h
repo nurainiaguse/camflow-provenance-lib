@@ -51,6 +51,7 @@ static const char RL_STR_CLONE []                 = "clone";
 static const char RL_STR_VERSION_PROCESS []       = "version_activity";
 static const char RL_STR_SEARCH []                = "search";
 static const char RL_STR_GETATTR []               = "getattr";
+static const char RL_STR_READLINK []              = "readlink";
 static const char RL_STR_MMAP_READ []             = "mmap_read";
 static const char RL_STR_MMAP_EXEC []             = "mmap_exec";
 static const char RL_STR_SND []                   = "send";
@@ -101,6 +102,8 @@ static inline const char* relation_str(uint64_t type){
       return RL_STR_SEARCH;
     case RL_GETATTR:
       return RL_STR_GETATTR;
+    case RL_READLINK:
+      return RL_STR_READLINK;
     case RL_MMAP_READ:
       return RL_STR_MMAP_READ;
     case RL_MMAP_EXEC:
@@ -136,6 +139,7 @@ static inline const uint64_t relation_id(char* str){
   MATCH_AND_RETURN(str, RL_STR_VERSION, RL_VERSION);
   MATCH_AND_RETURN(str, RL_STR_LINK, RL_LINK);
   MATCH_AND_RETURN(str, RL_STR_SETATTR, RL_SETATTR);
+  MATCH_AND_RETURN(str, RL_STR_READLINK, RL_READLINK);
   MATCH_AND_RETURN(str, RL_STR_NAMED, RL_NAMED);
   MATCH_AND_RETURN(str, RL_STR_IFC, RL_IFC);
   MATCH_AND_RETURN(str, RL_STR_EXEC, RL_EXEC);
