@@ -665,15 +665,14 @@ char* iattr_to_json(struct iattr_prov_struct* n){
 }
 
 char* xattr_to_json(struct xattr_prov_struct* n){
-  char tmp[65];
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
   __add_string_attribute(buffer, "cf:name", n->name, true);
   if(n->size>0){
     __add_uint32_attribute(buffer, "cf:size", n->size, true);
-    __add_uint32_attribute(buffer, "cf:flags", n->flags, true);
-    // TODO record the value.
+    __add_uint32hex_attribute(buffer, "cf:flags", n->flags, true);
+    // TODO record value when present
   }
   __add_label_attribute(buffer, "xattr", n->name, true);
   __close_json_entry(buffer);
@@ -790,7 +789,6 @@ char* addr_to_json(struct address_struct* n){
 }
 
 char* pathname_to_json(struct file_name_struct* n){
-  char node_info[1024];
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
@@ -801,7 +799,6 @@ char* pathname_to_json(struct file_name_struct* n){
 }
 
 char* ifc_to_json(struct ifc_context_struct* n){
-  char node_info[1024];
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
