@@ -21,6 +21,7 @@
 
 ### v0.1.13
 ```
+- Add support for xattr (node and relations).
 - Add new relations, and nodes based on LSM changes.
 - Fixed duplicated node attribute type.
 - Add command line option to delete ingress and egress ipv4 filter.

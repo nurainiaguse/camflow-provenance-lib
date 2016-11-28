@@ -44,6 +44,8 @@ static const char RL_STR_OPEN []                  = "open";
 static const char RL_STR_VERSION []               = "version_entity";
 static const char RL_STR_LINK []                  = "link";
 static const char RL_STR_SETATTR []               = "setattr";
+static const char RL_STR_SETXATTR []              = "setxattr";
+static const char RL_STR_RMVXATTR []              = "removexattr";
 static const char RL_STR_NAMED []                 = "named";
 static const char RL_STR_IFC []                   = "ifc";
 static const char RL_STR_EXEC []                  = "exec";
@@ -51,6 +53,8 @@ static const char RL_STR_CLONE []                 = "clone";
 static const char RL_STR_VERSION_PROCESS []       = "version_activity";
 static const char RL_STR_SEARCH []                = "search";
 static const char RL_STR_GETATTR []               = "getattr";
+static const char RL_STR_GETXATTR []              = "getxattr";
+static const char RL_STR_LSTXATTR []              = "listxattr";
 static const char RL_STR_READLINK []              = "readlink";
 static const char RL_STR_MMAP_READ []             = "mmap_read";
 static const char RL_STR_MMAP_EXEC []             = "mmap_exec";
@@ -88,6 +92,10 @@ static inline const char* relation_str(uint64_t type){
       return RL_STR_LINK;
     case RL_SETATTR:
       return RL_STR_SETATTR;
+    case RL_SETXATTR:
+      return RL_STR_SETXATTR;
+    case RL_RMVXATTR:
+      return RL_STR_RMVXATTR;
     case RL_NAMED:
       return RL_STR_NAMED;
     case RL_IFC:
@@ -102,6 +110,10 @@ static inline const char* relation_str(uint64_t type){
       return RL_STR_SEARCH;
     case RL_GETATTR:
       return RL_STR_GETATTR;
+    case RL_GETXATTR:
+      return RL_STR_GETXATTR;
+    case RL_LSTXATTR:
+      return RL_STR_LSTXATTR;
     case RL_READLINK:
       return RL_STR_READLINK;
     case RL_MMAP_READ:
@@ -139,6 +151,8 @@ static inline const uint64_t relation_id(char* str){
   MATCH_AND_RETURN(str, RL_STR_VERSION, RL_VERSION);
   MATCH_AND_RETURN(str, RL_STR_LINK, RL_LINK);
   MATCH_AND_RETURN(str, RL_STR_SETATTR, RL_SETATTR);
+  MATCH_AND_RETURN(str, RL_STR_SETXATTR, RL_SETXATTR);
+  MATCH_AND_RETURN(str, RL_STR_RMVXATTR, RL_RMVXATTR);
   MATCH_AND_RETURN(str, RL_STR_READLINK, RL_READLINK);
   MATCH_AND_RETURN(str, RL_STR_NAMED, RL_NAMED);
   MATCH_AND_RETURN(str, RL_STR_IFC, RL_IFC);
@@ -147,6 +161,8 @@ static inline const uint64_t relation_id(char* str){
   MATCH_AND_RETURN(str, RL_STR_VERSION_PROCESS, RL_VERSION_PROCESS);
   MATCH_AND_RETURN(str, RL_STR_SEARCH, RL_SEARCH);
   MATCH_AND_RETURN(str, RL_STR_GETATTR, RL_GETATTR);
+  MATCH_AND_RETURN(str, RL_STR_GETXATTR, RL_GETXATTR);
+  MATCH_AND_RETURN(str, RL_STR_LSTXATTR, RL_LSTXATTR);
   MATCH_AND_RETURN(str, RL_STR_MMAP_READ, RL_MMAP_READ);
   MATCH_AND_RETURN(str, RL_STR_MMAP_EXEC, RL_MMAP_EXEC);
   MATCH_AND_RETURN(str, RL_STR_SND, RL_SND);
@@ -183,6 +199,7 @@ static const char ND_STR_DISC_NODE[]=         "disc_node";
 static const char ND_STR_PACKET[]=            "packet";
 static const char ND_STR_INODE_MMAP[]=        "mmaped_file";
 static const char ND_STR_IATTR[]=             "iattr";
+static const char ND_STR_XATTR[]=             "xattr";
 
 static inline const uint64_t node_id(char* str){
   MATCH_AND_RETURN(str, ND_STR_TASK, ACT_TASK);
@@ -206,6 +223,7 @@ static inline const uint64_t node_id(char* str){
   MATCH_AND_RETURN(str, ND_STR_DISC_AGENT, AGT_DISC);
   MATCH_AND_RETURN(str, ND_STR_PACKET, ENT_PACKET);
   MATCH_AND_RETURN(str, ND_STR_IATTR, ENT_IATTR);
+  MATCH_AND_RETURN(str, ND_STR_XATTR, ENT_XATTR);
   return 0;
 }
 
@@ -255,6 +273,8 @@ static inline const char* node_str(uint64_t type){
       return ND_STR_PACKET;
     case ENT_IATTR:
       return ND_STR_IATTR;
+    case ENT_XATTR:
+      return ND_STR_XATTR;
     default:
       return ND_STR_UNKNOWN;
   }
