@@ -811,6 +811,12 @@ char* machine_description_json(char* buffer){
   strcat(buffer, machine_info.version);
   strcat(buffer, "\",\"cf:machine\":\"");
   strcat(buffer, machine_info.machine);
+  strcat(buffer, "\", \"cf:date");
+  strcat(buffer, "\":\"");
+  update_time();
+  pthread_rwlock_rdlock(&date_lock);
+  strcat(buffer, date);
+  pthread_rwlock_unlock(&date_lock);
   strcat(buffer, "\"}}}");
   return buffer;
 }
