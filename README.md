@@ -21,6 +21,7 @@
 
 ### v0.1.13
 ```
+- Replace cf:type by prov:type.
 - Add support for xattr (node and relations).
 - Add new relations, and nodes based on LSM changes.
 - Fixed duplicated node attribute type.

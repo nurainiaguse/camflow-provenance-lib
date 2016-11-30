@@ -495,7 +495,7 @@ static void prov_prep_taint(const uint8_t bloom[PROV_N_BYTES]){
 
 static inline void __node_identifier(char* buffer, const struct node_identifier* n){
   __add_uint64_attribute(buffer, "cf:id", n->id, false);
-  __add_string_attribute(buffer, "cf:type", node_str(n->type), true);
+  __add_string_attribute(buffer, "prov:type", node_str(n->type), true);
   __add_uint32_attribute(buffer, "cf:boot_id", n->boot_id, true);
   __add_uint32_attribute(buffer, "cf:machine_id", n->machine_id, true);
   __add_uint32_attribute(buffer, "cf:version", n->version, true);
@@ -515,7 +515,7 @@ static inline void __node_start(char* buffer,
 
 static inline void __relation_identifier(char* buffer, const struct relation_identifier* e){
   __add_uint64_attribute(buffer, "cf:id", e->id, false);
-  __add_string_attribute(buffer, "cf:type", relation_str(e->type), true);
+  __add_string_attribute(buffer, "prov:type", relation_str(e->type), true);
   __add_uint32_attribute(buffer, "cf:boot_id", e->boot_id, true);
   __add_uint32_attribute(buffer, "cf:machine_id", e->machine_id, true);
 }
