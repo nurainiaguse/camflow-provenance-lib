@@ -49,6 +49,7 @@ static const char RL_STR_RMVXATTR []              = "removexattr";
 static const char RL_STR_NAMED []                 = "named";
 static const char RL_STR_IFC []                   = "ifc";
 static const char RL_STR_EXEC []                  = "exec";
+static const char RL_STR_EXEC_PROCESS []          = "exec_process";
 static const char RL_STR_CLONE []                 = "clone";
 static const char RL_STR_VERSION_PROCESS []       = "version_activity";
 static const char RL_STR_SEARCH []                = "search";
@@ -102,6 +103,8 @@ static inline const char* relation_str(uint64_t type){
       return RL_STR_IFC;
     case RL_EXEC:
       return RL_STR_EXEC;
+    case RL_EXEC_PROCESS:
+      return RL_STR_EXEC_PROCESS;
     case RL_CLONE:
       return RL_STR_CLONE;
     case RL_VERSION_PROCESS:
@@ -157,6 +160,7 @@ static inline const uint64_t relation_id(char* str){
   MATCH_AND_RETURN(str, RL_STR_NAMED, RL_NAMED);
   MATCH_AND_RETURN(str, RL_STR_IFC, RL_IFC);
   MATCH_AND_RETURN(str, RL_STR_EXEC, RL_EXEC);
+  MATCH_AND_RETURN(str, RL_STR_EXEC_PROCESS, RL_EXEC_PROCESS);
   MATCH_AND_RETURN(str, RL_STR_CLONE, RL_CLONE);
   MATCH_AND_RETURN(str, RL_STR_VERSION_PROCESS, RL_VERSION_PROCESS);
   MATCH_AND_RETURN(str, RL_STR_SEARCH, RL_SEARCH);
