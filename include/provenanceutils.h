@@ -42,6 +42,7 @@ static const char RL_STR_LISTEN []                = "listen";
 static const char RL_STR_ACCEPT []                = "accept";
 static const char RL_STR_OPEN []                  = "open";
 static const char RL_STR_VERSION []               = "version_entity";
+static const char RL_STR_MMAP []                  = "mmap";
 static const char RL_STR_LINK []                  = "link";
 static const char RL_STR_SETATTR []               = "setattr";
 static const char RL_STR_SETXATTR []              = "setxattr";
@@ -89,6 +90,8 @@ static inline const char* relation_str(uint64_t type){
       return RL_STR_OPEN;
     case RL_VERSION:
       return RL_STR_VERSION;
+    case RL_MMAP:
+      return RL_STR_MMAP;
     case RL_LINK:
       return RL_STR_LINK;
     case RL_SETATTR:
@@ -152,6 +155,7 @@ static inline const uint64_t relation_id(char* str){
   MATCH_AND_RETURN(str, RL_STR_ACCEPT, RL_ACCEPT);
   MATCH_AND_RETURN(str, RL_STR_OPEN, RL_OPEN);
   MATCH_AND_RETURN(str, RL_STR_VERSION, RL_VERSION);
+  MATCH_AND_RETURN(str, RL_STR_MMAP, RL_MMAP);
   MATCH_AND_RETURN(str, RL_STR_LINK, RL_LINK);
   MATCH_AND_RETURN(str, RL_STR_SETATTR, RL_SETATTR);
   MATCH_AND_RETURN(str, RL_STR_SETXATTR, RL_SETXATTR);
