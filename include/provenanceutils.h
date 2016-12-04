@@ -48,6 +48,7 @@ static const char RL_STR_SETATTR []               = "setattr";
 static const char RL_STR_SETXATTR []              = "setxattr";
 static const char RL_STR_RMVXATTR []              = "removexattr";
 static const char RL_STR_NAMED []                 = "named";
+static const char RL_STR_NAMED_PROCESS []         = "named_process";
 static const char RL_STR_IFC []                   = "ifc";
 static const char RL_STR_EXEC []                  = "exec";
 static const char RL_STR_EXEC_PROCESS []          = "exec_process";
@@ -100,8 +101,8 @@ static inline const char* relation_str(uint64_t type){
       return RL_STR_SETXATTR;
     case RL_RMVXATTR:
       return RL_STR_RMVXATTR;
-    case RL_NAMED:
-      return RL_STR_NAMED;
+    case RL_NAMED_PROCESS:
+      return RL_STR_NAMED_PROCESS;
     case RL_IFC:
       return RL_STR_IFC;
     case RL_EXEC:
@@ -162,6 +163,7 @@ static inline const uint64_t relation_id(char* str){
   MATCH_AND_RETURN(str, RL_STR_RMVXATTR, RL_RMVXATTR);
   MATCH_AND_RETURN(str, RL_STR_READLINK, RL_READLINK);
   MATCH_AND_RETURN(str, RL_STR_NAMED, RL_NAMED);
+  MATCH_AND_RETURN(str, RL_STR_NAMED_PROCESS, RL_NAMED_PROCESS);
   MATCH_AND_RETURN(str, RL_STR_IFC, RL_IFC);
   MATCH_AND_RETURN(str, RL_STR_EXEC, RL_EXEC);
   MATCH_AND_RETURN(str, RL_STR_EXEC_PROCESS, RL_EXEC_PROCESS);
