@@ -40,6 +40,8 @@ struct provenance_ops{
   void (*log_address)(struct address_struct*);
   void (*log_file_name)(struct file_name_struct*);
   void (*log_ifc)(struct ifc_context_struct*);
+  void (*log_iattr)(struct iattr_prov_struct*);
+  void (*log_xattr)(struct xattr_prov_struct*);
   /* callback for library erros */
   void (*log_error)(char*);
 };
@@ -205,10 +207,12 @@ int provenance_taint_process(uint32_t pid, uint64_t taint);
 
 int provenance_ingress_ipv4_track(const char* param);
 int provenance_ingress_ipv4_propagate(const char* param);
+int provenance_ingress_ipv4_delete(const char* param);
+int provenance_ingress_ipv4( struct prov_ipv4_filter* filters, size_t length );
+
 int provenance_egress_ipv4_track(const char* param);
 int provenance_egress_ipv4_propagate(const char* param);
-
-int provenance_ingress_ipv4( struct prov_ipv4_filter* filters, size_t length );
+int provenance_egress_ipv4_delete(const char* param);
 int provenance_egress_ipv4( struct prov_ipv4_filter* filters, size_t length );
 
 #endif /* __PROVENANCELIB_H */

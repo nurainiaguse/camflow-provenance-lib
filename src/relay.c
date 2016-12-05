@@ -60,7 +60,9 @@ static inline void record_error(const char* fmt, ...){
 	va_start(args, fmt);
 	vsprintf(tmp, fmt, args);
 	va_end(args);
-  prov_ops.log_error(tmp);
+  if(prov_ops.log_error!=NULL){
+    prov_ops.log_error(tmp);
+  }
 }
 
 int provenance_register(struct provenance_ops* ops)
@@ -164,31 +166,37 @@ void prov_record(prov_msg_t* msg){
     w3c_type = W3C_TYPE(prov_type(msg));
     switch(w3c_type){
       case RL_DERIVED:
-        if(prov_ops.log_derived!=NULL)
+        if(prov_ops.log_derived!=NULL){
           prov_ops.log_derived(&(msg->relation_info));
+        }
         break;
       case RL_GENERATED:
-        if(prov_ops.log_generated!=NULL)
+        if(prov_ops.log_generated!=NULL){
           prov_ops.log_generated(&(msg->relation_info));
+        }
         break;
       case RL_USED:
-        if(prov_ops.log_used!=NULL)
+        if(prov_ops.log_used!=NULL){
           prov_ops.log_used(&(msg->relation_info));
+        }
         break;
       case RL_INFORMED:
-        if(prov_ops.log_informed!=NULL)
+        if(prov_ops.log_informed!=NULL){
           prov_ops.log_informed(&(msg->relation_info));
+        }
         break;
       default:
-        if(prov_ops.log_unknown_relation!=NULL)
+        if(prov_ops.log_unknown_relation!=NULL){
           prov_ops.log_unknown_relation(&(msg->relation_info));
+        }
         break;
     }
   }else{
     switch(prov_type(msg)){
       case ACT_TASK:
-        if(prov_ops.log_task!=NULL)
+        if(prov_ops.log_task!=NULL){
           prov_ops.log_task(&(msg->task_info));
+        }
         break;
       case ENT_INODE_UNKNOWN:
       case ENT_INODE_LINK:
@@ -199,20 +207,29 @@ void prov_record(prov_msg_t* msg){
       case ENT_INODE_FIFO:
       case ENT_INODE_SOCKET:
       case ENT_INODE_MMAP:
-        if(prov_ops.log_inode!=NULL)
+        if(prov_ops.log_inode!=NULL){
           prov_ops.log_inode(&(msg->inode_info));
+        }
         break;
       case ENT_MSG:
-        if(prov_ops.log_msg!=NULL)
+        if(prov_ops.log_msg!=NULL){
           prov_ops.log_msg(&(msg->msg_msg_info));
+        }
         break;
       case ENT_SHM:
-        if(prov_ops.log_shm!=NULL)
+        if(prov_ops.log_shm!=NULL){
           prov_ops.log_shm(&(msg->shm_info));
+        }
         break;
       case ENT_PACKET:
-        if(prov_ops.log_packet!=NULL)
+        if(prov_ops.log_packet!=NULL){
           prov_ops.log_packet(&(msg->pck_info));
+        }
+        break;
+      case ENT_IATTR:
+        if(prov_ops.log_iattr!=NULL){
+          prov_ops.log_iattr(&(msg->iattr_info));
+        }
         break;
       default:
         record_error("Error: unknown type %llu\n", prov_type(msg));
@@ -250,20 +267,29 @@ out:
 void long_prov_record(long_prov_msg_t* msg){
   switch(prov_type(msg)){
     case ENT_STR:
-      if(prov_ops.log_str!=NULL)
+      if(prov_ops.log_str!=NULL){
         prov_ops.log_str(&(msg->str_info));
+      }
       break;
     case ENT_FILE_NAME:
-      if(prov_ops.log_file_name!=NULL)
+      if(prov_ops.log_file_name!=NULL){
         prov_ops.log_file_name(&(msg->file_name_info));
+      }
       break;
     case ENT_ADDR:
-      if(prov_ops.log_address!=NULL)
+      if(prov_ops.log_address!=NULL){
         prov_ops.log_address(&(msg->address_info));
+      }
       break;
     case ENT_IFC:
-      if(prov_ops.log_ifc!=NULL)
+      if(prov_ops.log_ifc!=NULL){
         prov_ops.log_ifc(&(msg->ifc_info));
+      }
+      break;
+    case ENT_XATTR:
+      if(prov_ops.log_xattr!=NULL){
+        prov_ops.log_xattr(&(msg->xattr_info));
+      }
       break;
     case ENT_DISC:
     case ACT_DISC:

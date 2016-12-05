@@ -4,6 +4,7 @@
 
 | Library version | Date       |
 | --------------- | ---------- |
+| 0.1.13          | 05/12/2016 |
 | 0.1.12          | 14/11/2016 |
 | 0.1.11          | 11/11/2016 |
 | 0.1.10          | 28/10/2016 |
@@ -17,6 +18,17 @@
 | 0.1.2           | 26/05/2016 |
 | 0.1.1           | 03/04/2016 |
 | 0.1.0           | 28/03/2016 |
+
+### v0.1.13
+```
+- Replace cf:type by prov:type.
+- Add support for xattr (node and relations).
+- Add new relations, and nodes based on LSM changes.
+- Fixed duplicated node attribute type.
+- Add command line option to delete ingress and egress ipv4 filter.
+- Add provenance_ingress_ipv4_delete and provenance_egress_ipv4_delete.
+- Replace "version" by "version_activity" and "version_entity".
+```
 
 ### v0.1.12
 ```
