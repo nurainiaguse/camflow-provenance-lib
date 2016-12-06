@@ -4,6 +4,7 @@
 
 | Library version | Date       |
 | --------------- | ---------- |
+| 0.1.14          | N/A        |
 | 0.1.13          | 05/12/2016 |
 | 0.1.12          | 14/11/2016 |
 | 0.1.11          | 11/11/2016 |
@@ -19,7 +20,14 @@
 | 0.1.1           | 03/04/2016 |
 | 0.1.0           | 28/03/2016 |
 
+### v0.1.14
+
+```
+-
+```
+
 ### v0.1.13
+
 ```
 - Replace cf:type by prov:type.
 - Add support for xattr (node and relations).
@@ -31,11 +39,13 @@
 ```
 
 ### v0.1.12
+
 ```
 - Fix bug in the command line tool (--track-file --track-process not working).
 ```
 
 ### v0.1.11
+
 ```
 - Does not taint attribute if no taint is set.
 - Relation and node types recorded as string.
@@ -49,12 +59,14 @@
 ```
 
 ### v0.1.10
+
 ```
 - Guarantee machine id is properly set.
 - Add pid and vpid attribute to task JSON serialisation.
 ```
 
 ### v0.1.9
+
 ```
 - Private mmaped files now appear as separate nodes, connected to the mmaped file by a create relationship.
 - Add offset to relation if file info is set.
@@ -62,6 +74,7 @@
 ```
 
 ### v0.1.8
+
 ```
 - Changed attribute name cf:parent_id -> cf:hasParent.
 - Add infrastructure to deal with IPv4 packet provenance.
@@ -69,11 +82,13 @@
 ```
 
 ### v0.1.7
+
 ```
 - Adding API to manipulate taint.
 ```
 
 ### v0.1.6
+
 ```
 - Rework how tracking propagation work.
 - Added utils function for compression + encoding.
