@@ -717,6 +717,7 @@ char* packet_to_json(struct pck_struct* p){
   __add_uint32_attribute(buffer, "cf:seq", p->identifier.packet_id.seq, true);
   __add_ipv4_attribute(buffer, "cf:sender", p->identifier.packet_id.snd_ip, p->identifier.packet_id.snd_port, true);
   __add_ipv4_attribute(buffer, "cf:receiver", p->identifier.packet_id.rcv_ip, p->identifier.packet_id.rcv_port, true);
+  __add_string_attribute(buffer, "prov:type", "packet", true);
   __add_string_attribute(buffer, "cf:taint", taint, true);
   __add_uint64_attribute(buffer, "cf:jiffies", p->jiffies, true);
   strcat(buffer, ",\"prov:label\":\"[packet] ");

@@ -23,7 +23,7 @@
 ### v0.1.14
 
 ```
--
+- Fix prov:type attribute missing in packet nodes.
 ```
 
 ### v0.1.13
