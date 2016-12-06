@@ -23,6 +23,7 @@
 ### v0.1.14
 
 ```
+- IPv4 attribute properly set in provenance graph.
 - Fix prov:type attribute missing in packet nodes.
 ```
 

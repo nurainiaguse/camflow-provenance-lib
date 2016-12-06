@@ -447,7 +447,6 @@ static inline void __add_label_attribute(char* buffer, const char* type, const c
 static inline char* __format_ipv4(char* buffer, uint32_t ip, uint32_t port){
     char tmp[8];
     unsigned char bytes[4];
-    ip = htonl(ip);
     port = htons(port);
     buffer[0]='\0';
     strcat(buffer, uint32_to_ipv4str(ip));
