@@ -23,6 +23,7 @@
 ### v0.1.14
 
 ```
+- Fix a number of warning during build.
 - Correct relation type between packets and source/destination inodes.
 - IPv4 attribute properly set in provenance graph.
 - Fix prov:type attribute missing in packet nodes.

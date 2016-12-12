@@ -130,19 +130,19 @@ void state( void ){
   }
 
   provenance_get_node_filter(&filter);
-  printf("\nNode filter (%0x):\n", filter);
+  printf("\nNode filter (%0lx):\n", filter);
 
   provenance_get_relation_filter(&filter);
-  printf("Relation filter (%0x):\n", filter);
+  printf("Relation filter (%0lx):\n", filter);
 
   provenance_get_propagate_node_filter(&filter);
-  printf("\nPropagate node filter (%0x):\n", filter);
+  printf("\nPropagate node filter (%0lx):\n", filter);
 
   provenance_get_propagate_relation_filter(&filter);
-  printf("Propagate relation filter (%0x):\n", filter);
+  printf("Propagate relation filter (%0lx):\n", filter);
 
   size = provenance_ingress_ipv4(filters, 100*sizeof(struct prov_ipv4_filter));
-  printf("IPv4 ingress filter (%d).\n", size/sizeof(struct prov_ipv4_filter));
+  printf("IPv4 ingress filter (%ld).\n", size/sizeof(struct prov_ipv4_filter));
   for(i = 0; i < size/sizeof(struct prov_ipv4_filter); i++){
     printf("%s", uint32_to_ipv4str(filters[i].ip));
     printf("/%d", count_set_bits(filters[i].mask));
@@ -157,7 +157,7 @@ void state( void ){
   }
 
   size = provenance_egress_ipv4(filters, 100*sizeof(struct prov_ipv4_filter));
-  printf("IPv4 egress filter (%d).\n", size/sizeof(struct prov_ipv4_filter));
+  printf("IPv4 egress filter (%ld).\n", size/sizeof(struct prov_ipv4_filter));
   for(i = 0; i < size/sizeof(struct prov_ipv4_filter); i++){
     printf("%s", uint32_to_ipv4str(filters[i].ip));
     printf("/%d", count_set_bits(filters[i].mask));
@@ -190,7 +190,7 @@ void file( const char* path){
 
   ID_ENCODE(prov_id_buffer(&inode_info), PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN);
   printf("Identifier: %s\n", id);
-  printf("Type: %u\n", node_identifier(&inode_info).type);
+  printf("Type: %lu\n", node_identifier(&inode_info).type);
   printf("ID: %lu\n", node_identifier(&inode_info).id);
   printf("Boot ID: %u\n", node_identifier(&inode_info).boot_id);
   printf("Machine ID: %u\n", node_identifier(&inode_info).machine_id);
@@ -228,7 +228,7 @@ void process(uint32_t pid){
 
   ID_ENCODE(prov_id_buffer(&process_info), PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN);
   printf("Identifier: %s\n", id);
-  printf("Type: %u\n", node_identifier(&process_info).type);
+  printf("Type: %lu\n", node_identifier(&process_info).type);
   printf("ID: %lu\n", node_identifier(&process_info).id);
   printf("Boot ID: %u\n", node_identifier(&process_info).boot_id);
   printf("Machine ID: %u\n", node_identifier(&process_info).machine_id);
