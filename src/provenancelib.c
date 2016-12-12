@@ -343,7 +343,7 @@ union ipaddr{
 static int __param_to_ipv4_filter(const char* param, struct prov_ipv4_filter* filter){
   int err;
   union ipaddr ip;
-  uint8_t a,b,c,d;
+  uint32_t a,b,c,d;
   uint32_t mask;
   uint16_t port;
 
