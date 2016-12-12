@@ -23,6 +23,7 @@
 #include "provenanceutils.h"
 
 static inline int __set_boolean(bool value, const char* name){
+  int rc;
   int fd = open(name, O_WRONLY);
 
   if(fd<0)
@@ -31,24 +32,31 @@ static inline int __set_boolean(bool value, const char* name){
   }
   if(value)
   {
-    write(fd, "1", sizeof(char));
+    rc = write(fd, "1", sizeof(char));
   }else{
-    write(fd, "0", sizeof(char));
+    rc = write(fd, "0", sizeof(char));
   }
   close(fd);
+  if(rc < 0){
+    return rc;
+  }
   return 0;
 }
 
 static inline bool __get_boolean(const char* name){
   int fd = open(name, O_RDONLY);
+  int rc;
   char c;
   if(fd<0)
   {
     return false;
   }
 
-  read(fd, &c, sizeof(char));
+  rc = read(fd, &c, sizeof(char));
   close(fd);
+  if( rc<0 ){
+    return false;
+  }
   return c!='0';
 }
 
@@ -106,26 +114,34 @@ int provenance_set_propagate(bool v){
 }
 
 int provenance_set_machine_id(uint32_t v){
+  int rc;
   int fd = open(PROV_MACHINE_ID_FILE, O_WRONLY);
 
   if(fd<0)
   {
     return fd;
   }
-  write(fd, &v, sizeof(uint32_t));
+  rc = write(fd, &v, sizeof(uint32_t));
   close(fd);
+  if(rc<0){
+    return rc;
+  }
   return 0;
 }
 
 int provenance_get_machine_id(uint32_t* v){
+  int rc;
   int fd = open(PROV_MACHINE_ID_FILE, O_RDONLY);
 
   if(fd<0)
   {
     return fd;
   }
-  read(fd, v, sizeof(uint32_t));
+  rc = read(fd, v, sizeof(uint32_t));
   close(fd);
+  if(rc<0){
+    return rc;
+  }
   return 0;
 }
 
@@ -191,28 +207,37 @@ int provenance_flush(void){
 
 int provenance_read_file(const char name[PATH_MAX], prov_msg_t* inode_info){
   struct prov_file_config cfg;
-  int rc;
+  int rc=-1;
+  void* ptr;
   int fd = open(PROV_FILE_FILE, O_RDONLY);
 
   if( fd < 0 ){
     return fd;
   }
-  realpath(name, cfg.name);
+  ptr = realpath(name, cfg.name);
+  if(ptr==NULL){
+    goto out;
+  }
 
   rc = read(fd, &cfg, sizeof(struct prov_file_config));
-  close(fd);
   memcpy(inode_info, &(cfg.prov), sizeof(prov_msg_t));
+out:
+  close(fd);
   return rc;
 }
 
 #define declare_set_file_fcn(fcn_name, element, operation) int fcn_name (const char name[PATH_MAX], bool v){\
     struct prov_file_config cfg;\
-    int rc;\
+    int rc=-1;\
+    void* ptr;\
     int fd = open(PROV_FILE_FILE, O_WRONLY);\
     if( fd < 0 ){\
       return fd;\
     }\
-    realpath(name, cfg.name);\
+    ptr = realpath(name, cfg.name);\
+    if(ptr==NULL){\
+      goto out;\
+    }\
     cfg.op=operation;\
     if(v){\
       prov_set_flag(&cfg.prov, element);\
@@ -220,6 +245,7 @@ int provenance_read_file(const char name[PATH_MAX], prov_msg_t* inode_info){
       prov_clear_flag(&cfg.prov, element);\
     }\
     rc = write(fd, &cfg, sizeof(struct prov_file_config));\
+out:\
     close(fd);\
     return rc;\
   }
@@ -239,17 +265,22 @@ int provenance_propagate_file(const char name[PATH_MAX], bool propagate){
 
 int provenance_taint_file(const char name[PATH_MAX], uint64_t taint){
   struct prov_file_config cfg;
-  int rc;
+  int rc=-1;
+  void* ptr;
   int fd = open(PROV_FILE_FILE, O_WRONLY);
   if( fd < 0 ){
     return fd;
   }
   memset(&cfg, 0, sizeof(struct prov_file_config));
-  realpath(name, cfg.name);
+  ptr = realpath(name, cfg.name);
+  if(ptr==NULL){
+    goto out;
+  }
   cfg.op=PROV_SET_TAINT;
   prov_bloom_add(prov_taint(&(cfg.prov)), taint);
 
   rc = write(fd, &cfg, sizeof(struct prov_file_config));
+out:
   close(fd);
   return rc;
 }
@@ -345,7 +376,7 @@ static int __param_to_ipv4_filter(const char* param, struct prov_ipv4_filter* fi
   union ipaddr ip;
   uint32_t a,b,c,d;
   uint32_t mask;
-  uint16_t port;
+  uint32_t port;
 
   err = sscanf(param, "%u.%u.%u.%u/%u:%u", &a, &b, &c, &d, &mask, &port);
   ip.buffer[0]=a;
