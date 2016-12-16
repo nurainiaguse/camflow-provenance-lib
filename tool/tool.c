@@ -258,7 +258,6 @@ void process(uint32_t pid){
 int main(int argc, char *argv[]){
   int err;
   uint64_t id;
-  tag_t tag;
 
   CHECK_ATTR_NB(argc, 2);
   // do it properly, but that will do for now
