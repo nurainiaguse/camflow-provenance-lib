@@ -281,11 +281,6 @@ void long_prov_record(long_prov_msg_t* msg){
         prov_ops.log_address(&(msg->address_info));
       }
       break;
-    case ENT_IFC:
-      if(prov_ops.log_ifc!=NULL){
-        prov_ops.log_ifc(&(msg->ifc_info));
-      }
-      break;
     case ENT_XATTR:
       if(prov_ops.log_xattr!=NULL){
         prov_ops.log_xattr(&(msg->xattr_info));

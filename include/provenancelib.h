@@ -39,7 +39,6 @@ struct provenance_ops{
   void (*log_packet)(struct pck_struct*);
   void (*log_address)(struct address_struct*);
   void (*log_file_name)(struct file_name_struct*);
-  void (*log_ifc)(struct ifc_context_struct*);
   void (*log_iattr)(struct iattr_prov_struct*);
   void (*log_xattr)(struct xattr_prov_struct*);
   /* callback for library erros */

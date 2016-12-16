@@ -798,14 +798,6 @@ char* pathname_to_json(struct file_name_struct* n){
   return buffer;
 }
 
-char* ifc_to_json(struct ifc_context_struct* n){
-  NODE_PREP_IDs(n);
-  prov_prep_taint(n->taint);
-  __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
-  __add_string_attribute(buffer, "cf:pathname", "TODO", true);
-  return buffer;
-}
-
 char* prefix_json(){
   return "\"prov\" : \"http://www.w3.org/ns/prov\", \"cf\":\"http://www.camflow.org\"";
 }

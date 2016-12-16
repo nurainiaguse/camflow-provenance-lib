@@ -4,7 +4,7 @@
 
 | Library version | Date       |
 | --------------- | ---------- |
-| 0.1.14          | N/A        |
+| 0.2.0           | N/A        |
 | 0.1.13          | 05/12/2016 |
 | 0.1.12          | 14/11/2016 |
 | 0.1.11          | 11/11/2016 |
@@ -20,9 +20,9 @@
 | 0.1.1           | 03/04/2016 |
 | 0.1.0           | 28/03/2016 |
 
-### v0.1.14
-
+### v0.2.0
 ```
+- IFC support on hold.
 - Fix a number of warning during build.
 - Correct relation type between packets and source/destination inodes.
 - IPv4 attribute properly set in provenance graph.

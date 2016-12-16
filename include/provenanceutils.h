@@ -49,7 +49,6 @@ static const char RL_STR_SETXATTR []              = "setxattr";
 static const char RL_STR_RMVXATTR []              = "removexattr";
 static const char RL_STR_NAMED []                 = "named";
 static const char RL_STR_NAMED_PROCESS []         = "named_process";
-static const char RL_STR_IFC []                   = "ifc";
 static const char RL_STR_EXEC []                  = "exec";
 static const char RL_STR_EXEC_PROCESS []          = "exec_process";
 static const char RL_STR_CLONE []                 = "clone";
@@ -105,8 +104,6 @@ static inline const char* relation_str(uint64_t type){
       return RL_STR_RMVXATTR;
     case RL_NAMED_PROCESS:
       return RL_STR_NAMED_PROCESS;
-    case RL_IFC:
-      return RL_STR_IFC;
     case RL_EXEC:
       return RL_STR_EXEC;
     case RL_EXEC_PROCESS:
@@ -170,7 +167,6 @@ static inline const uint64_t relation_id(char* str){
   MATCH_AND_RETURN(str, RL_STR_READLINK, RL_READLINK);
   MATCH_AND_RETURN(str, RL_STR_NAMED, RL_NAMED);
   MATCH_AND_RETURN(str, RL_STR_NAMED_PROCESS, RL_NAMED_PROCESS);
-  MATCH_AND_RETURN(str, RL_STR_IFC, RL_IFC);
   MATCH_AND_RETURN(str, RL_STR_EXEC, RL_EXEC);
   MATCH_AND_RETURN(str, RL_STR_EXEC_PROCESS, RL_EXEC_PROCESS);
   MATCH_AND_RETURN(str, RL_STR_CLONE, RL_CLONE);
@@ -209,7 +205,6 @@ static const char ND_STR_SOCK[]=              "sock";
 static const char ND_STR_ADDR[]=              "address";
 static const char ND_STR_SB[]=                "sb";
 static const char ND_STR_FILE_NAME[]=         "file_name";
-static const char ND_STR_IFC[]=               "ifc";
 static const char ND_STR_DISC_ENTITY[]=       "disc_entity";
 static const char ND_STR_DISC_ACTIVITY[]=     "disc_activity";
 static const char ND_STR_DISC_AGENT[]=        "disc_agent";
@@ -235,7 +230,6 @@ static inline const uint64_t node_id(char* str){
   MATCH_AND_RETURN(str, ND_STR_ADDR, ENT_ADDR);
   MATCH_AND_RETURN(str, ND_STR_SB, ENT_SBLCK);
   MATCH_AND_RETURN(str, ND_STR_FILE_NAME, ENT_FILE_NAME);
-  MATCH_AND_RETURN(str, ND_STR_IFC, ENT_IFC);
   MATCH_AND_RETURN(str, ND_STR_DISC_ENTITY, ENT_DISC);
   MATCH_AND_RETURN(str, ND_STR_DISC_ACTIVITY, ACT_DISC);
   MATCH_AND_RETURN(str, ND_STR_DISC_AGENT, AGT_DISC);
@@ -279,8 +273,6 @@ static inline const char* node_str(uint64_t type){
       return ND_STR_SB;
     case ENT_FILE_NAME:
       return ND_STR_FILE_NAME;
-    case ENT_IFC:
-      return ND_STR_IFC;
     case ENT_DISC:
       return ND_STR_DISC_ENTITY;
     case ACT_DISC:
