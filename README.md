@@ -22,6 +22,7 @@
 
 ### v0.2.0
 ```
+- cgroup ID recorded in json output.
 - IFC support on hold.
 - Fix a number of warning during build.
 - Correct relation type between packets and source/destination inodes.

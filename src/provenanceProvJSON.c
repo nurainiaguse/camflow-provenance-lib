@@ -582,6 +582,7 @@ char* task_to_json(struct task_prov_struct* n){
   __add_uint32_attribute(buffer, "cf:gid", n->gid, true);
   __add_uint32_attribute(buffer, "cf:pid", n->pid, true);
   __add_uint32_attribute(buffer, "cf:vpid", n->vpid, true);
+  __add_uint32_attribute(buffer, "cf:cid", n->cid, true);
   __add_label_attribute(buffer, "task", utoa(n->identifier.node_id.version, tmp, DECIMAL), true);
   __close_json_entry(buffer);
   return buffer;
