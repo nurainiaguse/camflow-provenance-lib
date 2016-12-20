@@ -15,4 +15,4 @@ clean:
 	rm -f tool.o
 
 install:
-	cp --force ./tool.o /usr/bin/camflow-prov
+	cp --force ./tool.o /usr/bin/camflow
