@@ -437,3 +437,25 @@ declare_set_ipv4_fcn(provenance_egress_ipv4_delete, PROV_IPV4_EGRESS_FILE, PROV_
 
 declare_get_ipv4_fcn(provenance_ingress_ipv4, PROV_IPV4_INGRESS_FILE);
 declare_get_ipv4_fcn(provenance_egress_ipv4, PROV_IPV4_EGRESS_FILE);
+
+int provenance_secid_to_secctx( uint32_t secid, char* secctx, uint32_t len){
+  struct secinfo info;
+  int rc;
+  int fd = open(PROV_SECCTX, O_RDONLY);
+  if( fd < 0 ){
+    return fd;
+  }
+  memset(&info, 0, sizeof(struct secinfo));
+  info.secid=secid;
+  rc = read(fd, &info, sizeof(struct secinfo));
+  close(fd);
+  if(rc<0){
+    secctx[0]='\0';
+    return rc;
+  }
+  if(len<strlen(info.secctx)){
+    return -1;
+  }
+  strncpy(secctx, info.secctx, len);
+  return rc;
+}

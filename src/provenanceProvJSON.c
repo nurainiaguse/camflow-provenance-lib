@@ -575,6 +575,8 @@ char* disc_to_json(struct disc_node_struct* n){
 
 char* task_to_json(struct task_prov_struct* n){
   char tmp[33];
+  char secctx[PATH_MAX];
+  provenance_secid_to_secctx(n->secid, secctx, PATH_MAX);
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
@@ -584,6 +586,7 @@ char* task_to_json(struct task_prov_struct* n){
   __add_uint32_attribute(buffer, "cf:vpid", n->vpid, true);
   __add_uint32_attribute(buffer, "cf:cid", n->cid, true);
   __add_uint32_attribute(buffer, "cf:secid", n->secid, true);
+  __add_string_attribute(buffer, "cf:secctx", secctx, true);
   __add_label_attribute(buffer, "task", utoa(n->identifier.node_id.version, tmp, DECIMAL), true);
   __close_json_entry(buffer);
   return buffer;
@@ -635,12 +638,15 @@ static inline const char* get_inode_type(mode_t mode){
 char* inode_to_json(struct inode_prov_struct* n){
   char uuid[UUID_STR_SIZE];
   char tmp[65];
+  char secctx[PATH_MAX];
+  provenance_secid_to_secctx(n->secid, secctx, PATH_MAX);
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
   __add_uint32_attribute(buffer, "cf:uid", n->uid, true);
   __add_uint32_attribute(buffer, "cf:gid", n->gid, true);
   __add_uint32_attribute(buffer, "cf:secid", n->secid, true);
+  __add_string_attribute(buffer, "cf:secctx", secctx, true);
   __add_uint32hex_attribute(buffer, "cf:mode", n->mode, true);
   __add_string_attribute(buffer, "cf:uuid", uuid_to_str(n->sb_uuid, uuid, UUID_STR_SIZE), true);
   __add_label_attribute(buffer, node_str(n->identifier.node_id.type), utoa(n->identifier.node_id.version, tmp, DECIMAL), true);
