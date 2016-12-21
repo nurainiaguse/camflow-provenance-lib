@@ -20,7 +20,8 @@
 
 ### v0.2.0
 ```
-- secid recoreded in json output.
+- secctx recorded in the json output.
+- secid recoreded in the json output.
 - cgroup ID recorded in json output.
 - IFC support on hold.
 - Fix a number of warning during build.
