@@ -48,7 +48,6 @@ char* inode_to_json(struct inode_prov_struct* n);
 char* sb_to_json(struct sb_struct* n);
 char* msg_to_json(struct msg_msg_struct* n);
 char* shm_to_json(struct shm_struct* n);
-char* sock_to_json(struct sock_struct* n);
 char* packet_to_json(struct pck_struct* n);
 char* str_msg_to_json(struct str_struct* n);
 char* addr_to_json(struct address_struct* n);
