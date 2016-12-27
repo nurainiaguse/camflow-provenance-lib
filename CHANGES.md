@@ -20,6 +20,7 @@
 
 ### v0.2.0
 ```
+- Record service pid in /run/provenance-service.pid
 - Make audit file opaque.
 - secctx recorded in the json output.
 - secid recoreded in the json output.
