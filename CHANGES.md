@@ -19,6 +19,7 @@
 | 0.1.0           | 28/03/2016 |
 
 ### v0.2.0
+
 ```
 - Record service pid in /run/provenance-service.pid
 - Make audit file opaque.
