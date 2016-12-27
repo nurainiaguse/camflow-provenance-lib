@@ -20,6 +20,7 @@
 
 ### v0.2.0
 ```
+- Make audit file opaque.
 - secctx recorded in the json output.
 - secid recoreded in the json output.
 - cgroup ID recorded in json output.

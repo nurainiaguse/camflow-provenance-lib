@@ -40,6 +40,7 @@ void _init_logs( void ){
   simplog.setLineWrap(false);
   simplog.setLogSilentMode(true);
   simplog.setLogDebugLevel(SIMPLOG_VERBOSE);
+  provenance_opaque_file(LOG_FILE, true);
 }
 
 void init( void ){
