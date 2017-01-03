@@ -45,7 +45,7 @@
 #define ARG_PROPAGATE_FILTER_NODE       "--node-propagate-filter"
 #define ARG_PROPAGATE_FILTER_EDGE       "--edge-propagate-filter"
 #define ARG_FILTER_RESET                "--reset-filter"
-
+#define ARG_SECCTX_FILTER               "--track-secctx"
 
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -74,6 +74,7 @@ void usage( void ){
   printf(CMD_COLORED CMD_PARAMETER("pid") CMD_PARAMETER("bool") " mark/unmark the process as opaque.\n", ARG_OPAQUE_PROCESS);
   printf(CMD_COLORED CMD_PARAMETER("ip/mask:port") CMD_PARAMETER("track/propagate/delete") " track/propagate on bind.\n", ARG_TRACK_IPV4_INGRESS);
   printf(CMD_COLORED CMD_PARAMETER("ip/mask:port") CMD_PARAMETER("track/propagate/delete") " track/propagate on connect.\n", ARG_TRACK_IPV4_EGRESS);
+  printf(CMD_COLORED CMD_PARAMETER("security context") CMD_PARAMETER("track/propagate/delete") " track/propagate based on security context.\n", ARG_SECCTX_FILTER);
   printf(CMD_COLORED CMD_PARAMETER("type") CMD_PARAMETER("bool") " set node filter.\n", ARG_FILTER_NODE);
   printf(CMD_COLORED CMD_PARAMETER("type") CMD_PARAMETER("bool") " set edge filter.\n", ARG_FILTER_EDGE);
   printf(CMD_COLORED CMD_PARAMETER("type") CMD_PARAMETER("bool") " set propagate node filter.\n", ARG_PROPAGATE_FILTER_NODE);
@@ -110,6 +111,7 @@ void all( const char* str ){
 void state( void ){
   uint64_t filter=0;
   struct prov_ipv4_filter filters[100];
+  struct secinfo sec_filters[100];
   int size;
   uint32_t machine_id;
   int i;
@@ -166,6 +168,18 @@ void state( void ){
     if((filters[i].op&PROV_NET_PROPAGATE) == PROV_NET_PROPAGATE){
       printf("propagate");
     }else if((filters[i].op&PROV_NET_TRACKED) == PROV_NET_TRACKED){
+      printf("track");
+    }
+    printf("\n");
+  }
+
+  size = provenance_secctx(sec_filters, 100*sizeof(struct secinfo));
+  printf("IPv4 egress filter (%ld).\n", size/sizeof(struct secinfo));
+  for(i = 0; i < size/sizeof(struct secinfo); i++){
+    printf("%s", sec_filters[i].secctx);
+    if((filters[i].op&PROV_SEC_PROPAGATE) == PROV_SEC_PROPAGATE){
+      printf("propagate");
+    }else if((filters[i].op&PROV_SEC_TRACKED) == PROV_SEC_TRACKED){
       printf("track");
     }
     printf("\n");
@@ -385,6 +399,21 @@ int main(int argc, char *argv[]){
 
     if(err < 0){
       perror("Could not change ipv4 egress.\n");
+    }
+    return 0;
+  }
+  MATCH_ARGS(argv[1], ARG_SECCTX_FILTER){
+    CHECK_ATTR_NB(argc, 4);
+    if( is_str_propagate( argv[3]) ){
+      err = provenance_secctx_propagate(argv[2]);
+    }else if( is_str_track(argv[3])){
+      err = provenance_secctx_track(argv[2]);
+    }else if( is_str_delete(argv[3])){
+      err = provenance_secctx_delete(argv[2]);
+    }
+
+    if(err < 0){
+      perror("Could not change security context filter.\n");
     }
     return 0;
   }
