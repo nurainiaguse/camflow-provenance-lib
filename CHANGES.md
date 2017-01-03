@@ -21,6 +21,7 @@
 ### v0.2.0
 
 ```
+- Record inode number.
 - Record service pid in /run/provenance-service.pid
 - Make audit file opaque.
 - secctx recorded in the json output.
