@@ -216,4 +216,9 @@ int provenance_egress_ipv4( struct prov_ipv4_filter* filters, size_t length );
 
 int provenance_secid_to_secctx( uint32_t secid, char* secctx, uint32_t len);
 
+int provenance_secctx_track(const char* secctx);
+int provenance_secctx_propagate(const char* secctx);
+int provenance_secctx_delete(const char* secctx);
+int provenance_secctx( struct secinfo* filters, size_t length );
+
 #endif /* __PROVENANCELIB_H */

@@ -459,3 +459,34 @@ int provenance_secid_to_secctx( uint32_t secid, char* secctx, uint32_t len){
   strncpy(secctx, info.secctx, len);
   return rc;
 }
+
+#define declare_set_secctx_fcn(fcn_name, operation) int fcn_name (const char* secctx){\
+  struct secinfo filter;\
+  int rc;\
+  int fd = open(PROV_SECCTX_FILTER, O_WRONLY);\
+  if( fd < 0 ){\
+    return fd;\
+  }\
+  strncpy(filter.secctx, secctx, PATH_MAX);\
+  filter.len=strlen(filter.secctx);\
+  filter.op = operation;\
+  rc = write(fd, &filter, sizeof(struct secinfo));\
+  close(fd);\
+  return rc;\
+}
+
+#define declare_get_secctx_fcn(fcn_name) int fcn_name ( struct secinfo* filters, size_t length ){\
+  int rc;\
+  int fd = open(PROV_SECCTX_FILTER, O_RDONLY);\
+  if( fd < 0 ){\
+    return fd;\
+  }\
+  rc = read(fd, filters, length);\
+  close(fd);\
+  return rc;\
+}
+
+declare_set_secctx_fcn(provenance_secctx_track, PROV_SEC_TRACKED);
+declare_set_secctx_fcn(provenance_secctx_propagate, PROV_SEC_TRACKED|PROV_SEC_PROPAGATE);
+declare_set_secctx_fcn(provenance_secctx_delete, PROV_SEC_DELETE);
+declare_get_secctx_fcn(provenance_secctx);
