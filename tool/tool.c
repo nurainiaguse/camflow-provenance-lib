@@ -174,7 +174,7 @@ void state( void ){
   }
 
   size = provenance_secctx(sec_filters, 100*sizeof(struct secinfo));
-  printf("IPv4 egress filter (%ld).\n", size/sizeof(struct secinfo));
+  printf("Security context filter (%ld).\n", size/sizeof(struct secinfo));
   for(i = 0; i < size/sizeof(struct secinfo); i++){
     printf("%s", sec_filters[i].secctx);
     if((filters[i].op&PROV_SEC_PROPAGATE) == PROV_SEC_PROPAGATE){
