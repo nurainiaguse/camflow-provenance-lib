@@ -21,6 +21,7 @@
 ### v0.2.0
 
 ```
+- Handle shared read and shared write.
 - Handle security context filters.
 - Record inode number.
 - Record service pid in /run/provenance-service.pid
