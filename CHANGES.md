@@ -21,6 +21,7 @@
 ### v0.2.0
 
 ```
+- Handle CGroup filters.
 - Handle shared read and shared write.
 - Handle security context filters.
 - Record inode number.

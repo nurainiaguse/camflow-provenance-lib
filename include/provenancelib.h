@@ -221,4 +221,9 @@ int provenance_secctx_propagate(const char* secctx);
 int provenance_secctx_delete(const char* secctx);
 int provenance_secctx( struct secinfo* filters, size_t length );
 
+int provenance_cgroup_track(const uint32_t cid);
+int provenance_cgroup_propagate(const uint32_t cid);
+int provenance_cgroup_delete(const uint32_t cid);
+int provenance_cgroup( struct cgroupinfo* filters, size_t length );
+
 #endif /* __PROVENANCELIB_H */
