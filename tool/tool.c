@@ -58,6 +58,7 @@
 
 #define CMD_COLORED ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET
 #define CMD_PARAMETER(str) " " ANSI_COLOR_YELLOW "<" str ">" ANSI_COLOR_RESET
+#define CMD_WARNING(str) ANSI_COLOR_RED str ANSI_COLOR_RESET
 
 void usage( void ){
   printf(CMD_COLORED " usage.\n", ARG_HELP);
@@ -328,7 +329,6 @@ int main(int argc, char *argv[]){
         err |= provenance_propagate_file(argv[2], false);
       }
     }
-
     if(err < 0){
       perror("Could not change tracking settings for this file.\n");
     }
@@ -365,7 +365,6 @@ int main(int argc, char *argv[]){
         err |= provenance_propagate_process(atoi(argv[2]), false);
       }
     }
-
     if(err < 0){
       perror("Could not change tracking settings for this process.\n");
     }
@@ -396,9 +395,10 @@ int main(int argc, char *argv[]){
     }else if( is_str_delete(argv[3])){
       err = provenance_ingress_ipv4_delete(argv[2]);
     }
-
     if(err < 0){
       perror("Could not change ipv4 ingress.\n");
+    }else{
+      printf(CMD_WARNING("Only apply to newly created connection.\n"));
     }
     return 0;
   }
@@ -411,9 +411,10 @@ int main(int argc, char *argv[]){
     }else if( is_str_delete(argv[3])){
       err = provenance_egress_ipv4_delete(argv[2]);
     }
-
     if(err < 0){
       perror("Could not change ipv4 egress.\n");
+    }else{
+      printf(CMD_WARNING("Only apply to newly created connection.\n"));
     }
     return 0;
   }
