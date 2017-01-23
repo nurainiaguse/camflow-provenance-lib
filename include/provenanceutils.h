@@ -221,6 +221,7 @@ static const char ND_STR_PACKET[]=            "packet";
 static const char ND_STR_INODE_MMAP[]=        "mmaped_file";
 static const char ND_STR_IATTR[]=             "iattr";
 static const char ND_STR_XATTR[]=             "xattr";
+static const char ND_STR_PCKCNT[]=            "packet_content";
 
 static inline const uint64_t node_id(char* str){
   MATCH_AND_RETURN(str, ND_STR_TASK, ACT_TASK);
@@ -244,6 +245,7 @@ static inline const uint64_t node_id(char* str){
   MATCH_AND_RETURN(str, ND_STR_PACKET, ENT_PACKET);
   MATCH_AND_RETURN(str, ND_STR_IATTR, ENT_IATTR);
   MATCH_AND_RETURN(str, ND_STR_XATTR, ENT_XATTR);
+  MATCH_AND_RETURN(str, ND_STR_PCKCNT, ENT_PCKCNT);
   return 0;
 }
 
@@ -293,6 +295,8 @@ static inline const char* node_str(uint64_t type){
       return ND_STR_IATTR;
     case ENT_XATTR:
       return ND_STR_XATTR;
+    case ENT_PCKCNT:
+      return ND_STR_PCKCNT;
     default:
       return ND_STR_UNKNOWN;
   }
