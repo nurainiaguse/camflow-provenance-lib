@@ -382,7 +382,7 @@ static int __param_to_ipv4_filter(const char* param, struct prov_ipv4_filter* fi
   ip.buffer[0]=a;
   ip.buffer[1]=b;
   ip.buffer[2]=c;
-  ip.buffer[3]=c;
+  ip.buffer[3]=d;
   if(err < 6){
     errno=-EINVAL;
     return -EINVAL;
