@@ -300,15 +300,18 @@ void long_prov_record(long_prov_msg_t* msg){
       }
       break;
     case ENT_XATTR:
-      if(prov_ops.log_xattr!=NULL){
+      if(prov_ops.log_xattr!=NULL)
         prov_ops.log_xattr(&(msg->xattr_info));
-      }
       break;
     case ENT_DISC:
     case ACT_DISC:
     case AGT_DISC:
       if(prov_ops.log_disc!=NULL)
         prov_ops.log_disc(&(msg->disc_node_info));
+      break;
+    case ENT_PCKCNT:
+      if(prov_ops.log_packet_content!=NULL)
+        prov_ops.log_packet_content(&(msg->pckcnt_info));
       break;
     default:
       record_error("Error: unknown long type %llu\n", prov_type(msg));

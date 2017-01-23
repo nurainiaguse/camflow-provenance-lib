@@ -30,6 +30,7 @@
 - secctx recorded in the json output.
 - secid recoreded in the json output.
 - cgroup ID recorded in json output.
+- Record IP packet content.
 - IFC support on hold.
 - Fix a number of warning during build.
 - Correct relation type between packets and source/destination inodes.

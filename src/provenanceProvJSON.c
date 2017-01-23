@@ -440,7 +440,8 @@ static inline void __add_label_attribute(char* buffer, const char* type, const c
   }else{
     strcat(buffer, "\"");
   }
-  strcat(buffer, text);
+  if(text!=NULL)
+    strcat(buffer, text);
   strcat(buffer, "\"");
 }
 
@@ -682,6 +683,22 @@ char* xattr_to_json(struct xattr_prov_struct* n){
     // TODO record value when present
   }
   __add_label_attribute(buffer, "xattr", n->name, true);
+  __close_json_entry(buffer);
+  return buffer;
+}
+
+char* pckcnt_to_json(struct pckcnt_struct* n){
+  char* cntenc;
+  NODE_PREP_IDs(n);
+  prov_prep_taint(n->taint);
+  __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
+  cntenc = malloc( encode64Bound(n->length) );
+  base64encode(n->content, n->length, cntenc, encode64Bound(n->length));
+  __add_string_attribute(buffer, "cf:content", cntenc, true);
+  free(cntenc);
+  __add_uint32_attribute(buffer, "cf:length", n->length, true);
+  __add_string_attribute(buffer, "cf:truncated", bool_str[n->truncated], true);
+  __add_label_attribute(buffer, "content", NULL, true);
   __close_json_entry(buffer);
   return buffer;
 }
