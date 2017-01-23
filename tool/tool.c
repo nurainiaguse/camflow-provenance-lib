@@ -74,8 +74,8 @@ void usage( void ){
   printf(CMD_COLORED CMD_PARAMETER("pid") CMD_PARAMETER("false/true/propagate") " set tracking.\n", ARG_TRACK_PROCESS);
   printf(CMD_COLORED CMD_PARAMETER("pid") CMD_PARAMETER("uint64") " applies taint to the process.\n", ARG_TAINT_PROCESS);
   printf(CMD_COLORED CMD_PARAMETER("pid") CMD_PARAMETER("bool") " mark/unmark the process as opaque.\n", ARG_OPAQUE_PROCESS);
-  printf(CMD_COLORED CMD_PARAMETER("ip/mask:port") CMD_PARAMETER("track/propagate/delete") " track/propagate on bind.\n", ARG_TRACK_IPV4_INGRESS);
-  printf(CMD_COLORED CMD_PARAMETER("ip/mask:port") CMD_PARAMETER("track/propagate/delete") " track/propagate on connect.\n", ARG_TRACK_IPV4_EGRESS);
+  printf(CMD_COLORED CMD_PARAMETER("ip/mask:port") CMD_PARAMETER("track/propagate/record/delete") " track/propagate on bind.\n", ARG_TRACK_IPV4_INGRESS);
+  printf(CMD_COLORED CMD_PARAMETER("ip/mask:port") CMD_PARAMETER("track/propagate/record/delete") " track/propagate on connect.\n", ARG_TRACK_IPV4_EGRESS);
   printf(CMD_COLORED CMD_PARAMETER("security context") CMD_PARAMETER("track/propagate/delete") " track/propagate based on security context.\n", ARG_SECCTX_FILTER);
   printf(CMD_COLORED CMD_PARAMETER("cgroup ino") CMD_PARAMETER("track/propagate/delete") " track/propagate based on cgroup.\n", ARG_CGROUP_FILTER);
   printf(CMD_COLORED CMD_PARAMETER("type") CMD_PARAMETER("bool") " set node filter.\n", ARG_FILTER_NODE);
@@ -88,6 +88,7 @@ void usage( void ){
 #define is_str_track(str) ( strcmp (str, "track") == 0)
 #define is_str_delete(str) ( strcmp (str, "delete") == 0)
 #define is_str_propagate(str) ( strcmp (str, "propagate") == 0)
+#define is_str_record(str) ( strcmp (str, "record") == 0)
 #define is_str_true(str) ( strcmp (str, "true") == 0)
 #define is_str_false(str) ( strcmp (str, "false") == 0)
 
@@ -159,6 +160,9 @@ void state( void ){
     }else if((filters[i].op&PROV_NET_TRACKED) == PROV_NET_TRACKED){
       printf("track");
     }
+    if((filters[i].op&PROV_NET_RECORD) == PROV_NET_RECORD){
+      printf(" record");
+    }
     printf("\n");
   }
 
@@ -173,6 +177,9 @@ void state( void ){
       printf("propagate");
     }else if((filters[i].op&PROV_NET_TRACKED) == PROV_NET_TRACKED){
       printf("track");
+    }
+    if((filters[i].op&PROV_NET_RECORD) == PROV_NET_RECORD){
+      printf(" record");
     }
     printf("\n");
   }
@@ -390,6 +397,8 @@ int main(int argc, char *argv[]){
     CHECK_ATTR_NB(argc, 4);
     if( is_str_propagate( argv[3]) ){
       err = provenance_ingress_ipv4_propagate(argv[2]);
+    }else if( is_str_record( argv[3]) ){
+      err = provenance_ingress_ipv4_record(argv[2]);
     }else if( is_str_track(argv[3])){
       err = provenance_ingress_ipv4_track(argv[2]);
     }else if( is_str_delete(argv[3])){
@@ -406,6 +415,8 @@ int main(int argc, char *argv[]){
     CHECK_ATTR_NB(argc, 4);
     if( is_str_propagate( argv[3]) ){
       err = provenance_egress_ipv4_propagate(argv[2]);
+    }else if( is_str_record(argv[3]) ){
+      err = provenance_egress_ipv4_record(argv[2]);
     }else if( is_str_track(argv[3])){
       err = provenance_egress_ipv4_track(argv[2]);
     }else if( is_str_delete(argv[3])){
