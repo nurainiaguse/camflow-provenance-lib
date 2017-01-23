@@ -36,6 +36,7 @@ static const char RL_STR_WRITE []                 = "write";
 static const char RL_STR_CREATE []                = "create";
 static const char RL_STR_CHANGE []                = "change";
 static const char RL_STR_MMAP_WRITE []            = "mmap_write";
+static const char RL_STR_SH_WRITE []              = "sh_write";
 static const char RL_STR_BIND []                  = "bind";
 static const char RL_STR_CONNECT []               = "connect";
 static const char RL_STR_LISTEN []                = "listen";
@@ -49,7 +50,6 @@ static const char RL_STR_SETXATTR []              = "setxattr";
 static const char RL_STR_RMVXATTR []              = "removexattr";
 static const char RL_STR_NAMED []                 = "named";
 static const char RL_STR_NAMED_PROCESS []         = "named_process";
-static const char RL_STR_IFC []                   = "ifc";
 static const char RL_STR_EXEC []                  = "exec";
 static const char RL_STR_EXEC_PROCESS []          = "exec_process";
 static const char RL_STR_CLONE []                 = "clone";
@@ -60,9 +60,12 @@ static const char RL_STR_GETXATTR []              = "getxattr";
 static const char RL_STR_LSTXATTR []              = "listxattr";
 static const char RL_STR_READLINK []              = "readlink";
 static const char RL_STR_MMAP_READ []             = "mmap_read";
+static const char RL_STR_SH_READ []               = "sh_read";
 static const char RL_STR_MMAP_EXEC []             = "mmap_exec";
 static const char RL_STR_SND []                   = "send";
+static const char RL_STR_SND_PACKET []            = "send_packet";
 static const char RL_STR_RCV []                   = "receive";
+static const char RL_STR_RCV_PACKET []            = "receive_packet";
 static const char RL_STR_PERM_READ[]              = "perm_read";
 static const char RL_STR_PERM_WRITE[]             = "perm_write";
 static const char RL_STR_PERM_EXEC[]              = "perm_exec";
@@ -103,8 +106,6 @@ static inline const char* relation_str(uint64_t type){
       return RL_STR_RMVXATTR;
     case RL_NAMED_PROCESS:
       return RL_STR_NAMED_PROCESS;
-    case RL_IFC:
-      return RL_STR_IFC;
     case RL_EXEC:
       return RL_STR_EXEC;
     case RL_EXEC_PROCESS:
@@ -129,12 +130,20 @@ static inline const char* relation_str(uint64_t type){
       return RL_STR_MMAP_EXEC;
     case RL_SND:
       return RL_STR_SND;
+    case RL_SND_PACKET:
+      return RL_STR_SND_PACKET;
     case RL_RCV:
       return RL_STR_RCV;
+    case RL_RCV_PACKET:
+      return RL_STR_RCV_PACKET;
     case RL_PERM_READ:
       return RL_STR_PERM_READ;
     case RL_PERM_WRITE:
       return RL_STR_PERM_WRITE;
+    case RL_SH_READ:
+      return RL_STR_SH_READ;
+    case RL_SH_WRITE:
+      return RL_STR_SH_WRITE;
     case RL_PERM_EXEC:
       return RL_STR_PERM_EXEC;
     default:
@@ -164,7 +173,6 @@ static inline const uint64_t relation_id(char* str){
   MATCH_AND_RETURN(str, RL_STR_READLINK, RL_READLINK);
   MATCH_AND_RETURN(str, RL_STR_NAMED, RL_NAMED);
   MATCH_AND_RETURN(str, RL_STR_NAMED_PROCESS, RL_NAMED_PROCESS);
-  MATCH_AND_RETURN(str, RL_STR_IFC, RL_IFC);
   MATCH_AND_RETURN(str, RL_STR_EXEC, RL_EXEC);
   MATCH_AND_RETURN(str, RL_STR_EXEC_PROCESS, RL_EXEC_PROCESS);
   MATCH_AND_RETURN(str, RL_STR_CLONE, RL_CLONE);
@@ -176,10 +184,14 @@ static inline const uint64_t relation_id(char* str){
   MATCH_AND_RETURN(str, RL_STR_MMAP_READ, RL_MMAP_READ);
   MATCH_AND_RETURN(str, RL_STR_MMAP_EXEC, RL_MMAP_EXEC);
   MATCH_AND_RETURN(str, RL_STR_SND, RL_SND);
+  MATCH_AND_RETURN(str, RL_STR_SND_PACKET, RL_SND_PACKET);
   MATCH_AND_RETURN(str, RL_STR_RCV, RL_RCV);
+  MATCH_AND_RETURN(str, RL_STR_RCV_PACKET, RL_RCV_PACKET);
   MATCH_AND_RETURN(str, RL_STR_PERM_READ, RL_PERM_READ);
   MATCH_AND_RETURN(str, RL_STR_PERM_WRITE, RL_PERM_WRITE);
   MATCH_AND_RETURN(str, RL_STR_PERM_EXEC, RL_PERM_EXEC);
+  MATCH_AND_RETURN(str, RL_STR_SH_READ, RL_SH_READ);
+  MATCH_AND_RETURN(str, RL_STR_SH_WRITE, RL_SH_WRITE);
   return 0;
 }
 
@@ -201,7 +213,6 @@ static const char ND_STR_SOCK[]=              "sock";
 static const char ND_STR_ADDR[]=              "address";
 static const char ND_STR_SB[]=                "sb";
 static const char ND_STR_FILE_NAME[]=         "file_name";
-static const char ND_STR_IFC[]=               "ifc";
 static const char ND_STR_DISC_ENTITY[]=       "disc_entity";
 static const char ND_STR_DISC_ACTIVITY[]=     "disc_activity";
 static const char ND_STR_DISC_AGENT[]=        "disc_agent";
@@ -210,6 +221,7 @@ static const char ND_STR_PACKET[]=            "packet";
 static const char ND_STR_INODE_MMAP[]=        "mmaped_file";
 static const char ND_STR_IATTR[]=             "iattr";
 static const char ND_STR_XATTR[]=             "xattr";
+static const char ND_STR_PCKCNT[]=            "packet_content";
 
 static inline const uint64_t node_id(char* str){
   MATCH_AND_RETURN(str, ND_STR_TASK, ACT_TASK);
@@ -227,13 +239,13 @@ static inline const uint64_t node_id(char* str){
   MATCH_AND_RETURN(str, ND_STR_ADDR, ENT_ADDR);
   MATCH_AND_RETURN(str, ND_STR_SB, ENT_SBLCK);
   MATCH_AND_RETURN(str, ND_STR_FILE_NAME, ENT_FILE_NAME);
-  MATCH_AND_RETURN(str, ND_STR_IFC, ENT_IFC);
   MATCH_AND_RETURN(str, ND_STR_DISC_ENTITY, ENT_DISC);
   MATCH_AND_RETURN(str, ND_STR_DISC_ACTIVITY, ACT_DISC);
   MATCH_AND_RETURN(str, ND_STR_DISC_AGENT, AGT_DISC);
   MATCH_AND_RETURN(str, ND_STR_PACKET, ENT_PACKET);
   MATCH_AND_RETURN(str, ND_STR_IATTR, ENT_IATTR);
   MATCH_AND_RETURN(str, ND_STR_XATTR, ENT_XATTR);
+  MATCH_AND_RETURN(str, ND_STR_PCKCNT, ENT_PCKCNT);
   return 0;
 }
 
@@ -271,8 +283,6 @@ static inline const char* node_str(uint64_t type){
       return ND_STR_SB;
     case ENT_FILE_NAME:
       return ND_STR_FILE_NAME;
-    case ENT_IFC:
-      return ND_STR_IFC;
     case ENT_DISC:
       return ND_STR_DISC_ENTITY;
     case ACT_DISC:
@@ -285,6 +295,8 @@ static inline const char* node_str(uint64_t type){
       return ND_STR_IATTR;
     case ENT_XATTR:
       return ND_STR_XATTR;
+    case ENT_PCKCNT:
+      return ND_STR_PCKCNT;
     default:
       return ND_STR_UNKNOWN;
   }

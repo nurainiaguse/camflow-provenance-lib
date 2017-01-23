@@ -48,15 +48,14 @@ char* inode_to_json(struct inode_prov_struct* n);
 char* sb_to_json(struct sb_struct* n);
 char* msg_to_json(struct msg_msg_struct* n);
 char* shm_to_json(struct shm_struct* n);
-char* sock_to_json(struct sock_struct* n);
 char* packet_to_json(struct pck_struct* n);
 char* str_msg_to_json(struct str_struct* n);
 char* addr_to_json(struct address_struct* n);
 char* pathname_to_json(struct file_name_struct* n);
-char* ifc_to_json(struct ifc_context_struct* n);
 char* prefix_json();
 char* machine_description_json(char* buffer);
 char* iattr_to_json(struct iattr_prov_struct* n);
 char* xattr_to_json(struct xattr_prov_struct* n);
+char* pckcnt_to_json(struct pckcnt_struct* n);
 
 #endif /* __PROVENANCEPROVJSON_H */

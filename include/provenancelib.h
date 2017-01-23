@@ -39,10 +39,10 @@ struct provenance_ops{
   void (*log_packet)(struct pck_struct*);
   void (*log_address)(struct address_struct*);
   void (*log_file_name)(struct file_name_struct*);
-  void (*log_ifc)(struct ifc_context_struct*);
   void (*log_iattr)(struct iattr_prov_struct*);
   void (*log_xattr)(struct xattr_prov_struct*);
-  /* callback for library erros */
+  void (*log_packet_content)(struct pckcnt_struct*);
+  /* callback for library errors */
   void (*log_error)(char*);
 };
 
@@ -207,12 +207,26 @@ int provenance_taint_process(uint32_t pid, uint64_t taint);
 
 int provenance_ingress_ipv4_track(const char* param);
 int provenance_ingress_ipv4_propagate(const char* param);
+int provenance_ingress_ipv4_record(const char* param);
 int provenance_ingress_ipv4_delete(const char* param);
 int provenance_ingress_ipv4( struct prov_ipv4_filter* filters, size_t length );
 
 int provenance_egress_ipv4_track(const char* param);
 int provenance_egress_ipv4_propagate(const char* param);
+int provenance_egress_ipv4_record(const char* param);
 int provenance_egress_ipv4_delete(const char* param);
 int provenance_egress_ipv4( struct prov_ipv4_filter* filters, size_t length );
+
+int provenance_secid_to_secctx( uint32_t secid, char* secctx, uint32_t len);
+
+int provenance_secctx_track(const char* secctx);
+int provenance_secctx_propagate(const char* secctx);
+int provenance_secctx_delete(const char* secctx);
+int provenance_secctx( struct secinfo* filters, size_t length );
+
+int provenance_cgroup_track(const uint32_t cid);
+int provenance_cgroup_propagate(const uint32_t cid);
+int provenance_cgroup_delete(const uint32_t cid);
+int provenance_cgroup( struct cgroupinfo* filters, size_t length );
 
 #endif /* __PROVENANCELIB_H */

@@ -32,6 +32,7 @@
 static inline int __provenance_change_filter( bool add, const char* file, uint64_t filter, uint64_t mask ){
   struct prov_filter f;
   int fd = open(file, O_WRONLY);
+  int rc;
 
   if(fd<0)
   {
@@ -45,20 +46,27 @@ static inline int __provenance_change_filter( bool add, const char* file, uint64
     f.add=0;
   }
 
-  write(fd, &f, sizeof(struct prov_filter));
+  rc = write(fd, &f, sizeof(struct prov_filter));
   close(fd);
+  if(rc<0){
+    return rc;
+  }
   return 0;
 }
 
 static inline int __provenance_get_filter( const char* file, uint64_t* filter ){
   int fd = open(file, O_RDONLY);
+  int rc;
   if(fd<0)
   {
     return fd;
   }
 
-  read(fd, filter, sizeof(uint64_t));
+  rc = read(fd, filter, sizeof(uint64_t));
   close(fd);
+  if(rc<0){
+    return rc;
+  }
   return 0;
 }
 

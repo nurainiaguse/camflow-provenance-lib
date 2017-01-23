@@ -23,6 +23,7 @@
 #include "provenanceutils.h"
 
 static inline int __set_boolean(bool value, const char* name){
+  int rc;
   int fd = open(name, O_WRONLY);
 
   if(fd<0)
@@ -31,24 +32,31 @@ static inline int __set_boolean(bool value, const char* name){
   }
   if(value)
   {
-    write(fd, "1", sizeof(char));
+    rc = write(fd, "1", sizeof(char));
   }else{
-    write(fd, "0", sizeof(char));
+    rc = write(fd, "0", sizeof(char));
   }
   close(fd);
+  if(rc < 0){
+    return rc;
+  }
   return 0;
 }
 
 static inline bool __get_boolean(const char* name){
   int fd = open(name, O_RDONLY);
+  int rc;
   char c;
   if(fd<0)
   {
     return false;
   }
 
-  read(fd, &c, sizeof(char));
+  rc = read(fd, &c, sizeof(char));
   close(fd);
+  if( rc<0 ){
+    return false;
+  }
   return c!='0';
 }
 
@@ -106,26 +114,34 @@ int provenance_set_propagate(bool v){
 }
 
 int provenance_set_machine_id(uint32_t v){
+  int rc;
   int fd = open(PROV_MACHINE_ID_FILE, O_WRONLY);
 
   if(fd<0)
   {
     return fd;
   }
-  write(fd, &v, sizeof(uint32_t));
+  rc = write(fd, &v, sizeof(uint32_t));
   close(fd);
+  if(rc<0){
+    return rc;
+  }
   return 0;
 }
 
 int provenance_get_machine_id(uint32_t* v){
+  int rc;
   int fd = open(PROV_MACHINE_ID_FILE, O_RDONLY);
 
   if(fd<0)
   {
     return fd;
   }
-  read(fd, v, sizeof(uint32_t));
+  rc = read(fd, v, sizeof(uint32_t));
   close(fd);
+  if(rc<0){
+    return rc;
+  }
   return 0;
 }
 
@@ -191,28 +207,37 @@ int provenance_flush(void){
 
 int provenance_read_file(const char name[PATH_MAX], prov_msg_t* inode_info){
   struct prov_file_config cfg;
-  int rc;
+  int rc=-1;
+  void* ptr;
   int fd = open(PROV_FILE_FILE, O_RDONLY);
 
   if( fd < 0 ){
     return fd;
   }
-  realpath(name, cfg.name);
+  ptr = realpath(name, cfg.name);
+  if(ptr==NULL){
+    goto out;
+  }
 
   rc = read(fd, &cfg, sizeof(struct prov_file_config));
-  close(fd);
   memcpy(inode_info, &(cfg.prov), sizeof(prov_msg_t));
+out:
+  close(fd);
   return rc;
 }
 
 #define declare_set_file_fcn(fcn_name, element, operation) int fcn_name (const char name[PATH_MAX], bool v){\
     struct prov_file_config cfg;\
-    int rc;\
+    int rc=-1;\
+    void* ptr;\
     int fd = open(PROV_FILE_FILE, O_WRONLY);\
     if( fd < 0 ){\
       return fd;\
     }\
-    realpath(name, cfg.name);\
+    ptr = realpath(name, cfg.name);\
+    if(ptr==NULL){\
+      goto out;\
+    }\
     cfg.op=operation;\
     if(v){\
       prov_set_flag(&cfg.prov, element);\
@@ -220,6 +245,7 @@ int provenance_read_file(const char name[PATH_MAX], prov_msg_t* inode_info){
       prov_clear_flag(&cfg.prov, element);\
     }\
     rc = write(fd, &cfg, sizeof(struct prov_file_config));\
+out:\
     close(fd);\
     return rc;\
   }
@@ -239,17 +265,22 @@ int provenance_propagate_file(const char name[PATH_MAX], bool propagate){
 
 int provenance_taint_file(const char name[PATH_MAX], uint64_t taint){
   struct prov_file_config cfg;
-  int rc;
+  int rc=-1;
+  void* ptr;
   int fd = open(PROV_FILE_FILE, O_WRONLY);
   if( fd < 0 ){
     return fd;
   }
   memset(&cfg, 0, sizeof(struct prov_file_config));
-  realpath(name, cfg.name);
+  ptr = realpath(name, cfg.name);
+  if(ptr==NULL){
+    goto out;
+  }
   cfg.op=PROV_SET_TAINT;
   prov_bloom_add(prov_taint(&(cfg.prov)), taint);
 
   rc = write(fd, &cfg, sizeof(struct prov_file_config));
+out:
   close(fd);
   return rc;
 }
@@ -343,15 +374,15 @@ union ipaddr{
 static int __param_to_ipv4_filter(const char* param, struct prov_ipv4_filter* filter){
   int err;
   union ipaddr ip;
-  uint8_t a,b,c,d;
+  uint32_t a,b,c,d;
   uint32_t mask;
-  uint16_t port;
+  uint32_t port;
 
   err = sscanf(param, "%u.%u.%u.%u/%u:%u", &a, &b, &c, &d, &mask, &port);
   ip.buffer[0]=a;
   ip.buffer[1]=b;
   ip.buffer[2]=c;
-  ip.buffer[3]=c;
+  ip.buffer[3]=d;
   if(err < 6){
     errno=-EINVAL;
     return -EINVAL;
@@ -398,11 +429,96 @@ static int __param_to_ipv4_filter(const char* param, struct prov_ipv4_filter* fi
 
 declare_set_ipv4_fcn(provenance_ingress_ipv4_track, PROV_IPV4_INGRESS_FILE, PROV_NET_TRACKED);
 declare_set_ipv4_fcn(provenance_ingress_ipv4_propagate, PROV_IPV4_INGRESS_FILE, PROV_NET_TRACKED|PROV_NET_PROPAGATE);
+declare_set_ipv4_fcn(provenance_ingress_ipv4_record, PROV_IPV4_INGRESS_FILE, PROV_NET_TRACKED|PROV_NET_RECORD);
 declare_set_ipv4_fcn(provenance_ingress_ipv4_delete, PROV_IPV4_INGRESS_FILE, PROV_NET_DELETE);
 
 declare_set_ipv4_fcn(provenance_egress_ipv4_track, PROV_IPV4_EGRESS_FILE, PROV_NET_TRACKED);
 declare_set_ipv4_fcn(provenance_egress_ipv4_propagate, PROV_IPV4_EGRESS_FILE, PROV_NET_TRACKED|PROV_NET_PROPAGATE);
+declare_set_ipv4_fcn(provenance_egress_ipv4_record, PROV_IPV4_EGRESS_FILE, PROV_NET_TRACKED|PROV_NET_RECORD);
 declare_set_ipv4_fcn(provenance_egress_ipv4_delete, PROV_IPV4_EGRESS_FILE, PROV_NET_DELETE);
 
 declare_get_ipv4_fcn(provenance_ingress_ipv4, PROV_IPV4_INGRESS_FILE);
 declare_get_ipv4_fcn(provenance_egress_ipv4, PROV_IPV4_EGRESS_FILE);
+
+int provenance_secid_to_secctx( uint32_t secid, char* secctx, uint32_t len){
+  struct secinfo info;
+  int rc;
+  int fd = open(PROV_SECCTX, O_RDONLY);
+  if( fd < 0 ){
+    return fd;
+  }
+  memset(&info, 0, sizeof(struct secinfo));
+  info.secid=secid;
+  rc = read(fd, &info, sizeof(struct secinfo));
+  close(fd);
+  if(rc<0){
+    secctx[0]='\0';
+    return rc;
+  }
+  if(len<strlen(info.secctx)){
+    return -1;
+  }
+  strncpy(secctx, info.secctx, len);
+  return rc;
+}
+
+#define declare_set_secctx_fcn(fcn_name, operation) int fcn_name (const char* secctx){\
+  struct secinfo filter;\
+  int rc;\
+  int fd = open(PROV_SECCTX_FILTER, O_WRONLY);\
+  if( fd < 0 ){\
+    return fd;\
+  }\
+  strncpy(filter.secctx, secctx, PATH_MAX);\
+  filter.len=strlen(filter.secctx);\
+  filter.op = operation;\
+  rc = write(fd, &filter, sizeof(struct secinfo));\
+  close(fd);\
+  return rc;\
+}
+
+#define declare_get_secctx_fcn(fcn_name) int fcn_name ( struct secinfo* filters, size_t length ){\
+  int rc;\
+  int fd = open(PROV_SECCTX_FILTER, O_RDONLY);\
+  if( fd < 0 ){\
+    return fd;\
+  }\
+  rc = read(fd, filters, length);\
+  close(fd);\
+  return rc;\
+}
+
+declare_set_secctx_fcn(provenance_secctx_track, PROV_SEC_TRACKED);
+declare_set_secctx_fcn(provenance_secctx_propagate, PROV_SEC_TRACKED|PROV_SEC_PROPAGATE);
+declare_set_secctx_fcn(provenance_secctx_delete, PROV_SEC_DELETE);
+declare_get_secctx_fcn(provenance_secctx);
+
+#define declare_set_cgroup_fcn(fcn_name, operation) int fcn_name (const uint32_t cid){\
+  struct cgroupinfo filter;\
+  int rc;\
+  int fd = open(PROV_CGROUP_FILTER, O_WRONLY);\
+  if( fd < 0 ){\
+    return fd;\
+  }\
+  filter.cid = cid;\
+  filter.op = operation;\
+  rc = write(fd, &filter, sizeof(struct cgroupinfo));\
+  close(fd);\
+  return rc;\
+}
+
+#define declare_get_cgroup_fcn(fcn_name) int fcn_name ( struct cgroupinfo* filters, size_t length ){\
+  int rc;\
+  int fd = open(PROV_CGROUP_FILTER, O_RDONLY);\
+  if( fd < 0 ){\
+    return fd;\
+  }\
+  rc = read(fd, filters, length);\
+  close(fd);\
+  return rc;\
+}
+
+declare_set_cgroup_fcn(provenance_cgroup_track, PROV_CGROUP_TRACKED);
+declare_set_cgroup_fcn(provenance_cgroup_propagate, PROV_CGROUP_TRACKED|PROV_CGROUP_PROPAGATE);
+declare_set_cgroup_fcn(provenance_cgroup_delete, PROV_CGROUP_DELETE);
+declare_get_cgroup_fcn(provenance_cgroup);

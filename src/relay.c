@@ -23,6 +23,8 @@
 #include "thpool.h"
 #include "provenancelib.h"
 
+#define RUN_PID_FILE "/run/provenance-service.pid"
+
 /*
 * TODO look at code to avoid duplication across normal and "long" relay
 */
@@ -65,6 +67,18 @@ static inline void record_error(const char* fmt, ...){
   }
 }
 
+int provenance_record_pid( void ){
+  int err;
+  pid_t pid = getpid();
+  FILE *f = fopen(RUN_PID_FILE, "w");
+  if(f==NULL){
+    return -1;
+  }
+  err = fprintf(f, "%d", pid);
+  fclose(f);
+  return err;
+}
+
 int provenance_register(struct provenance_ops* ops)
 {
   int err;
@@ -94,6 +108,10 @@ int provenance_register(struct provenance_ops* ops)
   /* create callback threads */
   if(create_worker_pool()){
     close_files();
+    return -1;
+  }
+
+  if(provenance_record_pid() < 0){
     return -1;
   }
   return 0;
@@ -281,21 +299,19 @@ void long_prov_record(long_prov_msg_t* msg){
         prov_ops.log_address(&(msg->address_info));
       }
       break;
-    case ENT_IFC:
-      if(prov_ops.log_ifc!=NULL){
-        prov_ops.log_ifc(&(msg->ifc_info));
-      }
-      break;
     case ENT_XATTR:
-      if(prov_ops.log_xattr!=NULL){
+      if(prov_ops.log_xattr!=NULL)
         prov_ops.log_xattr(&(msg->xattr_info));
-      }
       break;
     case ENT_DISC:
     case ACT_DISC:
     case AGT_DISC:
       if(prov_ops.log_disc!=NULL)
         prov_ops.log_disc(&(msg->disc_node_info));
+      break;
+    case ENT_PCKCNT:
+      if(prov_ops.log_packet_content!=NULL)
+        prov_ops.log_packet_content(&(msg->pckcnt_info));
       break;
     default:
       record_error("Error: unknown long type %llu\n", prov_type(msg));

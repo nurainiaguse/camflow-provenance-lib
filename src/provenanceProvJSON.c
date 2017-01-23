@@ -440,14 +440,14 @@ static inline void __add_label_attribute(char* buffer, const char* type, const c
   }else{
     strcat(buffer, "\"");
   }
-  strcat(buffer, text);
+  if(text!=NULL)
+    strcat(buffer, text);
   strcat(buffer, "\"");
 }
 
 static inline char* __format_ipv4(char* buffer, uint32_t ip, uint32_t port){
     char tmp[8];
     unsigned char bytes[4];
-    ip = htonl(ip);
     port = htons(port);
     buffer[0]='\0';
     strcat(buffer, uint32_to_ipv4str(ip));
@@ -576,6 +576,8 @@ char* disc_to_json(struct disc_node_struct* n){
 
 char* task_to_json(struct task_prov_struct* n){
   char tmp[33];
+  char secctx[PATH_MAX];
+  provenance_secid_to_secctx(n->secid, secctx, PATH_MAX);
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
@@ -583,6 +585,8 @@ char* task_to_json(struct task_prov_struct* n){
   __add_uint32_attribute(buffer, "cf:gid", n->gid, true);
   __add_uint32_attribute(buffer, "cf:pid", n->pid, true);
   __add_uint32_attribute(buffer, "cf:vpid", n->vpid, true);
+  __add_uint32_attribute(buffer, "cf:cid", n->cid, true);
+  __add_string_attribute(buffer, "cf:secctx", secctx, true);
   __add_label_attribute(buffer, "task", utoa(n->identifier.node_id.version, tmp, DECIMAL), true);
   __close_json_entry(buffer);
   return buffer;
@@ -634,12 +638,16 @@ static inline const char* get_inode_type(mode_t mode){
 char* inode_to_json(struct inode_prov_struct* n){
   char uuid[UUID_STR_SIZE];
   char tmp[65];
+  char secctx[PATH_MAX];
+  provenance_secid_to_secctx(n->secid, secctx, PATH_MAX);
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
   __add_uint32_attribute(buffer, "cf:uid", n->uid, true);
   __add_uint32_attribute(buffer, "cf:gid", n->gid, true);
   __add_uint32hex_attribute(buffer, "cf:mode", n->mode, true);
+  __add_string_attribute(buffer, "cf:secctx", secctx, true);
+  __add_uint32_attribute(buffer, "cf:ino", n->ino, true);
   __add_string_attribute(buffer, "cf:uuid", uuid_to_str(n->sb_uuid, uuid, UUID_STR_SIZE), true);
   __add_label_attribute(buffer, node_str(n->identifier.node_id.type), utoa(n->identifier.node_id.version, tmp, DECIMAL), true);
   __close_json_entry(buffer);
@@ -675,6 +683,22 @@ char* xattr_to_json(struct xattr_prov_struct* n){
     // TODO record value when present
   }
   __add_label_attribute(buffer, "xattr", n->name, true);
+  __close_json_entry(buffer);
+  return buffer;
+}
+
+char* pckcnt_to_json(struct pckcnt_struct* n){
+  char* cntenc;
+  NODE_PREP_IDs(n);
+  prov_prep_taint(n->taint);
+  __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
+  cntenc = malloc( encode64Bound(n->length) );
+  base64encode(n->content, n->length, cntenc, encode64Bound(n->length));
+  __add_string_attribute(buffer, "cf:content", cntenc, true);
+  free(cntenc);
+  __add_uint32_attribute(buffer, "cf:length", n->length, true);
+  __add_string_attribute(buffer, "cf:truncated", bool_str[n->truncated], true);
+  __add_label_attribute(buffer, "content", NULL, true);
   __close_json_entry(buffer);
   return buffer;
 }
@@ -717,6 +741,7 @@ char* packet_to_json(struct pck_struct* p){
   __add_uint32_attribute(buffer, "cf:seq", p->identifier.packet_id.seq, true);
   __add_ipv4_attribute(buffer, "cf:sender", p->identifier.packet_id.snd_ip, p->identifier.packet_id.snd_port, true);
   __add_ipv4_attribute(buffer, "cf:receiver", p->identifier.packet_id.rcv_ip, p->identifier.packet_id.rcv_port, true);
+  __add_string_attribute(buffer, "prov:type", "packet", true);
   __add_string_attribute(buffer, "cf:taint", taint, true);
   __add_uint64_attribute(buffer, "cf:jiffies", p->jiffies, true);
   strcat(buffer, ",\"prov:label\":\"[packet] ");
@@ -795,14 +820,6 @@ char* pathname_to_json(struct file_name_struct* n){
   __add_string_attribute(buffer, "cf:pathname", n->name, true);
   __add_label_attribute(buffer, "path", n->name, true);
   __close_json_entry(buffer);
-  return buffer;
-}
-
-char* ifc_to_json(struct ifc_context_struct* n){
-  NODE_PREP_IDs(n);
-  prov_prep_taint(n->taint);
-  __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
-  __add_string_attribute(buffer, "cf:pathname", "TODO", true);
   return buffer;
 }
 
