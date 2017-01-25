@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdarg.h>
+#include <time.h>
 
 #include "thpool.h"
 #include "provenancelib.h"
@@ -343,36 +344,34 @@ out:
   free(data); /* free the memory allocated in the reader */
 }
 
-
+#define buffer_size(prov_size) (prov_size*1000)
 static void ___read_relay( const int relay_file, const size_t prov_size, const void* callback){
-  uint8_t* buf;
-  size_t size;
+	uint8_t *buf;
+	uint8_t* entry;
+  size_t size=0, i=0;
   int rc;
-
-  while(1){
-    buf = (uint8_t*)malloc(prov_size); /* freed by worker thread */
-    size = 0;
-    do{
-      rc = read(relay_file, buf+size, prov_size-size);
-
-      if(rc==0 && size==0){
-        free(buf);
-        return;
-      }
-
-      if(rc<0){
-        record_error("Failed while reading (%d).", errno);
-        if(errno==EAGAIN){ // retry
-          continue;
-        }
-        free(buf);
-        return;
-      }
-      size+=rc;
-    }while(size<prov_size);
-    /* add job to queue */
-    thpool_add_work(worker_thpool, callback, buf);
-  }
+	buf = (uint8_t*)malloc(buffer_size(prov_size));
+	do{
+		rc = read(relay_file, buf+size, buffer_size(prov_size)-size);
+		if(rc<0){
+			record_error("Failed while reading (%d).", errno);
+			if(errno==EAGAIN){ // retry
+				continue;
+			}
+			free(entry);
+			return;
+		}
+		size += rc;
+	}while(size%prov_size!=0);
+	while(size>0){
+		entry = (uint8_t*)malloc(prov_size);
+		memcpy(entry, buf+i, prov_size);
+		size-=prov_size;
+		i+=prov_size;
+		thpool_add_work(worker_thpool, callback, entry);
+	}
+	free(buf);
+	return;
 }
 
 #define POL_FLAG (POLLIN|POLLRDNORM|POLLERR)
@@ -399,14 +398,20 @@ static void reader_job(void *data)
   }while(1);
 }
 
+#define US	1000L
+#define MS 	1000000L
 /* read from relayfs file */
 static void long_reader_job(void *data)
 {
   int rc;
   uint8_t cpu = (uint8_t)(*(uint8_t*)data);
   struct pollfd pollfd;
+	struct timespec s;
 
+	s.tv_sec=0;
+	s.tv_nsec=5*MS;
   do{
+		nanosleep(&s, NULL);
     /* file to look on */
     pollfd.fd = long_relay_file[cpu];
     /* something to read */
