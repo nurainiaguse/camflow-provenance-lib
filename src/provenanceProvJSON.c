@@ -756,10 +756,18 @@ char* packet_to_json(struct pck_struct* p){
 }
 
 char* str_msg_to_json(struct str_struct* n){
+  int i=0;
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
-  __add_string_attribute(buffer, "cf:message", n->str, true);
+  for(i=0; i < n->length; i++){
+    if(n->str[i]=='"')
+      n->str[i]=' ';
+    if(n->str[i]<32 || n->str[i]>125)
+      n->str[i]='_';
+  }
+  __add_string_attribute(buffer, "cf:log", n->str, true);
+  __add_label_attribute(buffer, "log", n->str, true);
   __close_json_entry(buffer);
   return buffer;
 }

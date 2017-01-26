@@ -286,19 +286,16 @@ out:
 void long_prov_record(long_prov_msg_t* msg){
   switch(prov_type(msg)){
     case ENT_STR:
-      if(prov_ops.log_str!=NULL){
+      if(prov_ops.log_str!=NULL)
         prov_ops.log_str(&(msg->str_info));
-      }
       break;
     case ENT_FILE_NAME:
-      if(prov_ops.log_file_name!=NULL){
+      if(prov_ops.log_file_name!=NULL)
         prov_ops.log_file_name(&(msg->file_name_info));
-      }
       break;
     case ENT_ADDR:
-      if(prov_ops.log_address!=NULL){
+      if(prov_ops.log_address!=NULL)
         prov_ops.log_address(&(msg->address_info));
-      }
       break;
     case ENT_XATTR:
       if(prov_ops.log_xattr!=NULL)
