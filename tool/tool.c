@@ -214,7 +214,7 @@ void print_version(){
 }
 
 void file( const char* path){
-  prov_msg_t inode_info;
+  union prov_msg inode_info;
   char id[PROV_ID_STR_LEN];
   char taint[TAINT_STR_LEN];
   int err;
@@ -252,7 +252,7 @@ void file( const char* path){
 }
 
 void process(uint32_t pid){
-  prov_msg_t process_info;
+  union prov_msg process_info;
   char id[PROV_ID_STR_LEN];
   char taint[TAINT_STR_LEN];
   int err;

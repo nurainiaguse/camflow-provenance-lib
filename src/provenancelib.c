@@ -90,7 +90,7 @@ declare_get_boolean_fcn(provenance_get_all, PROV_ALL_FILE);
 }
 
 #define declare_self_get_flag(fcn_name, element) bool fcn_name( void ){\
-  prov_msg_t self;\
+  union prov_msg self;\
   provenance_self(&self.task_info);\
   return prov_check_flag(&self, element);\
 }
@@ -205,7 +205,7 @@ int provenance_flush(void){
   return rc;
 }
 
-int provenance_read_file(const char name[PATH_MAX], prov_msg_t* inode_info){
+int provenance_read_file(const char name[PATH_MAX], union prov_msg* inode_info){
   struct prov_file_config cfg;
   int rc=-1;
   void* ptr;
@@ -220,7 +220,7 @@ int provenance_read_file(const char name[PATH_MAX], prov_msg_t* inode_info){
   }
 
   rc = read(fd, &cfg, sizeof(struct prov_file_config));
-  memcpy(inode_info, &(cfg.prov), sizeof(prov_msg_t));
+  memcpy(inode_info, &(cfg.prov), sizeof(union prov_msg));
 out:
   close(fd);
   return rc;
@@ -301,7 +301,7 @@ int provenance_taint(uint64_t taint){
   return rc;
 }
 
-int provenance_read_process(uint32_t pid, prov_msg_t* process_info){
+int provenance_read_process(uint32_t pid, union prov_msg* process_info){
   struct prov_process_config cfg;
   int rc;
   int fd = open(PROV_PROCESS_FILE, O_RDONLY);
@@ -313,7 +313,7 @@ int provenance_read_process(uint32_t pid, prov_msg_t* process_info){
 
   rc = read(fd, &cfg, sizeof(struct prov_process_config));
   close(fd);
-  memcpy(process_info, &(cfg.prov), sizeof(prov_msg_t));
+  memcpy(process_info, &(cfg.prov), sizeof(union prov_msg));
   return rc;
 }
 

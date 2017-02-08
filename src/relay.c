@@ -179,7 +179,7 @@ static int destroy_worker_pool(void)
 /* per worker thread initialised variable */
 static __thread int initialised=0;
 
-void prov_record(prov_msg_t* msg){
+void prov_record(union prov_msg* msg){
   uint64_t w3c_type;
   if(prov_is_relation(msg)){
     w3c_type = W3C_TYPE(prov_type(msg));
@@ -260,7 +260,7 @@ void prov_record(prov_msg_t* msg){
 /* handle application callbacks */
 static void callback_job(void* data)
 {
-  prov_msg_t* msg = (prov_msg_t*)data;
+  union prov_msg* msg = (union prov_msg*)data;
   if(prov_type(msg)!=ENT_PACKET){
     node_identifier(msg).machine_id = machine_id;
   }
@@ -283,7 +283,7 @@ out:
   free(data); /* free the memory allocated in the reader */
 }
 
-void long_prov_record(long_prov_msg_t* msg){
+void long_prov_record(union long_prov_msg* msg){
   switch(prov_type(msg)){
     case ENT_STR:
       if(prov_ops.log_str!=NULL)
@@ -320,7 +320,7 @@ void long_prov_record(long_prov_msg_t* msg){
 /* handle application callbacks */
 static void long_callback_job(void* data)
 {
-  long_prov_msg_t* msg = (long_prov_msg_t*)data;
+  union long_prov_msg* msg = (union long_prov_msg*)data;
   node_identifier(msg).machine_id = machine_id;
 
   /* initialise per worker thread */
@@ -391,7 +391,7 @@ static void reader_job(void *data)
       record_error("Failed while polling (%d).", rc);
       continue; /* something bad happened */
     }
-    ___read_relay(relay_file[cpu], sizeof(prov_msg_t), callback_job);
+    ___read_relay(relay_file[cpu], sizeof(union prov_msg), callback_job);
   }while(1);
 }
 
@@ -419,6 +419,6 @@ static void long_reader_job(void *data)
       record_error("Failed while polling (%d).", rc);
       continue; /* something bad happened */
     }
-    ___read_relay(long_relay_file[cpu], sizeof(long_prov_msg_t), long_callback_job);
+    ___read_relay(long_relay_file[cpu], sizeof(union long_prov_msg), long_callback_job);
   }while(1);
 }

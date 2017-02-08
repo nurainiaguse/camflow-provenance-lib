@@ -130,11 +130,11 @@ void log_packet_content(struct pckcnt_struct* cnt){
   append_entity(pckcnt_to_json(cnt));
 }
 
-bool filter(prov_msg_t* msg){
+bool filter(union prov_msg* msg){
   return false;
 }
 
-bool long_filter(long_prov_msg_t* msg){
+bool long_filter(union long_prov_msg* msg){
   return false;
 }
 
