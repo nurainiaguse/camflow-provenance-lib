@@ -32,8 +32,6 @@
 
 #define NUMBER_CPUS           256 /* support 256 core max */
 
-#define RELAY_POLL_TIMEOUT 50
-
 /* internal variables */
 static struct provenance_ops prov_ops;
 static uint8_t ncpus;
@@ -51,8 +49,8 @@ static int close_files(void);
 static int create_worker_pool(void);
 static int destroy_worker_pool(void);
 
-static void callback_job(void* data);
-static void long_callback_job(void* data);
+static void callback_job(void* data, const size_t prov_size);
+static void long_callback_job(void* data, const size_t prov_size);
 static void reader_job(void *data);
 static void long_reader_job(void *data);
 
@@ -160,7 +158,7 @@ static int create_worker_pool(void)
 {
   int i;
   uint8_t* cpunb;
-  worker_thpool = thpool_init(ncpus*4);
+  worker_thpool = thpool_init(ncpus*2);
   /* set reader jobs */
   for(i=0; i<ncpus; i++){
     cpunb = (uint8_t*)malloc(sizeof(uint8_t)); // will be freed in worker
@@ -258,9 +256,14 @@ void prov_record(union prov_msg* msg){
 }
 
 /* handle application callbacks */
-static void callback_job(void* data)
+static void callback_job(void* data, const size_t prov_size)
 {
-  union prov_msg* msg = (union prov_msg*)data;
+  union prov_msg* msg;
+  if(prov_size!=sizeof(union prov_msg)){
+    record_error("Wrong size %d expected: %d.", prov_size, sizeof(union prov_msg));
+    return;
+  }
+  msg = (union prov_msg*)data;
   if(prov_type(msg)!=ENT_PACKET){
     node_identifier(msg).machine_id = machine_id;
   }
@@ -318,9 +321,14 @@ void long_prov_record(union long_prov_msg* msg){
 }
 
 /* handle application callbacks */
-static void long_callback_job(void* data)
+static void long_callback_job(void* data, const size_t prov_size)
 {
-  union long_prov_msg* msg = (union long_prov_msg*)data;
+  union long_prov_msg* msg;
+  if(prov_size!=sizeof(union long_prov_msg)){
+    record_error("Wrong size %d expected: %d.", prov_size, sizeof(union long_prov_msg));
+    return;
+  }
+  msg = (union long_prov_msg*)data;
   node_identifier(msg).machine_id = machine_id;
 
   /* initialise per worker thread */
@@ -342,7 +350,7 @@ out:
 }
 
 #define buffer_size(prov_size) (prov_size*1000)
-static void ___read_relay( const int relay_file, const size_t prov_size, const void* callback){
+static void ___read_relay( const int relay_file, const size_t prov_size, void (*callback)(void*, const size_t)){
 	uint8_t *buf;
 	uint8_t* entry;
   size_t size=0, i=0;
@@ -360,18 +368,21 @@ static void ___read_relay( const int relay_file, const size_t prov_size, const v
 		}
 		size += rc;
 	}while(size%prov_size!=0);
+  if(size!=0)
+    record_error("Size read is %d", size);
 	while(size>0){
 		entry = (uint8_t*)malloc(prov_size);
 		memcpy(entry, buf+i, prov_size);
 		size-=prov_size;
 		i+=prov_size;
-		thpool_add_work(worker_thpool, callback, entry);
+		callback(entry, prov_size);
 	}
 	free(buf);
 	return;
 }
 
 #define POL_FLAG (POLLIN|POLLRDNORM|POLLERR)
+#define RELAY_POLL_TIMEOUT 1000L
 
 /* read from relayfs file */
 static void reader_job(void *data)
