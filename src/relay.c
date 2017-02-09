@@ -368,8 +368,7 @@ static void ___read_relay( const int relay_file, const size_t prov_size, void (*
 		}
 		size += rc;
 	}while(size%prov_size!=0);
-  if(size!=0)
-    record_error("Size read is %d", size);
+  
 	while(size>0){
 		entry = (uint8_t*)malloc(prov_size);
 		memcpy(entry, buf+i, prov_size);
