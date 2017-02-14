@@ -15,6 +15,7 @@ clean:
 prepare:
 	cd ./simplelogger && $(MAKE) prepare
 	cd ./threadpool && $(MAKE) prepare
+	cd ./uthash && $(MAKE) prepare
 
 install:
 	cd ./service && sudo $(MAKE) install
