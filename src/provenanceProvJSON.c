@@ -124,7 +124,7 @@ bool writing_out = false;
 
 static void (*print_json)(char* json);
 
-int disclose_node_ProvJSON(uint64_t type, const char* content, prov_identifier_t* identifier){
+int disclose_node_ProvJSON(uint64_t type, const char* content, union prov_identifier* identifier){
   int err;
   struct disc_node_struct node;
 
@@ -135,16 +135,16 @@ int disclose_node_ProvJSON(uint64_t type, const char* content, prov_identifier_t
   if(err = provenance_disclose_node(&node)<0){
     return err;
   }
-  memcpy(identifier, &node.identifier, sizeof(prov_identifier_t));
+  memcpy(identifier, &node.identifier, sizeof(union prov_identifier));
   return err;
 }
 
-int disclose_relation_ProvJSON(uint64_t type, prov_identifier_t* sender, prov_identifier_t* receiver){
+int disclose_relation_ProvJSON(uint64_t type, union prov_identifier* sender, union prov_identifier* receiver){
   struct relation_struct relation;
   relation.identifier.relation_id.type=type;
   relation.allowed=true;
-  memcpy(&relation.snd, sender, sizeof(prov_identifier_t));
-  memcpy(&relation.rcv, receiver, sizeof(prov_identifier_t));
+  memcpy(&relation.snd, sender, sizeof(union prov_identifier));
+  memcpy(&relation.rcv, receiver, sizeof(union prov_identifier));
   return provenance_disclose_relation(&relation);
 }
 
@@ -756,10 +756,18 @@ char* packet_to_json(struct pck_struct* p){
 }
 
 char* str_msg_to_json(struct str_struct* n){
+  int i=0;
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
-  __add_string_attribute(buffer, "cf:message", n->str, true);
+  for(i=0; i < n->length; i++){
+    if(n->str[i]=='"')
+      n->str[i]=' ';
+    if(n->str[i]<32 || n->str[i]>125)
+      n->str[i]='_';
+  }
+  __add_string_attribute(buffer, "cf:log", n->str, true);
+  __add_label_attribute(buffer, "log", n->str, true);
   __close_json_entry(buffer);
   return buffer;
 }

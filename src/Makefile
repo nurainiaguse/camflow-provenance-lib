@@ -1,7 +1,7 @@
 SRC = provenancelib.c provenanceProvJSON.c provenanceutils.c provenancefilter.c relay.c
 OBJ = $(SRC:.c=.o)
 OUT = provenance.a
-INCLUDES = -I../threadpool -I../include
+INCLUDES = -I../threadpool -I../include -I../uthash/uthash/src
 CCFLAGS = -g -O2 -fpic
 CCC = gcc
 LDFLAGS = -g

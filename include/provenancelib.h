@@ -21,8 +21,8 @@
 
 struct provenance_ops{
   void (*init)(void);
-  bool (*filter)(prov_msg_t* msg);
-  bool (*long_filter)(long_prov_msg_t* msg);
+  bool (*filter)(union prov_msg* msg);
+  bool (*long_filter)(union long_prov_msg* msg);
   /* relation callback */
   void (*log_unknown_relation)(struct relation_struct*);
   void (*log_derived)(struct relation_struct*);
@@ -46,8 +46,8 @@ struct provenance_ops{
   void (*log_error)(char*);
 };
 
-void prov_record(prov_msg_t* msg);
-void long_prov_record(long_prov_msg_t* msg);
+void prov_record(union prov_msg* msg);
+void long_prov_record(union long_prov_msg* msg);
 
 /*
 * Function return boolean value corresponding to the presence or not of the
@@ -160,7 +160,7 @@ int provenance_flush(void);
 * @inode_info point to an inode_info structure
 * retrieve provenance information of the file associated with name.
 */
-int provenance_read_file(const char name[PATH_MAX], prov_msg_t* inode_info);
+int provenance_read_file(const char name[PATH_MAX], union prov_msg* inode_info);
 
 /*
 * @name file name
@@ -185,7 +185,7 @@ int provenance_taint_file(const char name[PATH_MAX], uint64_t taint);
 * @inode_info point to an inode_info structure
 * retrieve provenance information of the process associated with pid.
 */
-int provenance_read_process(uint32_t pid, prov_msg_t* process_info);
+int provenance_read_process(uint32_t pid, union prov_msg* process_info);
 
 /*
 * @pid process pid
