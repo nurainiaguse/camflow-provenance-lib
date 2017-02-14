@@ -2,7 +2,7 @@
 
 | Library version | Date       |
 | --------------- | ---------- |
-| 0.2.1           | N/A				 |
+| 0.2.1           | 14/02/2017 |
 | 0.2.0           | 23/01/2017 |
 | 0.1.13          | 05/12/2016 |
 | 0.1.12          | 14/11/2016 |
@@ -22,7 +22,7 @@
 ### v0.2.1
 
 ```
-- performance improvement.
+- performance improvement (security context cache, no logger, relay logic).
 ```
 
 ### v0.2.0
