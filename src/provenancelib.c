@@ -212,8 +212,16 @@ int provenance_read_file(const char path[PATH_MAX], union prov_msg* inode_info){
   return getxattr(path, XATTR_NAME_PROVENANCE, inode_info, sizeof(union prov_msg));
 }
 
+int fprovenance_read_file(int fd, union prov_msg* inode_info){
+  return fgetxattr(fd, XATTR_NAME_PROVENANCE, inode_info, sizeof(union prov_msg));
+}
+
 static inline int __provenance_write_file(const char path[PATH_MAX], union prov_msg* inode_info){
   return setxattr(path, XATTR_NAME_PROVENANCE, inode_info, sizeof(union prov_msg), 0);
+}
+
+static inline int __fprovenance_write_file(int fd, union prov_msg* inode_info){
+  return fsetxattr(fd, XATTR_NAME_PROVENANCE, inode_info, sizeof(union prov_msg), 0);
 }
 
 static inline int __provenance_set_flags_file(const char path[PATH_MAX], uint8_t bit, bool v){
@@ -229,13 +237,34 @@ static inline int __provenance_set_flags_file(const char path[PATH_MAX], uint8_t
   return __provenance_write_file(path, &prov);
 }
 
+static inline int __fprovenance_set_flags_file(int fd, uint8_t bit, bool v){
+  union prov_msg prov;
+  int rc;
+  rc = fprovenance_read_file(fd, &prov);
+  if(rc<0)
+    return rc;
+  if(v)
+    prov_set_flag(&prov, bit);
+  else
+    prov_clear_flag(&prov, bit);
+  return __fprovenance_write_file(fd, &prov);
+}
+
 #define declare_set_file_fcn(fcn_name, element) int fcn_name (const char name[PATH_MAX], bool v){\
     return __provenance_set_flags_file(name, element, v);\
+  }
+
+#define declare_fset_file_fcn(fcn_name, element) int fcn_name (int fd, bool v){\
+    return __fprovenance_set_flags_file(fd, element, v);\
   }
 
 declare_set_file_fcn(provenance_track_file, TRACKED_BIT);
 declare_set_file_fcn(provenance_opaque_file, OPAQUE_BIT);
 declare_set_file_fcn(__provenance_propagate_file, PROPAGATE_BIT);
+
+declare_fset_file_fcn(fprovenance_track_file, TRACKED_BIT);
+declare_fset_file_fcn(fprovenance_opaque_file, OPAQUE_BIT);
+declare_fset_file_fcn(__fprovenance_propagate_file, PROPAGATE_BIT);
 
 int provenance_propagate_file(const char name[PATH_MAX], bool propagate){
   int err;
@@ -246,6 +275,15 @@ int provenance_propagate_file(const char name[PATH_MAX], bool propagate){
   return provenance_track_file(name, propagate);
 }
 
+int fprovenance_propagate_file(int fd, bool propagate){
+  int err;
+  err = __fprovenance_propagate_file(fd, propagate);
+  if(err < 0){
+    return err;
+  }
+  return fprovenance_track_file(fd, propagate);
+}
+
 int provenance_taint_file(const char path[PATH_MAX], uint64_t taint){
   union prov_msg prov;
   int rc;
@@ -254,6 +292,16 @@ int provenance_taint_file(const char path[PATH_MAX], uint64_t taint){
     return rc;
   prov_bloom_add(prov_taint(&prov), taint);
   return __provenance_write_file(path, &prov);
+}
+
+int fprovenance_taint_file(int fd, uint64_t taint){
+  union prov_msg prov;
+  int rc;
+  rc = fprovenance_read_file(fd, &prov);
+  if(rc<0)
+    return rc;
+  prov_bloom_add(prov_taint(&prov), taint);
+  return __fprovenance_write_file(fd, &prov);
 }
 
 int provenance_taint(uint64_t taint){

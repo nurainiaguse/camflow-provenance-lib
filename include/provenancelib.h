@@ -168,6 +168,7 @@ int provenance_read_file(const char name[PATH_MAX], union prov_msg* inode_info);
 * set tracking option corresponding to the file associated with name
 */
 int provenance_track_file(const char name[PATH_MAX], bool track);
+int fprovenance_track_file(int fd, bool track);
 
 /*
 * @name file name
@@ -175,10 +176,13 @@ int provenance_track_file(const char name[PATH_MAX], bool track);
 * make the file opaque to provenance tracking.
 */
 int provenance_opaque_file(const char name[PATH_MAX], bool opaque);
+int fprovenance_opaque_file(int fd, bool opaque);
 
 int provenance_propagate_file(const char name[PATH_MAX], bool propagate);
+int fprovenance_propagate_file(int fd, bool propagate);
 
 int provenance_taint_file(const char name[PATH_MAX], uint64_t taint);
+int fprovenance_taint_file(int fd, uint64_t taint);
 
 /*
 * @pid process pid
