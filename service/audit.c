@@ -25,7 +25,6 @@
 #include <netdb.h>
 #include <pthread.h>
 
-#include "simplog.h"
 #include "provenancelib.h"
 #include "provenanceutils.h"
 #include "provenancePovJSON.h"
@@ -35,18 +34,25 @@
 
 static pthread_mutex_t l_log =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
+FILE *fp=NULL;
+
 void _init_logs( void ){
-  simplog.setLogFile(LOG_FILE);
-  simplog.setLineWrap(false);
-  simplog.setLogSilentMode(true);
-  simplog.setLogDebugLevel(SIMPLOG_VERBOSE);
+  int n;
+  fp = fopen(LOG_FILE, "a+");
+  if(!fp){
+    printf("Cannot open file\n");
+    exit(-1);
+  }
+  n = fprintf(fp, "Starting audit service...\n");
+  printf("%d\n", n);
+
   provenance_opaque_file(LOG_FILE, true);
 }
 
 void init( void ){
   pid_t tid = gettid();
   pthread_mutex_lock(&l_log);
-  simplog.writeLog(SIMPLOG_INFO, "audit writer thread, tid:%ld", tid);
+  fprintf(fp, "audit writer thread, tid:%ld\n", tid);
   pthread_mutex_unlock(&l_log);
 }
 
@@ -140,7 +146,8 @@ bool long_filter(union long_prov_msg* msg){
 
 void log_error(char* err_msg){
   pthread_mutex_lock(&l_log);
-  simplog.writeLog(SIMPLOG_ERROR,  err_msg);
+  fprintf(fp, err_msg);
+  fprintf(fp, "\n");
   pthread_mutex_unlock(&l_log);
 }
 
@@ -170,7 +177,9 @@ struct provenance_ops ops = {
 
 void print_json(char* json){
     pthread_mutex_lock(&l_log);
-    simplog.writeLog(SIMPLOG_INFO,  json);
+    fprintf(fp, json);
+    fprintf(fp, "\n");
+    fflush(fp);
     pthread_mutex_unlock(&l_log);
 }
 
@@ -178,14 +187,16 @@ int main(void){
   int rc;
   char json[4096];
 	_init_logs();
-  simplog.writeLog(SIMPLOG_INFO, "audit service pid: %ld", getpid());
+  fprintf(fp, "audit service pid: %ld\n", getpid());
   set_ProvJSON_callback(print_json);
   rc = provenance_register(&ops);
   if(rc<0){
-    simplog.writeLog(SIMPLOG_ERROR, "Failed registering audit operation (%d).", rc);
+    fprintf(fp, "Failed registering audit operation (%d).\n", rc);
     exit(rc);
   }
-  simplog.writeLog(SIMPLOG_INFO, machine_description_json(json));
+  fprintf(fp, machine_description_json(json));
+  fprintf(fp, "\n");
+  fflush(fp);
 
   while(1){
     sleep(1);
