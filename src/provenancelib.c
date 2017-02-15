@@ -86,7 +86,7 @@ declare_get_boolean_fcn(provenance_get_all, PROV_ALL_FILE);
   }else{\
     prov_clear_flag(&cfg.prov, element);\
   }\
-  rc = write(fd, &cfg, sizeof(struct prov_file_config));\
+  rc = write(fd, &cfg, sizeof(struct prov_self_config));\
   close(fd);\
   if(rc>0) rc=0;\
   return rc;\
@@ -315,7 +315,7 @@ int provenance_taint(uint64_t taint){
   cfg.op=PROV_SET_TAINT;
   prov_bloom_add(prov_taint(&(cfg.prov)), taint);
 
-  rc = write(fd, &cfg, sizeof(struct prov_file_config));
+  rc = write(fd, &cfg, sizeof(struct prov_self_config));
   close(fd);
   return rc;
 }
