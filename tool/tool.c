@@ -231,6 +231,7 @@ void file( const char* path){
   printf("ID: %lu\n", node_identifier(&inode_info).id);
   printf("Boot ID: %u\n", node_identifier(&inode_info).boot_id);
   printf("Machine ID: %u\n", node_identifier(&inode_info).machine_id);
+  printf("Version: %u\n", node_identifier(&inode_info).version);
   TAINT_ENCODE(prov_taint(&(inode_info)), PROV_N_BYTES, taint, TAINT_STR_LEN);
   printf("Taint: %s\n", taint);
   printf("\n");
