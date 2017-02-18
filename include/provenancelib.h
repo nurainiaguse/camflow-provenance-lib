@@ -103,6 +103,10 @@ bool provenance_get_all( void );
 * root.
 */
 int provenance_set_opaque(bool v);
+
+/*
+* return if current process is opaque or not.
+*/
 bool provenance_get_opaque(void);
 
 /*
@@ -111,9 +115,21 @@ bool provenance_get_opaque(void);
 * is not set).
 */
 int provenance_set_tracked(bool v);
+
+/*
+* return if current process is tracked or not.
+*/
 bool provenance_get_tracked(void);
 
+/*
+* @v boolean value
+* Request the current process to propagate tracking.
+*/
 int provenance_set_propagate(bool v);
+
+/*
+* return if current process propagate tracking or not.
+*/
 bool provenance_get_propagate(void);
 
 /*
@@ -168,6 +184,12 @@ int provenance_read_file(const char name[PATH_MAX], union prov_msg* inode_info);
 * set tracking option corresponding to the file associated with name
 */
 int provenance_track_file(const char name[PATH_MAX], bool track);
+
+/*
+* @fd file descriptor
+* @track boolean either to track or not the file
+* set tracking option corresponding to the file associated with fd
+*/
 int fprovenance_track_file(int fd, bool track);
 
 /*
@@ -176,12 +198,40 @@ int fprovenance_track_file(int fd, bool track);
 * make the file opaque to provenance tracking.
 */
 int provenance_opaque_file(const char name[PATH_MAX], bool opaque);
+
+/*
+* @fd file descriptor
+* @opaque boolean either to make opaque or not the file
+* make the file opaque to provenance tracking.
+*/
 int fprovenance_opaque_file(int fd, bool opaque);
 
+/*
+* @name file name
+* @propagate boolean either to propagate tracking or not
+* set propagate option corresponding to the file associated with name
+*/
 int provenance_propagate_file(const char name[PATH_MAX], bool propagate);
+
+/*
+* @fd file descriptor
+* @propagate boolean either to propagate tracking or not
+* set propagate option corresponding to the file associated with fd
+*/
 int fprovenance_propagate_file(int fd, bool propagate);
 
+/*
+* @name file name
+* @taint taint to be applied to the file
+* add taint to the file corresponding to name
+*/
 int provenance_taint_file(const char name[PATH_MAX], uint64_t taint);
+
+/*
+* @fd file descriptor
+* @taint taint to be applied to the file
+* add taint to the file corresponding to fd
+*/
 int fprovenance_taint_file(int fd, uint64_t taint);
 
 /*
