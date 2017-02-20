@@ -23,7 +23,7 @@
 ### v0.2.2
 
 ```
-- move command line tool to its own repository ().
+- move command line tool to its own repository (https://github.com/CamFlow/camflow-cli).
 - use extended attribute interface to manipulate file provenance.
 ```
 
