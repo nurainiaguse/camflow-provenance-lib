@@ -23,6 +23,7 @@
 ### v0.2.2
 
 ```
+- move command line tool to its own repository ().
 - use extended attribute interface to manipulate file provenance.
 ```
 
