@@ -68,13 +68,13 @@ pthread_rwlock_t  date_lock = PTHREAD_RWLOCK_INITIALIZER;
 
 // ideally should be derived from jiffies
 static void update_time( void ){
-  struct tm* tm;
+  struct tm tm;
   struct timeval tv;
 
   pthread_rwlock_wrlock(&date_lock);
   gettimeofday(&tv, NULL);
-  tm = gmtime(&tv.tv_sec);
-  strftime(date, 30,"%Y:%m:%dT%H:%M:%S", tm);
+  gmtime_r(&tv.tv_sec, &tm);
+  strftime(date, 30,"%Y:%m:%dT%H:%M:%S", &tm);
   pthread_rwlock_unlock(&date_lock);
 }
 
@@ -448,11 +448,10 @@ static inline void __add_label_attribute(char* buffer, const char* type, const c
 static inline char* __format_ipv4(char* buffer, uint32_t ip, uint32_t port){
     char tmp[8];
     unsigned char bytes[4];
-    port = htons(port);
     buffer[0]='\0';
     strcat(buffer, uint32_to_ipv4str(ip));
     strcat(buffer, ":");
-    strcat(buffer, utoa(port, tmp, DECIMAL));
+    strcat(buffer, utoa(htons(port), tmp, DECIMAL));
     return buffer;
 }
 

@@ -468,9 +468,9 @@ struct secentry {
 static __thread struct secentry *hash = NULL;
 
 bool exists_entry(uint32_t secid) {
-  struct secentry *se;
+  struct secentry *se=NULL;
   HASH_FIND_INT(hash, &secid, se);
-  if(se==NULL)
+  if(!se)
     return false;
   return true;
 }
@@ -486,9 +486,9 @@ static void add_entry(uint32_t secid, const char* secctx){
 }
 
 bool find_entry(uint32_t secid, char* secctx) {
-  struct secentry *se;
+  struct secentry *se=NULL;
   HASH_FIND_INT(hash, &secid, se);
-  if(se==NULL)
+  if(!se)
     return false;
   strncpy(secctx, se->name, 200);
   return true;

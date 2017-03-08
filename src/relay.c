@@ -47,7 +47,7 @@ static uint32_t machine_id=0;
 static int open_files(void);
 static int close_files(void);
 static int create_worker_pool(void);
-static int destroy_worker_pool(void);
+static void destroy_worker_pool(void);
 
 static void callback_job(void* data, const size_t prov_size);
 static void long_callback_job(void* data, const size_t prov_size);
@@ -166,9 +166,10 @@ static int create_worker_pool(void)
     thpool_add_work(worker_thpool, (void*)reader_job, (void*)cpunb);
     thpool_add_work(worker_thpool, (void*)long_reader_job, (void*)cpunb);
   }
+  return 0;
 }
 
-static int destroy_worker_pool(void)
+static void destroy_worker_pool(void)
 {
   thpool_wait(worker_thpool); // wait for all jobs in queue to be finished
   thpool_destroy(worker_thpool); // destory all worker threads
@@ -368,7 +369,7 @@ static void ___read_relay( const int relay_file, const size_t prov_size, void (*
 		}
 		size += rc;
 	}while(size%prov_size!=0);
-  
+
 	while(size>0){
 		entry = (uint8_t*)malloc(prov_size);
 		memcpy(entry, buf+i, prov_size);
