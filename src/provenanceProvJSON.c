@@ -596,10 +596,10 @@ char* task_to_json(struct task_prov_struct* n){
 #define UUID_STR_SIZE 37
 char* uuid_to_str(uint8_t* uuid, char* str, size_t size){
   if(size<37){
-    sprintf(str, "UUID-ERROR");
+    snprintf(str, size, "UUID-ERROR");
     return str;
   }
-  sprintf(str, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+  snprintf(str, size, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
     uuid[0], uuid[1], uuid[2], uuid[3]
     , uuid[4], uuid[5]
     , uuid[6], uuid[7]
@@ -773,39 +773,39 @@ char* str_msg_to_json(struct str_struct* n){
   return buffer;
 }
 
-char* sockaddr_to_json(char* buf, struct sockaddr* addr, size_t length){
+char* sockaddr_to_json(char* buf, size_t blen, struct sockaddr* addr, size_t length){
   char host[NI_MAXHOST];
   char serv[NI_MAXSERV];
 
   if(addr->sa_family == AF_INET){
     getnameinfo(addr, length, host, NI_MAXHOST, serv, NI_MAXSERV, 0);
-    sprintf(buf, "{\"type\":\"AF_INET\", \"host\":\"%s\", \"serv\":\"%s\"}", host, serv);
+    snprintf(buf, blen, "{\"type\":\"AF_INET\", \"host\":\"%s\", \"serv\":\"%s\"}", host, serv);
   }else if(addr->sa_family == AF_INET6){
     getnameinfo(addr, length, host, NI_MAXHOST, serv, NI_MAXSERV, 0);
-    sprintf(buf, "{\"type\":\"AF_INET6\", \"host\":\"%s\", \"serv\":\"%s\"}", host, serv);
+    snprintf(buf, blen, "{\"type\":\"AF_INET6\", \"host\":\"%s\", \"serv\":\"%s\"}", host, serv);
   }else if(addr->sa_family == AF_UNIX){
-    sprintf(buf, "{\"type\":\"AF_UNIX\", \"path\":\"%s\"}", ((struct sockaddr_un*)addr)->sun_path);
+    snprintf(buf, blen, "{\"type\":\"AF_UNIX\", \"path\":\"%s\"}", ((struct sockaddr_un*)addr)->sun_path);
   }else{
-    sprintf(buf, "{\"type\":\"OTHER\"}");
+    snprintf(buf, blen, "{\"type\":\"OTHER\"}");
   }
 
   return buf;
 }
 
-char* sockaddr_to_label(char* buf, struct sockaddr* addr, size_t length){
+char* sockaddr_to_label(char* buf, size_t blen, struct sockaddr* addr, size_t length){
   char host[NI_MAXHOST];
   char serv[NI_MAXSERV];
 
   if(addr->sa_family == AF_INET){
     getnameinfo(addr, length, host, NI_MAXHOST, serv, NI_MAXSERV, 0);
-    sprintf(buf, "IPV4 %s", host);
+    snprintf(buf, blen, "IPV4 %s", host);
   }else if(addr->sa_family == AF_INET6){
     getnameinfo(addr, length, host, NI_MAXHOST, serv, NI_MAXSERV, 0);
-    sprintf(buf, "IPV6 %s", host);
+    snprintf(buf, blen, "IPV6 %s", host);
   }else if(addr->sa_family == AF_UNIX){
-    sprintf(buf, "UNIX %s", ((struct sockaddr_un*)addr)->sun_path);
+    snprintf(buf, blen, "UNIX %s", ((struct sockaddr_un*)addr)->sun_path);
   }else{
-    sprintf(buf, "OTHER");
+    snprintf(buf, blen, "OTHER");
   }
 
   return buf;
@@ -816,8 +816,8 @@ char* addr_to_json(struct address_struct* n){
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
-  __add_json_attribute("cf:address", sockaddr_to_json(addr_info, &n->addr, n->length), true);
-  __add_label_attribute("address", sockaddr_to_label(addr_info, &n->addr, n->length), true);
+  __add_json_attribute("cf:address", sockaddr_to_json(addr_info, PATH_MAX+1024, &n->addr, n->length), true);
+  __add_label_attribute("address", sockaddr_to_label(addr_info, PATH_MAX+1024, &n->addr, n->length), true);
   __close_json_entry(buffer);
   return buffer;
 }
