@@ -49,7 +49,7 @@ int add_taint(const uint64_t id, const char* name){
   struct taint_entry* n = &taint_list;
   struct taint_entry* tmp = (struct taint_entry*)malloc(sizeof(struct taint_entry));
   char* str = (char*)malloc(strlen(name)+1);
-  strcpy(str, name);
+  strncpy(str, name, strlen(name)+1);
   while(true){
     if(n->next!=NULL){
       n = n->next;
@@ -201,10 +201,10 @@ static inline bool __append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* 
 
 #define str_is_empty(str) (str[0]=='\0')
 
-#define cat_prov(prefix, data, lock)     if(!str_is_empty(data)){ \
+#define cat_prov(prefix, data, lock, size)     if(!str_is_empty(data)){ \
                                               content=true; \
-                                              strcat(json, prefix); \
-                                              strcat(json, data); \
+                                              strncat(json, prefix, size); \
+                                              strncat(json, data, size); \
                                               memset(data, '\0', MAX_PROVJSON_BUFFER_LENGTH); \
                                             } \
                                             pthread_mutex_unlock(&lock);
@@ -230,15 +230,15 @@ static inline char* ready_to_print(){
   strncat(json, JSON_START, JSON_LENGTH - strlen(json));
   strncat(json, prefix_json(), JSON_LENGTH - strlen(json));
 
-  cat_prov(JSON_ACTIVITY, activity, l_activity);
-  cat_prov(JSON_AGENT, agent, l_agent);
-  cat_prov(JSON_ENTITY, entity, l_entity);
-  cat_prov(JSON_MESSAGE, message, l_message);
-  cat_prov(JSON_RELATION, relation, l_relation);
-  cat_prov(JSON_USED, used, l_used);
-  cat_prov(JSON_GENERATED, generated, l_generated);
-  cat_prov(JSON_INFORMED, informed, l_informed);
-  cat_prov(JSON_DERIVED, derived, l_derived);
+  cat_prov(JSON_ACTIVITY, activity, l_activity, JSON_LENGTH - strlen(json));
+  cat_prov(JSON_AGENT, agent, l_agent, JSON_LENGTH - strlen(json));
+  cat_prov(JSON_ENTITY, entity, l_entity, JSON_LENGTH - strlen(json));
+  cat_prov(JSON_MESSAGE, message, l_message, JSON_LENGTH - strlen(json));
+  cat_prov(JSON_RELATION, relation, l_relation, JSON_LENGTH - strlen(json));
+  cat_prov(JSON_USED, used, l_used, JSON_LENGTH - strlen(json));
+  cat_prov(JSON_GENERATED, generated, l_generated, JSON_LENGTH - strlen(json));
+  cat_prov(JSON_INFORMED, informed, l_informed, JSON_LENGTH - strlen(json));
+  cat_prov(JSON_DERIVED, derived, l_derived, JSON_LENGTH - strlen(json));
 
   if(!content){
     free(json);
@@ -477,20 +477,20 @@ static void prov_prep_taint(const uint8_t bloom[PROV_N_BYTES]){
   if(prov_bloom_empty(bloom)){
     return;
   }else{
-    strcat(taint, "[");
+    strncat(taint, "[", TAINT_LENGTH);
     do{
       if( prov_bloom_in(bloom, tmp->taint_id) ){
         if(!first){
-          strcat(taint, ",");
+          strncat(taint, ",", TAINT_LENGTH);
         }
-        strcat(taint, "\"");
-        strcat(taint, tmp->taint_name);
-        strcat(taint, "\"");
+        strncat(taint, "\"", TAINT_LENGTH);
+        strncat(taint, tmp->taint_name, TAINT_LENGTH);
+        strncat(taint, "\"", TAINT_LENGTH);
         first=false;
       }
       tmp = tmp->next;
     }while(tmp!=NULL);
-    strcat(taint, "]");
+    strncat(taint, "]", TAINT_LENGTH);
   }
 }
 
@@ -568,8 +568,8 @@ char* disc_to_json(struct disc_node_struct* n){
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
   __add_string_attribute("cf:hasParent", parent_id, true);
   if(n->length > 0){
-    strcat(buffer, ",");
-    strcat(buffer, n->content);
+    strncat(buffer, ",", BUFFER_LENGTH);
+    strncat(buffer, n->content, BUFFER_LENGTH);
   }
   __close_json_entry(buffer);
   return buffer;
