@@ -1,6 +1,6 @@
 # CamFlow Userspace Library
 
-# Build Status
+## Build Status
 
 | Branch | Status                                                                                  | SonarQube |
 |--------|-----------------------------------------------------------------------------------------|-----------|
