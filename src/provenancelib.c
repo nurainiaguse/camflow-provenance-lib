@@ -73,20 +73,20 @@ declare_set_boolean_fcn(provenance_set_all, PROV_ALL_FILE);
 declare_get_boolean_fcn(provenance_get_all, PROV_ALL_FILE);
 
 #define declare_self_set_flag(fcn_name, element, operation) int fcn_name (bool v){ \
-  struct prov_self_config cfg;\
+  struct prov_process_config cfg;\
   int rc;\
   int fd = open(PROV_SELF_FILE, O_WRONLY);\
   if( fd < 0 ){\
     return fd;\
   }\
-  memset(&cfg, 0, sizeof(struct prov_self_config));\
+  memset(&cfg, 0, sizeof(struct prov_process_config));\
   cfg.op=operation;\
   if(v){\
     prov_set_flag(&cfg.prov, element);\
   }else{\
     prov_clear_flag(&cfg.prov, element);\
   }\
-  rc = write(fd, &cfg, sizeof(struct prov_self_config));\
+  rc = write(fd, &cfg, sizeof(struct prov_process_config));\
   close(fd);\
   if(rc>0) rc=0;\
   return rc;\
@@ -305,17 +305,17 @@ int fprovenance_taint_file(int fd, uint64_t taint){
 }
 
 int provenance_taint(uint64_t taint){
-  struct prov_self_config cfg;
+  struct prov_process_config cfg;
   int rc;
   int fd = open(PROV_SELF_FILE, O_WRONLY);
   if( fd < 0 ){
     return fd;
   }
-  memset(&cfg, 0, sizeof(struct prov_self_config));
+  memset(&cfg, 0, sizeof(struct prov_process_config));
   cfg.op=PROV_SET_TAINT;
   prov_bloom_add(prov_taint(&(cfg.prov)), taint);
 
-  rc = write(fd, &cfg, sizeof(struct prov_self_config));
+  rc = write(fd, &cfg, sizeof(struct prov_process_config));
   close(fd);
   return rc;
 }
@@ -468,9 +468,9 @@ struct secentry {
 static __thread struct secentry *hash = NULL;
 
 bool exists_entry(uint32_t secid) {
-  struct secentry *se;
+  struct secentry *se=NULL;
   HASH_FIND_INT(hash, &secid, se);
-  if(se==NULL)
+  if(!se)
     return false;
   return true;
 }
@@ -486,9 +486,9 @@ static void add_entry(uint32_t secid, const char* secctx){
 }
 
 bool find_entry(uint32_t secid, char* secctx) {
-  struct secentry *se;
+  struct secentry *se=NULL;
   HASH_FIND_INT(hash, &secid, se);
-  if(se==NULL)
+  if(!se)
     return false;
   strncpy(secctx, se->name, 200);
   return true;

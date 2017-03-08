@@ -49,7 +49,7 @@ int add_taint(const uint64_t id, const char* name){
   struct taint_entry* n = &taint_list;
   struct taint_entry* tmp = (struct taint_entry*)malloc(sizeof(struct taint_entry));
   char* str = (char*)malloc(strlen(name)+1);
-  strcpy(str, name);
+  strncpy(str, name, strlen(name)+1);
   while(true){
     if(n->next!=NULL){
       n = n->next;
@@ -68,13 +68,13 @@ pthread_rwlock_t  date_lock = PTHREAD_RWLOCK_INITIALIZER;
 
 // ideally should be derived from jiffies
 static void update_time( void ){
-  struct tm* tm;
+  struct tm tm;
   struct timeval tv;
 
   pthread_rwlock_wrlock(&date_lock);
   gettimeofday(&tv, NULL);
-  tm = gmtime(&tv.tv_sec);
-  strftime(date, 30,"%Y:%m:%dT%H:%M:%S", tm);
+  gmtime_r(&tv.tv_sec, &tm);
+  strftime(date, 30,"%Y:%m:%dT%H:%M:%S", &tm);
   pthread_rwlock_unlock(&date_lock);
 }
 
@@ -159,7 +159,7 @@ static inline bool __append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* 
   }
   // add the comma
   if(destination[0]!='\0')
-    strcat(destination, ",");
+    strncat(destination, ",", MAX_PROVJSON_BUFFER_LENGTH - strlen(destination) - 1);
   strncat(destination, source, MAX_PROVJSON_BUFFER_LENGTH - strlen(destination) - 1); // copy up to free space
   return true;
 }
@@ -201,10 +201,10 @@ static inline bool __append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* 
 
 #define str_is_empty(str) (str[0]=='\0')
 
-#define cat_prov(prefix, data, lock)     if(!str_is_empty(data)){ \
+#define cat_prov(prefix, data, lock, size)     if(!str_is_empty(data)){ \
                                               content=true; \
-                                              strcat(json, prefix); \
-                                              strcat(json, data); \
+                                              strncat(json, prefix, size); \
+                                              strncat(json, data, size); \
                                               memset(data, '\0', MAX_PROVJSON_BUFFER_LENGTH); \
                                             } \
                                             pthread_mutex_unlock(&lock);
@@ -227,25 +227,25 @@ static inline char* ready_to_print(){
   json = (char*)malloc(JSON_LENGTH * sizeof(char));
   json[0]='\0';
 
-  strcat(json, JSON_START);
-  strcat(json, prefix_json());
+  strncat(json, JSON_START, JSON_LENGTH - strlen(json));
+  strncat(json, prefix_json(), JSON_LENGTH - strlen(json));
 
-  cat_prov(JSON_ACTIVITY, activity, l_activity);
-  cat_prov(JSON_AGENT, agent, l_agent);
-  cat_prov(JSON_ENTITY, entity, l_entity);
-  cat_prov(JSON_MESSAGE, message, l_message);
-  cat_prov(JSON_RELATION, relation, l_relation);
-  cat_prov(JSON_USED, used, l_used);
-  cat_prov(JSON_GENERATED, generated, l_generated);
-  cat_prov(JSON_INFORMED, informed, l_informed);
-  cat_prov(JSON_DERIVED, derived, l_derived);
+  cat_prov(JSON_ACTIVITY, activity, l_activity, JSON_LENGTH - strlen(json));
+  cat_prov(JSON_AGENT, agent, l_agent, JSON_LENGTH - strlen(json));
+  cat_prov(JSON_ENTITY, entity, l_entity, JSON_LENGTH - strlen(json));
+  cat_prov(JSON_MESSAGE, message, l_message, JSON_LENGTH - strlen(json));
+  cat_prov(JSON_RELATION, relation, l_relation, JSON_LENGTH - strlen(json));
+  cat_prov(JSON_USED, used, l_used, JSON_LENGTH - strlen(json));
+  cat_prov(JSON_GENERATED, generated, l_generated, JSON_LENGTH - strlen(json));
+  cat_prov(JSON_INFORMED, informed, l_informed, JSON_LENGTH - strlen(json));
+  cat_prov(JSON_DERIVED, derived, l_derived, JSON_LENGTH - strlen(json));
 
   if(!content){
     free(json);
     return NULL;
   }
 
-  strcat(json, JSON_END);
+  strncat(json, JSON_END, JSON_LENGTH - strlen(json));
   return json;
 }
 
@@ -322,12 +322,14 @@ void append_derived(char* json_element){
 }
 
 static __thread char buffer[MAX_PROVJSON_BUFFER_LENGTH];
+#define BUFFER_LENGTH (MAX_PROVJSON_BUFFER_LENGTH-strnlen(buffer, MAX_PROVJSON_BUFFER_LENGTH))
 
 static __thread char id[PROV_ID_STR_LEN];
 static __thread char sender[PROV_ID_STR_LEN];
 static __thread char receiver[PROV_ID_STR_LEN];
 static __thread char parent_id[PROV_ID_STR_LEN];
 static __thread char taint[PATH_MAX];
+#define TAINT_LENGTH (PATH_MAX-strnlen(taint, PATH_MAX))
 
 #define RELATION_PREP_IDs(e) ID_ENCODE(e->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN);\
                         ID_ENCODE(e->snd.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, sender, PROV_ID_STR_LEN);\
@@ -345,128 +347,127 @@ static __thread char taint[PATH_MAX];
 static inline void __init_json_entry(char* buffer, const char* id)
 {
   buffer[0]='\0';
-  strcat(buffer, "\"");
-  strcat(buffer, id);
-  strcat(buffer, "\":{");
+  strncat(buffer, "\"", BUFFER_LENGTH);
+  strncat(buffer, id, BUFFER_LENGTH);
+  strncat(buffer, "\":{", BUFFER_LENGTH);
 }
 
-static inline void __add_attribute(char* buffer, const char* name, bool comma){
+static inline void __add_attribute(const char* name, bool comma){
   if(comma){
-    strcat(buffer, ",\"");
+    strncat(buffer, ",\"", BUFFER_LENGTH);
   }else{
-    strcat(buffer, "\"");
+    strncat(buffer, "\"", BUFFER_LENGTH);
   }
-  strcat(buffer, name);
-  strcat(buffer, "\":");
+  strncat(buffer, name, BUFFER_LENGTH);
+  strncat(buffer, "\":", BUFFER_LENGTH);
 }
 
-static inline void __add_uint32_attribute(char* buffer, const char* name, const uint32_t value, bool comma){
+static inline void __add_uint32_attribute(const char* name, const uint32_t value, bool comma){
   char tmp[32];
-  __add_attribute(buffer, name, comma);
-  strcat(buffer, utoa(value, tmp, DECIMAL));
+  __add_attribute(name, comma);
+  strncat(buffer, utoa(value, tmp, DECIMAL), BUFFER_LENGTH);
 }
 
 
-static inline void __add_int32_attribute(char* buffer, const char* name, const int32_t value, bool comma){
+static inline void __add_int32_attribute(const char* name, const int32_t value, bool comma){
   char tmp[32];
-  __add_attribute(buffer, name, comma);
-  strcat(buffer, itoa(value, tmp, DECIMAL));
+  __add_attribute(name, comma);
+  strncat(buffer, itoa(value, tmp, DECIMAL), BUFFER_LENGTH);
 }
 
-static inline void __add_uint32hex_attribute(char* buffer, const char* name, const uint32_t value, bool comma){
+static inline void __add_uint32hex_attribute(const char* name, const uint32_t value, bool comma){
   char tmp[32];
-  __add_attribute(buffer, name, comma);
-  strcat(buffer, "\"0x");
-  strcat(buffer, utoa(value, tmp, HEX));
-  strcat(buffer, "\"");
+  __add_attribute(name, comma);
+  strncat(buffer, "\"0x", BUFFER_LENGTH);
+  strncat(buffer, utoa(value, tmp, HEX), BUFFER_LENGTH);
+  strncat(buffer, "\"", BUFFER_LENGTH);
 }
 
-static inline void __add_uint64_attribute(char* buffer, const char* name, const uint64_t value, bool comma){
+static inline void __add_uint64_attribute(const char* name, const uint64_t value, bool comma){
   char tmp[64];
-  __add_attribute(buffer, name, comma);
-  strcat(buffer, "\"");
-  strcat(buffer, ulltoa(value, tmp, DECIMAL));
-  strcat(buffer, "\"");
+  __add_attribute(name, comma);
+  strncat(buffer, "\"", BUFFER_LENGTH);
+  strncat(buffer, ulltoa(value, tmp, DECIMAL), BUFFER_LENGTH);
+  strncat(buffer, "\"", BUFFER_LENGTH);
 }
 
-static inline void __add_uint64hex_attribute(char* buffer, const char* name, const uint64_t value, bool comma){
+static inline void __add_uint64hex_attribute(const char* name, const uint64_t value, bool comma){
   char tmp[64];
-  __add_attribute(buffer, name, comma);
-  strcat(buffer, "\"");
-  strcat(buffer, ulltoa(value, tmp, HEX));
-  strcat(buffer, "\"");
+  __add_attribute(name, comma);
+  strncat(buffer, "\"", BUFFER_LENGTH);
+  strncat(buffer, ulltoa(value, tmp, HEX), BUFFER_LENGTH);
+  strncat(buffer, "\"", BUFFER_LENGTH);
 }
 
-static inline void __add_int64_attribute(char* buffer, const char* name, const int64_t value, bool comma){
+static inline void __add_int64_attribute(const char* name, const int64_t value, bool comma){
   char tmp[64];
-  __add_attribute(buffer, name, comma);
-  strcat(buffer, "\"");
-  strcat(buffer, lltoa(value, tmp, DECIMAL));
-  strcat(buffer, "\"");
+  __add_attribute(name, comma);
+  strncat(buffer, "\"", BUFFER_LENGTH);
+  strncat(buffer, lltoa(value, tmp, DECIMAL), BUFFER_LENGTH);
+  strncat(buffer, "\"", BUFFER_LENGTH);
 }
 
-static inline void __add_string_attribute(char* buffer, const char* name, const char* value, bool comma){
+static inline void __add_string_attribute(const char* name, const char* value, bool comma){
   char tmp[64];
   if(value[0]=='\0'){ // value is not set
     return;
   }
-  __add_attribute(buffer, name, comma);
-  strcat(buffer, "\"");
-  strcat(buffer, value);
-  strcat(buffer, "\"");
+  __add_attribute(name, comma);
+  strncat(buffer, "\"", BUFFER_LENGTH);
+  strncat(buffer, value, BUFFER_LENGTH);
+  strncat(buffer, "\"", BUFFER_LENGTH);
 }
 
-static inline void __add_json_attribute(char* buffer, const char* name, const char* value, bool comma){
+static inline void __add_json_attribute(const char* name, const char* value, bool comma){
   char tmp[64];
-  __add_attribute(buffer, name, comma);
-  strcat(buffer, value);
+  __add_attribute(name, comma);
+  strncat(buffer, value, BUFFER_LENGTH);
 }
 
-static inline void __add_date_attribute(char* buffer, bool comma){
-  __add_attribute(buffer, "cf:date", comma);
-  strcat(buffer, "\"");
+static inline void __add_date_attribute(bool comma){
+  __add_attribute("cf:date", comma);
+  strncat(buffer, "\"", BUFFER_LENGTH);
   pthread_rwlock_rdlock(&date_lock);
-  strcat(buffer, date);
+  strncat(buffer, date, BUFFER_LENGTH);
   pthread_rwlock_unlock(&date_lock);
-  strcat(buffer, "\"");
+  strncat(buffer, "\"", BUFFER_LENGTH);
 }
 
-static inline void __add_label_attribute(char* buffer, const char* type, const char* text, bool comma){
-  __add_attribute(buffer, "prov:label", comma);
+static inline void __add_label_attribute(const char* type, const char* text, bool comma){
+  __add_attribute("prov:label", comma);
   if(type!=NULL){
-    strcat(buffer, "\"[");
-    strcat(buffer, type);
-    strcat(buffer, "] ");
+    strncat(buffer, "\"[", BUFFER_LENGTH);
+    strncat(buffer, type, BUFFER_LENGTH);
+    strncat(buffer, "] ", BUFFER_LENGTH);
   }else{
-    strcat(buffer, "\"");
+    strncat(buffer, "\"", BUFFER_LENGTH);
   }
   if(text!=NULL)
-    strcat(buffer, text);
-  strcat(buffer, "\"");
+    strncat(buffer, text, BUFFER_LENGTH);
+  strncat(buffer, "\"", BUFFER_LENGTH);
 }
 
-static inline char* __format_ipv4(char* buffer, uint32_t ip, uint32_t port){
+static inline char* __format_ipv4(char* buffer, size_t s, uint32_t ip, uint32_t port){
     char tmp[8];
     unsigned char bytes[4];
-    port = htons(port);
     buffer[0]='\0';
-    strcat(buffer, uint32_to_ipv4str(ip));
-    strcat(buffer, ":");
-    strcat(buffer, utoa(port, tmp, DECIMAL));
+    strncat(buffer, uint32_to_ipv4str(ip), s-strlen(buffer));
+    strncat(buffer, ":", s-strlen(buffer));
+    strncat(buffer, utoa(htons(port), tmp, DECIMAL), s-strlen(buffer));
     return buffer;
 }
 
-static inline void __add_ipv4_attribute(char* buffer, const char* name, const uint32_t ip, const uint32_t port, bool comma){
+static inline void __add_ipv4_attribute(const char* name, const uint32_t ip, const uint32_t port, bool comma){
   char tmp[64];
-  __add_attribute(buffer, name, comma);
-  strcat(buffer, "\"");
-  strcat(buffer, __format_ipv4(tmp, ip, port));
-  strcat(buffer, "\"");
+  __add_attribute(name, comma);
+  strncat(buffer, "\"", BUFFER_LENGTH);
+  strncat(buffer, __format_ipv4(tmp, 64, ip, port), BUFFER_LENGTH);
+  strncat(buffer, "\"", BUFFER_LENGTH);
 }
 
 static inline void __close_json_entry(char* buffer)
 {
-  strcat(buffer, "}");
+  strncat(buffer, "}", BUFFER_LENGTH);
 }
 
 static void prov_prep_taint(const uint8_t bloom[PROV_N_BYTES]){
@@ -476,29 +477,29 @@ static void prov_prep_taint(const uint8_t bloom[PROV_N_BYTES]){
   if(prov_bloom_empty(bloom)){
     return;
   }else{
-    strcat(taint, "[");
+    strncat(taint, "[", TAINT_LENGTH);
     do{
       if( prov_bloom_in(bloom, tmp->taint_id) ){
         if(!first){
-          strcat(taint, ",");
+          strncat(taint, ",", TAINT_LENGTH);
         }
-        strcat(taint, "\"");
-        strcat(taint, tmp->taint_name);
-        strcat(taint, "\"");
+        strncat(taint, "\"", TAINT_LENGTH);
+        strncat(taint, tmp->taint_name, TAINT_LENGTH);
+        strncat(taint, "\"", TAINT_LENGTH);
         first=false;
       }
       tmp = tmp->next;
     }while(tmp!=NULL);
-    strcat(taint, "]");
+    strncat(taint, "]", TAINT_LENGTH);
   }
 }
 
 static inline void __node_identifier(char* buffer, const struct node_identifier* n){
-  __add_uint64_attribute(buffer, "cf:id", n->id, false);
-  __add_string_attribute(buffer, "prov:type", node_str(n->type), true);
-  __add_uint32_attribute(buffer, "cf:boot_id", n->boot_id, true);
-  __add_uint32_attribute(buffer, "cf:machine_id", n->machine_id, true);
-  __add_uint32_attribute(buffer, "cf:version", n->version, true);
+  __add_uint64_attribute("cf:id", n->id, false);
+  __add_string_attribute("prov:type", node_str(n->type), true);
+  __add_uint32_attribute("cf:boot_id", n->boot_id, true);
+  __add_uint32_attribute("cf:machine_id", n->machine_id, true);
+  __add_uint32_attribute("cf:version", n->version, true);
 }
 
 static inline void __node_start(char* buffer,
@@ -508,16 +509,16 @@ static inline void __node_start(char* buffer,
                                 uint64_t jiffies){
   __init_json_entry(buffer, id);
   __node_identifier(buffer, n);
-  __add_date_attribute(buffer, true);
-  __add_string_attribute(buffer, "cf:taint", taint, true);
-  __add_uint64_attribute(buffer, "cf:jiffies", jiffies, true);
+  __add_date_attribute(true);
+  __add_string_attribute("cf:taint", taint, true);
+  __add_uint64_attribute("cf:jiffies", jiffies, true);
 }
 
 static inline void __relation_identifier(char* buffer, const struct relation_identifier* e){
-  __add_uint64_attribute(buffer, "cf:id", e->id, false);
-  __add_string_attribute(buffer, "prov:type", relation_str(e->type), true);
-  __add_uint32_attribute(buffer, "cf:boot_id", e->boot_id, true);
-  __add_uint32_attribute(buffer, "cf:machine_id", e->machine_id, true);
+  __add_uint64_attribute("cf:id", e->id, false);
+  __add_string_attribute("prov:type", relation_str(e->type), true);
+  __add_uint32_attribute("cf:boot_id", e->boot_id, true);
+  __add_uint32_attribute("cf:machine_id", e->machine_id, true);
 }
 
 static char* bool_str[] = {"false", "true"};
@@ -527,15 +528,15 @@ static char* __relation_to_json(struct relation_struct* e, const char* snd, cons
   prov_prep_taint(e->taint);
   __init_json_entry(buffer, id);
   __relation_identifier(buffer, &(e->identifier.relation_id));
-  __add_date_attribute(buffer, true);
-  __add_string_attribute(buffer, "cf:taint", taint, true);
-  __add_uint64_attribute(buffer, "cf:jiffies", e->jiffies, true);
-  __add_label_attribute(buffer, NULL, relation_str(e->identifier.relation_id.type), true);
-  __add_string_attribute(buffer, "cf:allowed", bool_str[e->allowed], true);
-  __add_string_attribute(buffer, snd, sender, true);
-  __add_string_attribute(buffer, rcv, receiver, true);
+  __add_date_attribute(true);
+  __add_string_attribute("cf:taint", taint, true);
+  __add_uint64_attribute("cf:jiffies", e->jiffies, true);
+  __add_label_attribute(NULL, relation_str(e->identifier.relation_id.type), true);
+  __add_string_attribute("cf:allowed", bool_str[e->allowed], true);
+  __add_string_attribute(snd, sender, true);
+  __add_string_attribute(rcv, receiver, true);
   if(e->set==FILE_INFO_SET){ // if file related info were set
-    __add_int64_attribute(buffer, "cf:offset", e->offset, true); // just offset for now
+    __add_int64_attribute("cf:offset", e->offset, true); // just offset for now
   }
   __close_json_entry(buffer);
   return buffer;
@@ -565,10 +566,10 @@ char* disc_to_json(struct disc_node_struct* n){
   DISC_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
-  __add_string_attribute(buffer, "cf:hasParent", parent_id, true);
+  __add_string_attribute("cf:hasParent", parent_id, true);
   if(n->length > 0){
-    strcat(buffer, ",");
-    strcat(buffer, n->content);
+    strncat(buffer, ",", BUFFER_LENGTH);
+    strncat(buffer, n->content, BUFFER_LENGTH);
   }
   __close_json_entry(buffer);
   return buffer;
@@ -581,13 +582,13 @@ char* task_to_json(struct task_prov_struct* n){
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
-  __add_uint32_attribute(buffer, "cf:uid", n->uid, true);
-  __add_uint32_attribute(buffer, "cf:gid", n->gid, true);
-  __add_uint32_attribute(buffer, "cf:pid", n->pid, true);
-  __add_uint32_attribute(buffer, "cf:vpid", n->vpid, true);
-  __add_uint32_attribute(buffer, "cf:cid", n->cid, true);
-  __add_string_attribute(buffer, "cf:secctx", secctx, true);
-  __add_label_attribute(buffer, "task", utoa(n->identifier.node_id.version, tmp, DECIMAL), true);
+  __add_uint32_attribute("cf:uid", n->uid, true);
+  __add_uint32_attribute("cf:gid", n->gid, true);
+  __add_uint32_attribute("cf:pid", n->pid, true);
+  __add_uint32_attribute("cf:vpid", n->vpid, true);
+  __add_uint32_attribute("cf:cid", n->cid, true);
+  __add_string_attribute("cf:secctx", secctx, true);
+  __add_label_attribute("task", utoa(n->identifier.node_id.version, tmp, DECIMAL), true);
   __close_json_entry(buffer);
   return buffer;
 }
@@ -595,10 +596,10 @@ char* task_to_json(struct task_prov_struct* n){
 #define UUID_STR_SIZE 37
 char* uuid_to_str(uint8_t* uuid, char* str, size_t size){
   if(size<37){
-    sprintf(str, "UUID-ERROR");
+    snprintf(str, size, "UUID-ERROR");
     return str;
   }
-  sprintf(str, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+  snprintf(str, size, "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
     uuid[0], uuid[1], uuid[2], uuid[3]
     , uuid[4], uuid[5]
     , uuid[6], uuid[7]
@@ -643,13 +644,13 @@ char* inode_to_json(struct inode_prov_struct* n){
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
-  __add_uint32_attribute(buffer, "cf:uid", n->uid, true);
-  __add_uint32_attribute(buffer, "cf:gid", n->gid, true);
-  __add_uint32hex_attribute(buffer, "cf:mode", n->mode, true);
-  __add_string_attribute(buffer, "cf:secctx", secctx, true);
-  __add_uint32_attribute(buffer, "cf:ino", n->ino, true);
-  __add_string_attribute(buffer, "cf:uuid", uuid_to_str(n->sb_uuid, uuid, UUID_STR_SIZE), true);
-  __add_label_attribute(buffer, node_str(n->identifier.node_id.type), utoa(n->identifier.node_id.version, tmp, DECIMAL), true);
+  __add_uint32_attribute("cf:uid", n->uid, true);
+  __add_uint32_attribute("cf:gid", n->gid, true);
+  __add_uint32hex_attribute("cf:mode", n->mode, true);
+  __add_string_attribute("cf:secctx", secctx, true);
+  __add_uint32_attribute("cf:ino", n->ino, true);
+  __add_string_attribute("cf:uuid", uuid_to_str(n->sb_uuid, uuid, UUID_STR_SIZE), true);
+  __add_label_attribute(node_str(n->identifier.node_id.type), utoa(n->identifier.node_id.version, tmp, DECIMAL), true);
   __close_json_entry(buffer);
   return buffer;
 }
@@ -659,15 +660,15 @@ char* iattr_to_json(struct iattr_prov_struct* n){
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
-  __add_uint32hex_attribute(buffer, "cf:valid", n->valid, true);
-  __add_uint32hex_attribute(buffer, "cf:mode", n->mode, true);
-  __add_uint32_attribute(buffer, "cf:uid", n->uid, true);
-  __add_uint32_attribute(buffer, "cf:gid", n->gid, true);
-  __add_int64_attribute(buffer, "cf:size", n->size, true);
-  __add_int64_attribute(buffer, "cf:atime", n->atime, true);
-  __add_int64_attribute(buffer, "cf:ctime", n->ctime, true);
-  __add_int64_attribute(buffer, "cf:mtime", n->mtime, true);
-  __add_label_attribute(buffer, "iattr", utoa(n->identifier.node_id.id, tmp, DECIMAL), true);
+  __add_uint32hex_attribute("cf:valid", n->valid, true);
+  __add_uint32hex_attribute("cf:mode", n->mode, true);
+  __add_uint32_attribute("cf:uid", n->uid, true);
+  __add_uint32_attribute("cf:gid", n->gid, true);
+  __add_int64_attribute("cf:size", n->size, true);
+  __add_int64_attribute("cf:atime", n->atime, true);
+  __add_int64_attribute("cf:ctime", n->ctime, true);
+  __add_int64_attribute("cf:mtime", n->mtime, true);
+  __add_label_attribute("iattr", utoa(n->identifier.node_id.id, tmp, DECIMAL), true);
   __close_json_entry(buffer);
   return buffer;
 }
@@ -676,13 +677,13 @@ char* xattr_to_json(struct xattr_prov_struct* n){
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
-  __add_string_attribute(buffer, "cf:name", n->name, true);
+  __add_string_attribute("cf:name", n->name, true);
   if(n->size>0){
-    __add_uint32_attribute(buffer, "cf:size", n->size, true);
-    __add_uint32hex_attribute(buffer, "cf:flags", n->flags, true);
+    __add_uint32_attribute("cf:size", n->size, true);
+    __add_uint32hex_attribute("cf:flags", n->flags, true);
     // TODO record value when present
   }
-  __add_label_attribute(buffer, "xattr", n->name, true);
+  __add_label_attribute("xattr", n->name, true);
   __close_json_entry(buffer);
   return buffer;
 }
@@ -694,11 +695,11 @@ char* pckcnt_to_json(struct pckcnt_struct* n){
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
   cntenc = malloc( encode64Bound(n->length) );
   base64encode(n->content, n->length, cntenc, encode64Bound(n->length));
-  __add_string_attribute(buffer, "cf:content", cntenc, true);
+  __add_string_attribute("cf:content", cntenc, true);
   free(cntenc);
-  __add_uint32_attribute(buffer, "cf:length", n->length, true);
-  __add_string_attribute(buffer, "cf:truncated", bool_str[n->truncated], true);
-  __add_label_attribute(buffer, "content", NULL, true);
+  __add_uint32_attribute("cf:length", n->length, true);
+  __add_string_attribute("cf:truncated", bool_str[n->truncated], true);
+  __add_label_attribute("content", NULL, true);
   __close_json_entry(buffer);
   return buffer;
 }
@@ -708,7 +709,7 @@ char* sb_to_json(struct sb_struct* n){
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
-  __add_string_attribute(buffer, "cf:uuid", uuid_to_str(n->uuid, uuid, UUID_STR_SIZE), true);
+  __add_string_attribute("cf:uuid", uuid_to_str(n->uuid, uuid, UUID_STR_SIZE), true);
   __close_json_entry(buffer);
   return buffer;
 }
@@ -727,7 +728,7 @@ char* shm_to_json(struct shm_struct* n){
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
-  __add_uint32hex_attribute(buffer, "cf:mode", n->mode, true);
+  __add_uint32hex_attribute("cf:mode", n->mode, true);
   __close_json_entry(buffer);
   return buffer;
 }
@@ -737,20 +738,20 @@ char* packet_to_json(struct pck_struct* p){
   PACKET_PREP_IDs(p);
   prov_prep_taint(p->taint);
   __init_json_entry(buffer, id);
-  __add_uint32_attribute(buffer, "cf:id", p->identifier.packet_id.id, false);
-  __add_uint32_attribute(buffer, "cf:seq", p->identifier.packet_id.seq, true);
-  __add_ipv4_attribute(buffer, "cf:sender", p->identifier.packet_id.snd_ip, p->identifier.packet_id.snd_port, true);
-  __add_ipv4_attribute(buffer, "cf:receiver", p->identifier.packet_id.rcv_ip, p->identifier.packet_id.rcv_port, true);
-  __add_string_attribute(buffer, "prov:type", "packet", true);
-  __add_string_attribute(buffer, "cf:taint", taint, true);
-  __add_uint64_attribute(buffer, "cf:jiffies", p->jiffies, true);
-  strcat(buffer, ",\"prov:label\":\"[packet] ");
-  strcat(buffer, __format_ipv4(tmp, p->identifier.packet_id.snd_ip, p->identifier.packet_id.snd_port));
-  strcat(buffer, "->");
-  strcat(buffer, __format_ipv4(tmp, p->identifier.packet_id.rcv_ip, p->identifier.packet_id.rcv_port));
-  strcat(buffer, " (");
-  strcat(buffer, utoa(p->identifier.packet_id.id, tmp, DECIMAL));
-  strcat(buffer, ")\"");
+  __add_uint32_attribute("cf:id", p->identifier.packet_id.id, false);
+  __add_uint32_attribute("cf:seq", p->identifier.packet_id.seq, true);
+  __add_ipv4_attribute("cf:sender", p->identifier.packet_id.snd_ip, p->identifier.packet_id.snd_port, true);
+  __add_ipv4_attribute("cf:receiver", p->identifier.packet_id.rcv_ip, p->identifier.packet_id.rcv_port, true);
+  __add_string_attribute("prov:type", "packet", true);
+  __add_string_attribute("cf:taint", taint, true);
+  __add_uint64_attribute("cf:jiffies", p->jiffies, true);
+  strncat(buffer, ",\"prov:label\":\"[packet] ", BUFFER_LENGTH);
+  strncat(buffer, __format_ipv4(tmp, 256, p->identifier.packet_id.snd_ip, p->identifier.packet_id.snd_port), BUFFER_LENGTH);
+  strncat(buffer, "->", BUFFER_LENGTH);
+  strncat(buffer, __format_ipv4(tmp, 256, p->identifier.packet_id.rcv_ip, p->identifier.packet_id.rcv_port), BUFFER_LENGTH);
+  strncat(buffer, " (", BUFFER_LENGTH);
+  strncat(buffer, utoa(p->identifier.packet_id.id, tmp, DECIMAL), BUFFER_LENGTH);
+  strncat(buffer, ")\"", BUFFER_LENGTH);
   __close_json_entry(buffer);
   return buffer;
 }
@@ -766,45 +767,45 @@ char* str_msg_to_json(struct str_struct* n){
     if(n->str[i]<32 || n->str[i]>125)
       n->str[i]='_';
   }
-  __add_string_attribute(buffer, "cf:log", n->str, true);
-  __add_label_attribute(buffer, "log", n->str, true);
+  __add_string_attribute("cf:log", n->str, true);
+  __add_label_attribute("log", n->str, true);
   __close_json_entry(buffer);
   return buffer;
 }
 
-char* sockaddr_to_json(char* buf, struct sockaddr* addr, size_t length){
+char* sockaddr_to_json(char* buf, size_t blen, struct sockaddr* addr, size_t length){
   char host[NI_MAXHOST];
   char serv[NI_MAXSERV];
 
   if(addr->sa_family == AF_INET){
     getnameinfo(addr, length, host, NI_MAXHOST, serv, NI_MAXSERV, 0);
-    sprintf(buf, "{\"type\":\"AF_INET\", \"host\":\"%s\", \"serv\":\"%s\"}", host, serv);
+    snprintf(buf, blen, "{\"type\":\"AF_INET\", \"host\":\"%s\", \"serv\":\"%s\"}", host, serv);
   }else if(addr->sa_family == AF_INET6){
     getnameinfo(addr, length, host, NI_MAXHOST, serv, NI_MAXSERV, 0);
-    sprintf(buf, "{\"type\":\"AF_INET6\", \"host\":\"%s\", \"serv\":\"%s\"}", host, serv);
+    snprintf(buf, blen, "{\"type\":\"AF_INET6\", \"host\":\"%s\", \"serv\":\"%s\"}", host, serv);
   }else if(addr->sa_family == AF_UNIX){
-    sprintf(buf, "{\"type\":\"AF_UNIX\", \"path\":\"%s\"}", ((struct sockaddr_un*)addr)->sun_path);
+    snprintf(buf, blen, "{\"type\":\"AF_UNIX\", \"path\":\"%s\"}", ((struct sockaddr_un*)addr)->sun_path);
   }else{
-    sprintf(buf, "{\"type\":\"OTHER\"}");
+    snprintf(buf, blen, "{\"type\":\"OTHER\"}");
   }
 
   return buf;
 }
 
-char* sockaddr_to_label(char* buf, struct sockaddr* addr, size_t length){
+char* sockaddr_to_label(char* buf, size_t blen, struct sockaddr* addr, size_t length){
   char host[NI_MAXHOST];
   char serv[NI_MAXSERV];
 
   if(addr->sa_family == AF_INET){
     getnameinfo(addr, length, host, NI_MAXHOST, serv, NI_MAXSERV, 0);
-    sprintf(buf, "IPV4 %s", host);
+    snprintf(buf, blen, "IPV4 %s", host);
   }else if(addr->sa_family == AF_INET6){
     getnameinfo(addr, length, host, NI_MAXHOST, serv, NI_MAXSERV, 0);
-    sprintf(buf, "IPV6 %s", host);
+    snprintf(buf, blen, "IPV6 %s", host);
   }else if(addr->sa_family == AF_UNIX){
-    sprintf(buf, "UNIX %s", ((struct sockaddr_un*)addr)->sun_path);
+    snprintf(buf, blen, "UNIX %s", ((struct sockaddr_un*)addr)->sun_path);
   }else{
-    sprintf(buf, "OTHER");
+    snprintf(buf, blen, "OTHER");
   }
 
   return buf;
@@ -815,18 +816,23 @@ char* addr_to_json(struct address_struct* n){
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
-  __add_json_attribute(buffer, "cf:address", sockaddr_to_json(addr_info, &n->addr, n->length), true);
-  __add_label_attribute(buffer, "address", sockaddr_to_label(addr_info, &n->addr, n->length), true);
+  __add_json_attribute("cf:address", sockaddr_to_json(addr_info, PATH_MAX+1024, &n->addr, n->length), true);
+  __add_label_attribute("address", sockaddr_to_label(addr_info, PATH_MAX+1024, &n->addr, n->length), true);
   __close_json_entry(buffer);
   return buffer;
 }
 
 char* pathname_to_json(struct file_name_struct* n){
+  int i;
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
-  __add_string_attribute(buffer, "cf:pathname", n->name, true);
-  __add_label_attribute(buffer, "path", n->name, true);
+  for(i=0; i<n->length; i++){
+    if(n->name[i]=='\\')
+      n->name[i]='/';
+  }
+  __add_string_attribute("cf:pathname", n->name, true);
+  __add_label_attribute("path", n->name, true);
   __close_json_entry(buffer);
   return buffer;
 }
@@ -844,33 +850,33 @@ char* machine_description_json(char* buffer){
   uname(&machine_info);
 
   buffer[0]='\0';
-  strcat(buffer, "{\"prefix\":{");
-  strcat(buffer, prefix_json());
-  strcat(buffer, "}");
-  strcat(buffer, ",\"entity\":{");
-  strcat(buffer, "\"");
-  strcat(buffer, utoa(machine_id, tmp, DECIMAL));
-  strcat(buffer, "\":{");
-  strcat(buffer, "\"prov:label\":\"[machine] ");
-  strcat(buffer, utoa(machine_id, tmp, DECIMAL));
-  strcat(buffer, "\",\"cf:camflow\":\"");
-  strcat(buffer, CAMFLOW_VERSION_STR);
-  strcat(buffer, "\",\"cf:sysname\":\"");
-  strcat(buffer, machine_info.sysname);
-  strcat(buffer, "\",\"cf:nodename\":\"");
-  strcat(buffer, machine_info.nodename);
-  strcat(buffer, "\",\"cf:release\":\"");
-  strcat(buffer, machine_info.release);
-  strcat(buffer, "\",\"cf:version\":\"");
-  strcat(buffer, machine_info.version);
-  strcat(buffer, "\",\"cf:machine\":\"");
-  strcat(buffer, machine_info.machine);
-  strcat(buffer, "\", \"cf:date");
-  strcat(buffer, "\":\"");
+  strncat(buffer, "{\"prefix\":{", BUFFER_LENGTH);
+  strncat(buffer, prefix_json(), BUFFER_LENGTH);
+  strncat(buffer, "}", BUFFER_LENGTH);
+  strncat(buffer, ",\"entity\":{", BUFFER_LENGTH);
+  strncat(buffer, "\"", BUFFER_LENGTH);
+  strncat(buffer, utoa(machine_id, tmp, DECIMAL), BUFFER_LENGTH);
+  strncat(buffer, "\":{", BUFFER_LENGTH);
+  strncat(buffer, "\"prov:label\":\"[machine] ", BUFFER_LENGTH);
+  strncat(buffer, utoa(machine_id, tmp, DECIMAL), BUFFER_LENGTH);
+  strncat(buffer, "\",\"cf:camflow\":\"", BUFFER_LENGTH);
+  strncat(buffer, CAMFLOW_VERSION_STR, BUFFER_LENGTH);
+  strncat(buffer, "\",\"cf:sysname\":\"", BUFFER_LENGTH);
+  strncat(buffer, machine_info.sysname, BUFFER_LENGTH);
+  strncat(buffer, "\",\"cf:nodename\":\"", BUFFER_LENGTH);
+  strncat(buffer, machine_info.nodename, BUFFER_LENGTH);
+  strncat(buffer, "\",\"cf:release\":\"", BUFFER_LENGTH);
+  strncat(buffer, machine_info.release, BUFFER_LENGTH);
+  strncat(buffer, "\",\"cf:version\":\"", BUFFER_LENGTH);
+  strncat(buffer, machine_info.version, BUFFER_LENGTH);
+  strncat(buffer, "\",\"cf:machine\":\"", BUFFER_LENGTH);
+  strncat(buffer, machine_info.machine, BUFFER_LENGTH);
+  strncat(buffer, "\", \"cf:date", BUFFER_LENGTH);
+  strncat(buffer, "\":\"", BUFFER_LENGTH);
   update_time();
   pthread_rwlock_rdlock(&date_lock);
-  strcat(buffer, date);
+  strncat(buffer, date, BUFFER_LENGTH);
   pthread_rwlock_unlock(&date_lock);
-  strcat(buffer, "\"}}}");
+  strncat(buffer, "\"}}}", BUFFER_LENGTH);
   return buffer;
 }

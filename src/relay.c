@@ -47,7 +47,7 @@ static uint32_t machine_id=0;
 static int open_files(void);
 static int close_files(void);
 static int create_worker_pool(void);
-static int destroy_worker_pool(void);
+static void destroy_worker_pool(void);
 
 static void callback_job(void* data, const size_t prov_size);
 static void long_callback_job(void* data, const size_t prov_size);
@@ -59,7 +59,7 @@ static inline void record_error(const char* fmt, ...){
 	va_list args;
 
 	va_start(args, fmt);
-	vsprintf(tmp, fmt, args);
+	vsnprintf(tmp, 2048, fmt, args);
 	va_end(args);
   if(prov_ops.log_error!=NULL){
     prov_ops.log_error(tmp);
@@ -127,14 +127,15 @@ static int open_files(void)
   int i;
   char tmp[4096]; // to store file name
 
+  tmp[0]='\0';
   for(i=0; i<ncpus; i++){
-    sprintf(tmp, "%s%d", PROV_RELAY_NAME, i);
+    snprintf(tmp, 4096-strlen(tmp), "%s%d", PROV_RELAY_NAME, i);
     relay_file[i] = open(tmp, O_RDONLY | O_NONBLOCK);
     if(relay_file[i]<0){
       record_error("Could not open files (%d)\n", relay_file[i]);
       return -1;
     }
-    sprintf(tmp, "%s%d", PROV_LONG_RELAY_NAME, i);
+    snprintf(tmp, 4096-strlen(tmp), "%s%d", PROV_LONG_RELAY_NAME, i);
     long_relay_file[i] = open(tmp, O_RDONLY | O_NONBLOCK);
     if(long_relay_file[i]<0){
       record_error("Could not open files (%d)\n", long_relay_file[i]);
@@ -166,9 +167,10 @@ static int create_worker_pool(void)
     thpool_add_work(worker_thpool, (void*)reader_job, (void*)cpunb);
     thpool_add_work(worker_thpool, (void*)long_reader_job, (void*)cpunb);
   }
+  return 0;
 }
 
-static int destroy_worker_pool(void)
+static void destroy_worker_pool(void)
 {
   thpool_wait(worker_thpool); // wait for all jobs in queue to be finished
   thpool_destroy(worker_thpool); // destory all worker threads
@@ -368,7 +370,7 @@ static void ___read_relay( const int relay_file, const size_t prov_size, void (*
 		}
 		size += rc;
 	}while(size%prov_size!=0);
-  
+
 	while(size>0){
 		entry = (uint8_t*)malloc(prov_size);
 		memcpy(entry, buf+i, prov_size);
