@@ -822,9 +822,14 @@ char* addr_to_json(struct address_struct* n){
 }
 
 char* pathname_to_json(struct file_name_struct* n){
+  int i;
   NODE_PREP_IDs(n);
   prov_prep_taint(n->taint);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
+  for(i=0; i<n->length; i++){
+    if(n->name[i]=='\\')
+      n->name[i]='/';
+  }
   __add_string_attribute(buffer, "cf:pathname", n->name, true);
   __add_label_attribute(buffer, "path", n->name, true);
   __close_json_entry(buffer);
