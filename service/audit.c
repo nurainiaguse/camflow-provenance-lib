@@ -152,27 +152,27 @@ void log_error(char* err_msg){
 }
 
 struct provenance_ops ops = {
-  .init=init,
-  .filter=filter,
-  .long_filter=long_filter,
-  .log_unknown_relation=log_unknown_relation,
-  .log_derived=log_derived,
-  .log_generated=log_generated,
-  .log_used=log_used,
-  .log_informed=log_informed,
-  .log_task=log_task,
-  .log_inode=log_inode,
-  .log_str=log_str,
-  .log_disc=log_disc,
-  .log_msg=log_msg,
-  .log_shm=log_shm,
-  .log_packet=log_packet,
-  .log_address=log_address,
-  .log_file_name=log_file_name,
-  .log_iattr=log_iattr,
-  .log_xattr=log_xattr,
-  .log_packet_content=log_packet_content,
-  .log_error=log_error
+  .init=&init,
+  .filter=&filter,
+  .long_filter=&long_filter,
+  .log_unknown_relation=&log_unknown_relation,
+  .log_derived=&log_derived,
+  .log_generated=&log_generated,
+  .log_used=&log_used,
+  .log_informed=&log_informed,
+  .log_task=&log_task,
+  .log_inode=&log_inode,
+  .log_str=&log_str,
+  .log_disc=&log_disc,
+  .log_msg=&log_msg,
+  .log_shm=&log_shm,
+  .log_packet=&log_packet,
+  .log_address=&log_address,
+  .log_file_name=&log_file_name,
+  .log_iattr=&log_iattr,
+  .log_xattr=&log_xattr,
+  .log_packet_content=&log_packet_content,
+  .log_error=&log_error
 };
 
 void print_json(char* json){

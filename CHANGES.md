@@ -2,6 +2,7 @@
 
 | Library version | Date       |
 | --------------- | ---------- |
+| 0.2.2           | 09/03/2017 |
 | 0.2.1           | 14/02/2017 |
 | 0.2.0           | 23/01/2017 |
 | 0.1.13          | 05/12/2016 |
@@ -18,6 +19,13 @@
 | 0.1.2           | 26/05/2016 |
 | 0.1.1           | 03/04/2016 |
 | 0.1.0           | 28/03/2016 |
+
+### v0.2.2
+
+```
+- move command line tool to its own repository (https://github.com/CamFlow/camflow-cli).
+- use extended attribute interface to manipulate file provenance.
+```
 
 ### v0.2.1
 

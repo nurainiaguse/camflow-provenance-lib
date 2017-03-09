@@ -18,6 +18,8 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/xattr.h>
+#include <linux/xattr.h>
 
 #include "provenancelib.h"
 #include "provenanceutils.h"
@@ -71,20 +73,20 @@ declare_set_boolean_fcn(provenance_set_all, PROV_ALL_FILE);
 declare_get_boolean_fcn(provenance_get_all, PROV_ALL_FILE);
 
 #define declare_self_set_flag(fcn_name, element, operation) int fcn_name (bool v){ \
-  struct prov_self_config cfg;\
+  struct prov_process_config cfg;\
   int rc;\
   int fd = open(PROV_SELF_FILE, O_WRONLY);\
   if( fd < 0 ){\
     return fd;\
   }\
-  memset(&cfg, 0, sizeof(struct prov_self_config));\
+  memset(&cfg, 0, sizeof(struct prov_process_config));\
   cfg.op=operation;\
   if(v){\
     prov_set_flag(&cfg.prov, element);\
   }else{\
     prov_clear_flag(&cfg.prov, element);\
   }\
-  rc = write(fd, &cfg, sizeof(struct prov_file_config));\
+  rc = write(fd, &cfg, sizeof(struct prov_process_config));\
   close(fd);\
   if(rc>0) rc=0;\
   return rc;\
@@ -206,54 +208,63 @@ int provenance_flush(void){
   return rc;
 }
 
-int provenance_read_file(const char name[PATH_MAX], union prov_msg* inode_info){
-  struct prov_file_config cfg;
-  int rc=-1;
-  void* ptr;
-  int fd = open(PROV_FILE_FILE, O_RDONLY);
-
-  if( fd < 0 ){
-    return fd;
-  }
-  ptr = realpath(name, cfg.name);
-  if(ptr==NULL){
-    goto out;
-  }
-
-  rc = read(fd, &cfg, sizeof(struct prov_file_config));
-  memcpy(inode_info, &(cfg.prov), sizeof(union prov_msg));
-out:
-  close(fd);
-  return rc;
+int provenance_read_file(const char path[PATH_MAX], union prov_msg* inode_info){
+  return getxattr(path, XATTR_NAME_PROVENANCE, inode_info, sizeof(union prov_msg));
 }
 
-#define declare_set_file_fcn(fcn_name, element, operation) int fcn_name (const char name[PATH_MAX], bool v){\
-    struct prov_file_config cfg;\
-    int rc=-1;\
-    void* ptr;\
-    int fd = open(PROV_FILE_FILE, O_WRONLY);\
-    if( fd < 0 ){\
-      return fd;\
-    }\
-    ptr = realpath(name, cfg.name);\
-    if(ptr==NULL){\
-      goto out;\
-    }\
-    cfg.op=operation;\
-    if(v){\
-      prov_set_flag(&cfg.prov, element);\
-    }else{\
-      prov_clear_flag(&cfg.prov, element);\
-    }\
-    rc = write(fd, &cfg, sizeof(struct prov_file_config));\
-out:\
-    close(fd);\
-    return rc;\
+int fprovenance_read_file(int fd, union prov_msg* inode_info){
+  return fgetxattr(fd, XATTR_NAME_PROVENANCE, inode_info, sizeof(union prov_msg));
+}
+
+static inline int __provenance_write_file(const char path[PATH_MAX], union prov_msg* inode_info){
+  return setxattr(path, XATTR_NAME_PROVENANCE, inode_info, sizeof(union prov_msg), 0);
+}
+
+static inline int __fprovenance_write_file(int fd, union prov_msg* inode_info){
+  return fsetxattr(fd, XATTR_NAME_PROVENANCE, inode_info, sizeof(union prov_msg), 0);
+}
+
+static inline int __provenance_set_flags_file(const char path[PATH_MAX], uint8_t bit, bool v){
+  union prov_msg prov;
+  int rc;
+  rc = provenance_read_file(path, &prov);
+  if(rc<0)
+    return rc;
+  if(v)
+    prov_set_flag(&prov, bit);
+  else
+    prov_clear_flag(&prov, bit);
+  return __provenance_write_file(path, &prov);
+}
+
+static inline int __fprovenance_set_flags_file(int fd, uint8_t bit, bool v){
+  union prov_msg prov;
+  int rc;
+  rc = fprovenance_read_file(fd, &prov);
+  if(rc<0)
+    return rc;
+  if(v)
+    prov_set_flag(&prov, bit);
+  else
+    prov_clear_flag(&prov, bit);
+  return __fprovenance_write_file(fd, &prov);
+}
+
+#define declare_set_file_fcn(fcn_name, element) int fcn_name (const char name[PATH_MAX], bool v){\
+    return __provenance_set_flags_file(name, element, v);\
   }
 
-declare_set_file_fcn(provenance_track_file, TRACKED_BIT, PROV_SET_TRACKED);
-declare_set_file_fcn(provenance_opaque_file, OPAQUE_BIT, PROV_SET_OPAQUE);
-declare_set_file_fcn(__provenance_propagate_file, PROPAGATE_BIT, PROV_SET_PROPAGATE);
+#define declare_fset_file_fcn(fcn_name, element) int fcn_name (int fd, bool v){\
+    return __fprovenance_set_flags_file(fd, element, v);\
+  }
+
+declare_set_file_fcn(provenance_track_file, TRACKED_BIT);
+declare_set_file_fcn(provenance_opaque_file, OPAQUE_BIT);
+declare_set_file_fcn(__provenance_propagate_file, PROPAGATE_BIT);
+
+declare_fset_file_fcn(fprovenance_track_file, TRACKED_BIT);
+declare_fset_file_fcn(fprovenance_opaque_file, OPAQUE_BIT);
+declare_fset_file_fcn(__fprovenance_propagate_file, PROPAGATE_BIT);
 
 int provenance_propagate_file(const char name[PATH_MAX], bool propagate){
   int err;
@@ -264,40 +275,47 @@ int provenance_propagate_file(const char name[PATH_MAX], bool propagate){
   return provenance_track_file(name, propagate);
 }
 
-int provenance_taint_file(const char name[PATH_MAX], uint64_t taint){
-  struct prov_file_config cfg;
-  int rc=-1;
-  void* ptr;
-  int fd = open(PROV_FILE_FILE, O_WRONLY);
-  if( fd < 0 ){
-    return fd;
+int fprovenance_propagate_file(int fd, bool propagate){
+  int err;
+  err = __fprovenance_propagate_file(fd, propagate);
+  if(err < 0){
+    return err;
   }
-  memset(&cfg, 0, sizeof(struct prov_file_config));
-  ptr = realpath(name, cfg.name);
-  if(ptr==NULL){
-    goto out;
-  }
-  cfg.op=PROV_SET_TAINT;
-  prov_bloom_add(prov_taint(&(cfg.prov)), taint);
+  return fprovenance_track_file(fd, propagate);
+}
 
-  rc = write(fd, &cfg, sizeof(struct prov_file_config));
-out:
-  close(fd);
-  return rc;
+int provenance_taint_file(const char path[PATH_MAX], uint64_t taint){
+  union prov_msg prov;
+  int rc;
+  rc = provenance_read_file(path, &prov);
+  if(rc<0)
+    return rc;
+  prov_bloom_add(prov_taint(&prov), taint);
+  return __provenance_write_file(path, &prov);
+}
+
+int fprovenance_taint_file(int fd, uint64_t taint){
+  union prov_msg prov;
+  int rc;
+  rc = fprovenance_read_file(fd, &prov);
+  if(rc<0)
+    return rc;
+  prov_bloom_add(prov_taint(&prov), taint);
+  return __fprovenance_write_file(fd, &prov);
 }
 
 int provenance_taint(uint64_t taint){
-  struct prov_self_config cfg;
+  struct prov_process_config cfg;
   int rc;
   int fd = open(PROV_SELF_FILE, O_WRONLY);
   if( fd < 0 ){
     return fd;
   }
-  memset(&cfg, 0, sizeof(struct prov_self_config));
+  memset(&cfg, 0, sizeof(struct prov_process_config));
   cfg.op=PROV_SET_TAINT;
   prov_bloom_add(prov_taint(&(cfg.prov)), taint);
 
-  rc = write(fd, &cfg, sizeof(struct prov_file_config));
+  rc = write(fd, &cfg, sizeof(struct prov_process_config));
   close(fd);
   return rc;
 }
@@ -450,9 +468,9 @@ struct secentry {
 static __thread struct secentry *hash = NULL;
 
 bool exists_entry(uint32_t secid) {
-  struct secentry *se;
+  struct secentry *se=NULL;
   HASH_FIND_INT(hash, &secid, se);
-  if(se==NULL)
+  if(!se)
     return false;
   return true;
 }
@@ -468,9 +486,9 @@ static void add_entry(uint32_t secid, const char* secctx){
 }
 
 bool find_entry(uint32_t secid, char* secctx) {
-  struct secentry *se;
+  struct secentry *se=NULL;
   HASH_FIND_INT(hash, &secid, se);
-  if(se==NULL)
+  if(!se)
     return false;
   strncpy(secctx, se->name, 200);
   return true;
