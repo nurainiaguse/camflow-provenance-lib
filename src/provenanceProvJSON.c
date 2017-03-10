@@ -227,25 +227,25 @@ static inline char* ready_to_print(){
   json = (char*)malloc(JSON_LENGTH * sizeof(char));
   json[0]='\0';
 
-  strncat(json, JSON_START, JSON_LENGTH - strlen(json));
-  strncat(json, prefix_json(), JSON_LENGTH - strlen(json));
+  strncat(json, JSON_START, JSON_LENGTH);
+  strncat(json, prefix_json(), JSON_LENGTH);
 
-  cat_prov(JSON_ACTIVITY, activity, l_activity, JSON_LENGTH - strlen(json));
-  cat_prov(JSON_AGENT, agent, l_agent, JSON_LENGTH - strlen(json));
-  cat_prov(JSON_ENTITY, entity, l_entity, JSON_LENGTH - strlen(json));
-  cat_prov(JSON_MESSAGE, message, l_message, JSON_LENGTH - strlen(json));
-  cat_prov(JSON_RELATION, relation, l_relation, JSON_LENGTH - strlen(json));
-  cat_prov(JSON_USED, used, l_used, JSON_LENGTH - strlen(json));
-  cat_prov(JSON_GENERATED, generated, l_generated, JSON_LENGTH - strlen(json));
-  cat_prov(JSON_INFORMED, informed, l_informed, JSON_LENGTH - strlen(json));
-  cat_prov(JSON_DERIVED, derived, l_derived, JSON_LENGTH - strlen(json));
+  cat_prov(JSON_ACTIVITY, activity, l_activity, JSON_LENGTH);
+  cat_prov(JSON_AGENT, agent, l_agent, JSON_LENGTH);
+  cat_prov(JSON_ENTITY, entity, l_entity, JSON_LENGTH);
+  cat_prov(JSON_MESSAGE, message, l_message, JSON_LENGTH);
+  cat_prov(JSON_RELATION, relation, l_relation, JSON_LENGTH);
+  cat_prov(JSON_USED, used, l_used, JSON_LENGTH);
+  cat_prov(JSON_GENERATED, generated, l_generated, JSON_LENGTH);
+  cat_prov(JSON_INFORMED, informed, l_informed, JSON_LENGTH);
+  cat_prov(JSON_DERIVED, derived, l_derived, JSON_LENGTH);
 
   if(!content){
     free(json);
     return NULL;
   }
 
-  strncat(json, JSON_END, JSON_LENGTH - strlen(json));
+  strncat(json, JSON_END, JSON_LENGTH);
   return json;
 }
 
