@@ -230,15 +230,15 @@ static inline char* ready_to_print(){
   strncat(json, JSON_START, JSON_LENGTH);
   strncat(json, prefix_json(), JSON_LENGTH);
 
-  cat_prov(JSON_ACTIVITY, activity, l_activity, JSON_LENGTH);
-  cat_prov(JSON_AGENT, agent, l_agent, JSON_LENGTH);
-  cat_prov(JSON_ENTITY, entity, l_entity, JSON_LENGTH);
-  cat_prov(JSON_MESSAGE, message, l_message, JSON_LENGTH);
-  cat_prov(JSON_RELATION, relation, l_relation, JSON_LENGTH);
-  cat_prov(JSON_USED, used, l_used, JSON_LENGTH);
-  cat_prov(JSON_GENERATED, generated, l_generated, JSON_LENGTH);
-  cat_prov(JSON_INFORMED, informed, l_informed, JSON_LENGTH);
-  cat_prov(JSON_DERIVED, derived, l_derived, JSON_LENGTH);
+  cat_prov(JSON_ACTIVITY, activity, l_activity, MAX_PROVJSON_BUFFER_LENGTH);
+  cat_prov(JSON_AGENT, agent, l_agent, MAX_PROVJSON_BUFFER_LENGTH);
+  cat_prov(JSON_ENTITY, entity, l_entity, MAX_PROVJSON_BUFFER_LENGTH);
+  cat_prov(JSON_MESSAGE, message, l_message, MAX_PROVJSON_BUFFER_LENGTH);
+  cat_prov(JSON_RELATION, relation, l_relation, MAX_PROVJSON_BUFFER_LENGTH);
+  cat_prov(JSON_USED, used, l_used, MAX_PROVJSON_BUFFER_LENGTH);
+  cat_prov(JSON_GENERATED, generated, l_generated, MAX_PROVJSON_BUFFER_LENGTH);
+  cat_prov(JSON_INFORMED, informed, l_informed, MAX_PROVJSON_BUFFER_LENGTH);
+  cat_prov(JSON_DERIVED, derived, l_derived, MAX_PROVJSON_BUFFER_LENGTH);
 
   if(!content){
     free(json);
