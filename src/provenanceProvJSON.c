@@ -204,7 +204,7 @@ static inline bool __append(char destination[MAX_PROVJSON_BUFFER_LENGTH], char* 
 #define cat_prov(prefix, data, lock, size)     if(!str_is_empty(data)){ \
                                               content=true; \
                                               strncat(json, prefix, size); \
-                                              strncat(json, data, size-strlen(prefix)); \
+                                              strncat(json, data, size); \
                                               memset(data, '\0', MAX_PROVJSON_BUFFER_LENGTH); \
                                             } \
                                             pthread_mutex_unlock(&lock);
