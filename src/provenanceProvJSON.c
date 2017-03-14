@@ -329,7 +329,6 @@ static __thread char sender[PROV_ID_STR_LEN];
 static __thread char receiver[PROV_ID_STR_LEN];
 static __thread char parent_id[PROV_ID_STR_LEN];
 static __thread char taint[PATH_MAX];
-#define TAINT_LENGTH (PATH_MAX-strnlen(taint, PATH_MAX))
 
 #define RELATION_PREP_IDs(e) ID_ENCODE(e->identifier.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, id, PROV_ID_STR_LEN);\
                         ID_ENCODE(e->snd.buffer, PROV_IDENTIFIER_BUFFER_LENGTH, sender, PROV_ID_STR_LEN);\
@@ -360,6 +359,11 @@ static inline void __add_attribute(const char* name, bool comma){
   }
   strncat(buffer, name, BUFFER_LENGTH);
   strncat(buffer, "\":", BUFFER_LENGTH);
+}
+
+static inline void __add_array_attribute(const char* name, const char* value, bool comma){
+  __add_attribute(name, comma);
+  strncat(buffer, value, BUFFER_LENGTH);
 }
 
 static inline void __add_uint32_attribute(const char* name, const uint32_t value, bool comma){
@@ -477,20 +481,20 @@ static void prov_prep_taint(const uint8_t bloom[PROV_N_BYTES]){
   if(prov_bloom_empty(bloom)){
     return;
   }else{
-    strncat(taint, "[", TAINT_LENGTH);
+    strncat(taint, "[", PATH_MAX);
     do{
       if( prov_bloom_in(bloom, tmp->taint_id) ){
         if(!first){
-          strncat(taint, ",", TAINT_LENGTH);
+          strncat(taint, ",", PATH_MAX);
         }
-        strncat(taint, "\"", TAINT_LENGTH);
-        strncat(taint, tmp->taint_name, TAINT_LENGTH);
-        strncat(taint, "\"", TAINT_LENGTH);
+        strncat(taint, "\"", PATH_MAX);
+        strncat(taint, tmp->taint_name, PATH_MAX);
+        strncat(taint, "\"", PATH_MAX);
         first=false;
       }
       tmp = tmp->next;
     }while(tmp!=NULL);
-    strncat(taint, "]", TAINT_LENGTH);
+    strncat(taint, "]", PATH_MAX);
   }
 }
 
@@ -510,7 +514,7 @@ static inline void __node_start(char* buffer,
   __init_json_entry(buffer, id);
   __node_identifier(buffer, n);
   __add_date_attribute(true);
-  __add_string_attribute("cf:taint", taint, true);
+  __add_array_attribute("cf:taint", taint, true);
   __add_uint64_attribute("cf:jiffies", jiffies, true);
 }
 
