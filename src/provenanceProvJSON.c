@@ -362,8 +362,10 @@ static inline void __add_attribute(const char* name, bool comma){
 }
 
 static inline void __add_array_attribute(const char* name, const char* value, bool comma){
-  __add_attribute(name, comma);
-  strncat(buffer, value, BUFFER_LENGTH);
+	if(value[0]=='['){
+	  __add_attribute(name, comma);
+	  strncat(buffer, value, BUFFER_LENGTH);
+	}
 }
 
 static inline void __add_uint32_attribute(const char* name, const uint32_t value, bool comma){
