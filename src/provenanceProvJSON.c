@@ -321,7 +321,7 @@ static __thread char taint[PATH_MAX];
 
 #define PROV_PREP_TAINT(n) TAINT_ENCODE(n->taint, PROV_N_BYTES, taint, TAINT_STR_LEN)
 
-static inline void __init_json_entry(char* buffer, const char* id)
+static inline void __init_json_entry(const char* id)
 {
   buffer[0]='\0';
   strncat(buffer, "\"", BUFFER_LENGTH);
@@ -385,7 +385,6 @@ static inline void __add_int64_attribute(const char* name, const int64_t value, 
 }
 
 static inline void __add_string_attribute(const char* name, const char* value, bool comma){
-  char tmp[64];
   if(value[0]=='\0'){ // value is not set
     return;
   }
@@ -396,7 +395,6 @@ static inline void __add_string_attribute(const char* name, const char* value, b
 }
 
 static inline void __add_json_attribute(const char* name, const char* value, bool comma){
-  char tmp[64];
   __add_attribute(name, comma);
   strncat(buffer, value, BUFFER_LENGTH);
 }
@@ -426,7 +424,6 @@ static inline void __add_label_attribute(const char* type, const char* text, boo
 
 static inline char* __format_ipv4(char* buffer, size_t s, uint32_t ip, uint32_t port){
     char tmp[8];
-    unsigned char bytes[4];
     buffer[0]='\0';
     strncat(buffer, uint32_to_ipv4str(ip), s-strlen(buffer));
     strncat(buffer, ":", s-strlen(buffer));
@@ -447,7 +444,7 @@ static inline void __close_json_entry(char* buffer)
   strncat(buffer, "}", BUFFER_LENGTH);
 }
 
-static inline void __node_identifier(char* buffer, const struct node_identifier* n){
+static inline void __node_identifier(const struct node_identifier* n){
   __add_uint64_attribute("cf:id", n->id, false);
   __add_string_attribute("prov:type", node_str(n->type), true);
   __add_uint32_attribute("cf:boot_id", n->boot_id, true);
@@ -460,14 +457,14 @@ static inline void __node_start(char* buffer,
                                 const struct node_identifier* n,
                                 const char* taint,
                                 uint64_t jiffies){
-  __init_json_entry(buffer, id);
-  __node_identifier(buffer, n);
+  __init_json_entry(id);
+  __node_identifier(n);
   __add_date_attribute(true);
   __add_string_attribute("cf:taint", taint, true);
   __add_uint64_attribute("cf:jiffies", jiffies, true);
 }
 
-static inline void __relation_identifier(char* buffer, const struct relation_identifier* e){
+static inline void __relation_identifier(const struct relation_identifier* e){
   __add_uint64_attribute("cf:id", e->id, false);
   __add_string_attribute("prov:type", relation_str(e->type), true);
   __add_uint32_attribute("cf:boot_id", e->boot_id, true);
@@ -479,8 +476,8 @@ static char* bool_str[] = {"false", "true"};
 static char* __relation_to_json(struct relation_struct* e, const char* snd, const char* rcv){
   RELATION_PREP_IDs(e);
   PROV_PREP_TAINT(e);
-  __init_json_entry(buffer, id);
-  __relation_identifier(buffer, &(e->identifier.relation_id));
+  __init_json_entry(id);
+  __relation_identifier(&(e->identifier.relation_id));
   __add_date_attribute(true);
   __add_string_attribute("cf:taint", taint, true);
   __add_uint64_attribute("cf:jiffies", e->jiffies, true);
@@ -668,7 +665,6 @@ char* sb_to_json(struct sb_struct* n){
 }
 
 char* msg_to_json(struct msg_msg_struct* n){
-  char tmp[65];
   NODE_PREP_IDs(n);
   PROV_PREP_TAINT(n);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
@@ -677,7 +673,6 @@ char* msg_to_json(struct msg_msg_struct* n){
 }
 
 char* shm_to_json(struct shm_struct* n){
-  char tmp[33];
   NODE_PREP_IDs(n);
   PROV_PREP_TAINT(n);
   __node_start(buffer, id, &(n->identifier.node_id), taint, n->jiffies);
@@ -690,7 +685,7 @@ char* packet_to_json(struct pck_struct* p){
   char tmp[256];
   PACKET_PREP_IDs(p);
   PROV_PREP_TAINT(p);
-  __init_json_entry(buffer, id);
+  __init_json_entry(id);
   __add_uint32_attribute("cf:id", p->identifier.packet_id.id, false);
   __add_uint32_attribute("cf:seq", p->identifier.packet_id.seq, true);
   __add_ipv4_attribute("cf:sender", p->identifier.packet_id.snd_ip, p->identifier.packet_id.snd_port, true);
