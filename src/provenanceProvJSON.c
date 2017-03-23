@@ -51,6 +51,10 @@ static void update_time( void ){
   strftime(date, 30,"%Y:%m:%dT%H:%M:%S", &tm);
   pthread_rwlock_unlock(&date_lock);
 }
+const static char prefix[] = "\"prov\" : \"http://www.w3.org/ns/prov\", \"cf\":\"http://www.camflow.org\"";
+const char* prefix_json(){
+  return prefix;
+}
 
 static pthread_mutex_t l_flush =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 static pthread_mutex_t l_activity =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
@@ -784,10 +788,6 @@ char* pathname_to_json(struct file_name_struct* n){
   __add_label_attribute("path", n->name, true);
   __close_json_entry(buffer);
   return buffer;
-}
-
-char* prefix_json(){
-  return "\"prov\" : \"http://www.w3.org/ns/prov\", \"cf\":\"http://www.camflow.org\"";
 }
 
 char* machine_description_json(char* buffer){
