@@ -109,10 +109,9 @@ int disclose_node_ProvJSON(uint64_t type, const char* content, union prov_identi
   strncpy(node.content, content, PATH_MAX);
   node.length=strnlen(content, PATH_MAX);
   node.identifier.node_id.type=type;
-
-  if(err = provenance_disclose_node(&node)<0){
+  err = provenance_disclose_node(&node);
+  if(err<0)
     return err;
-  }
   memcpy(identifier, &node.identifier, sizeof(union prov_identifier));
   return err;
 }
