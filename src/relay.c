@@ -185,37 +185,31 @@ void prov_record(union prov_msg* msg){
     w3c_type = W3C_TYPE(prov_type(msg));
     switch(w3c_type){
       case RL_DERIVED:
-        if(prov_ops.log_derived!=NULL){
+        if(prov_ops.log_derived!=NULL)
           prov_ops.log_derived(&(msg->relation_info));
-        }
         break;
       case RL_GENERATED:
-        if(prov_ops.log_generated!=NULL){
+        if(prov_ops.log_generated!=NULL)
           prov_ops.log_generated(&(msg->relation_info));
-        }
         break;
       case RL_USED:
-        if(prov_ops.log_used!=NULL){
+        if(prov_ops.log_used!=NULL)
           prov_ops.log_used(&(msg->relation_info));
-        }
         break;
       case RL_INFORMED:
-        if(prov_ops.log_informed!=NULL){
+        if(prov_ops.log_informed!=NULL)
           prov_ops.log_informed(&(msg->relation_info));
-        }
         break;
       default:
-        if(prov_ops.log_unknown_relation!=NULL){
+        if(prov_ops.log_unknown_relation!=NULL)
           prov_ops.log_unknown_relation(&(msg->relation_info));
-        }
         break;
     }
   }else{
     switch(prov_type(msg)){
       case ACT_TASK:
-        if(prov_ops.log_task!=NULL){
+        if(prov_ops.log_task!=NULL)
           prov_ops.log_task(&(msg->task_info));
-        }
         break;
       case ENT_INODE_UNKNOWN:
       case ENT_INODE_LINK:
@@ -226,29 +220,24 @@ void prov_record(union prov_msg* msg){
       case ENT_INODE_FIFO:
       case ENT_INODE_SOCKET:
       case ENT_INODE_MMAP:
-        if(prov_ops.log_inode!=NULL){
+        if(prov_ops.log_inode!=NULL)
           prov_ops.log_inode(&(msg->inode_info));
-        }
         break;
       case ENT_MSG:
-        if(prov_ops.log_msg!=NULL){
+        if(prov_ops.log_msg!=NULL)
           prov_ops.log_msg(&(msg->msg_msg_info));
-        }
         break;
       case ENT_SHM:
-        if(prov_ops.log_shm!=NULL){
+        if(prov_ops.log_shm!=NULL)
           prov_ops.log_shm(&(msg->shm_info));
-        }
         break;
       case ENT_PACKET:
-        if(prov_ops.log_packet!=NULL){
+        if(prov_ops.log_packet!=NULL)
           prov_ops.log_packet(&(msg->pck_info));
-        }
         break;
       case ENT_IATTR:
-        if(prov_ops.log_iattr!=NULL){
+        if(prov_ops.log_iattr!=NULL)
           prov_ops.log_iattr(&(msg->iattr_info));
-        }
         break;
       default:
         record_error("Error: unknown type %llu\n", prov_type(msg));
@@ -266,9 +255,8 @@ static void callback_job(void* data, const size_t prov_size)
     return;
   }
   msg = (union prov_msg*)data;
-  if(prov_type(msg)!=ENT_PACKET){
+  if(prov_type(msg)!=ENT_PACKET)
     node_identifier(msg).machine_id = machine_id;
-  }
 
   /* initialise per worker thread */
   if(!initialised && prov_ops.init!=NULL){
@@ -278,9 +266,8 @@ static void callback_job(void* data, const size_t prov_size)
 
   // dealing with filter
   if(prov_ops.filter!=NULL){
-    if(prov_ops.filter(msg)){ // message has been fitlered
+    if(prov_ops.filter(msg)) // message has been fitlered
       goto out;
-    }
   }
 
   prov_record(msg);
