@@ -133,6 +133,11 @@ int provenance_set_propagate(bool v);
 bool provenance_get_propagate(void);
 
 /*
+* apply label to current process.
+*/
+int provenance_label(const char *label);
+
+/*
 * @v uint32_t value
 * Assign an ID to the current machine. Will fail if the current process is not
 * root.
@@ -222,17 +227,17 @@ int fprovenance_propagate_file(int fd, bool propagate);
 
 /*
 * @name file name
-* @taint taint to be applied to the file
-* add taint to the file corresponding to name
+* @label label to be applied to the file
+* add label to the file corresponding to name
 */
-int provenance_taint_file(const char name[PATH_MAX], uint64_t taint);
+int provenance_label_file(const char name[PATH_MAX], const char *label);
 
 /*
 * @fd file descriptor
-* @taint taint to be applied to the file
-* add taint to the file corresponding to fd
+* @label label to be applied to the file
+* add label to the file corresponding to fd
 */
-int fprovenance_taint_file(int fd, uint64_t taint);
+int fprovenance_label_file(int fd, const char *label);
 
 /*
 * @pid process pid
@@ -257,7 +262,7 @@ int provenance_opaque_process(uint32_t pid, bool opaque);
 
 int provenance_propagate_process(uint32_t pid, bool propagate);
 
-int provenance_taint_process(uint32_t pid, uint64_t taint);
+int provenance_label_process(uint32_t pid, const char *label);
 
 int provenance_ingress_ipv4_track(const char* param);
 int provenance_ingress_ipv4_propagate(const char* param);
