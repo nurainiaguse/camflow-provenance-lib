@@ -179,7 +179,7 @@ static void destroy_worker_pool(void)
 /* per worker thread initialised variable */
 static __thread int initialised=0;
 
-void prov_record(union prov_msg* msg){
+void prov_record(union prov_elt* msg){
   uint64_t w3c_type;
   if(prov_is_relation(msg)){
     w3c_type = W3C_TYPE(prov_type(msg));
@@ -249,12 +249,12 @@ void prov_record(union prov_msg* msg){
 /* handle application callbacks */
 static void callback_job(void* data, const size_t prov_size)
 {
-  union prov_msg* msg;
-  if(prov_size!=sizeof(union prov_msg)){
-    record_error("Wrong size %d expected: %d.", prov_size, sizeof(union prov_msg));
+  union prov_elt* msg;
+  if(prov_size!=sizeof(union prov_elt)){
+    record_error("Wrong size %d expected: %d.", prov_size, sizeof(union prov_elt));
     return;
   }
-  msg = (union prov_msg*)data;
+  msg = (union prov_elt*)data;
   if(prov_type(msg)!=ENT_PACKET)
     node_identifier(msg).machine_id = machine_id;
 
@@ -275,7 +275,7 @@ out:
   free(data); /* free the memory allocated in the reader */
 }
 
-void long_prov_record(union long_prov_msg* msg){
+void long_prov_record(union long_prov_elt* msg){
   switch(prov_type(msg)){
     case ENT_STR:
       if(prov_ops.log_str!=NULL)
@@ -312,12 +312,12 @@ void long_prov_record(union long_prov_msg* msg){
 /* handle application callbacks */
 static void long_callback_job(void* data, const size_t prov_size)
 {
-  union long_prov_msg* msg;
-  if(prov_size!=sizeof(union long_prov_msg)){
-    record_error("Wrong size %d expected: %d.", prov_size, sizeof(union long_prov_msg));
+  union long_prov_elt* msg;
+  if(prov_size!=sizeof(union long_prov_elt)){
+    record_error("Wrong size %d expected: %d.", prov_size, sizeof(union long_prov_elt));
     return;
   }
-  msg = (union long_prov_msg*)data;
+  msg = (union long_prov_elt*)data;
   node_identifier(msg).machine_id = machine_id;
 
   /* initialise per worker thread */
@@ -390,7 +390,7 @@ static void reader_job(void *data)
       record_error("Failed while polling (%d).", rc);
       continue; /* something bad happened */
     }
-    ___read_relay(relay_file[cpu], sizeof(union prov_msg), callback_job);
+    ___read_relay(relay_file[cpu], sizeof(union prov_elt), callback_job);
   }while(1);
 }
 
@@ -418,6 +418,6 @@ static void long_reader_job(void *data)
       record_error("Failed while polling (%d).", rc);
       continue; /* something bad happened */
     }
-    ___read_relay(long_relay_file[cpu], sizeof(union long_prov_msg), long_callback_job);
+    ___read_relay(long_relay_file[cpu], sizeof(union long_prov_elt), long_callback_job);
   }while(1);
 }

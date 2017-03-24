@@ -21,8 +21,8 @@
 
 struct provenance_ops{
   void (*init)(void);
-  bool (*filter)(union prov_msg* msg);
-  bool (*long_filter)(union long_prov_msg* msg);
+  bool (*filter)(union prov_elt* msg);
+  bool (*long_filter)(union long_prov_elt* msg);
   /* relation callback */
   void (*log_unknown_relation)(struct relation_struct*);
   void (*log_derived)(struct relation_struct*);
@@ -46,8 +46,8 @@ struct provenance_ops{
   void (*log_error)(char*);
 };
 
-void prov_record(union prov_msg* msg);
-void long_prov_record(union long_prov_msg* msg);
+void prov_record(union prov_elt* msg);
+void long_prov_record(union long_prov_elt* msg);
 
 /*
 * Function return boolean value corresponding to the presence or not of the
@@ -181,7 +181,7 @@ int provenance_flush(void);
 * @inode_info point to an inode_info structure
 * retrieve provenance information of the file associated with name.
 */
-int provenance_read_file(const char name[PATH_MAX], union prov_msg* inode_info);
+int provenance_read_file(const char name[PATH_MAX], union prov_elt* inode_info);
 
 /*
 * @name file name
@@ -244,7 +244,7 @@ int fprovenance_label_file(int fd, const char *label);
 * @inode_info point to an inode_info structure
 * retrieve provenance information of the process associated with pid.
 */
-int provenance_read_process(uint32_t pid, union prov_msg* process_info);
+int provenance_read_process(uint32_t pid, union prov_elt* process_info);
 
 /*
 * @pid process pid

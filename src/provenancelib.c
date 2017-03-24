@@ -93,7 +93,7 @@ declare_get_boolean_fcn(provenance_get_all, PROV_ALL_FILE);
 }
 
 #define declare_self_get_flag(fcn_name, element) bool fcn_name( void ){\
-  union prov_msg self;\
+  union prov_elt self;\
   provenance_self(&self.task_info);\
   return prov_check_flag(&self, element);\
 }
@@ -208,24 +208,24 @@ int provenance_flush(void){
   return rc;
 }
 
-int provenance_read_file(const char path[PATH_MAX], union prov_msg* inode_info){
-  return getxattr(path, XATTR_NAME_PROVENANCE, inode_info, sizeof(union prov_msg));
+int provenance_read_file(const char path[PATH_MAX], union prov_elt* inode_info){
+  return getxattr(path, XATTR_NAME_PROVENANCE, inode_info, sizeof(union prov_elt));
 }
 
-int fprovenance_read_file(int fd, union prov_msg* inode_info){
-  return fgetxattr(fd, XATTR_NAME_PROVENANCE, inode_info, sizeof(union prov_msg));
+int fprovenance_read_file(int fd, union prov_elt* inode_info){
+  return fgetxattr(fd, XATTR_NAME_PROVENANCE, inode_info, sizeof(union prov_elt));
 }
 
-static inline int __provenance_write_file(const char path[PATH_MAX], union prov_msg* inode_info){
-  return setxattr(path, XATTR_NAME_PROVENANCE, inode_info, sizeof(union prov_msg), 0);
+static inline int __provenance_write_file(const char path[PATH_MAX], union prov_elt* inode_info){
+  return setxattr(path, XATTR_NAME_PROVENANCE, inode_info, sizeof(union prov_elt), 0);
 }
 
-static inline int __fprovenance_write_file(int fd, union prov_msg* inode_info){
-  return fsetxattr(fd, XATTR_NAME_PROVENANCE, inode_info, sizeof(union prov_msg), 0);
+static inline int __fprovenance_write_file(int fd, union prov_elt* inode_info){
+  return fsetxattr(fd, XATTR_NAME_PROVENANCE, inode_info, sizeof(union prov_elt), 0);
 }
 
 static inline int __provenance_set_flags_file(const char path[PATH_MAX], uint8_t bit, bool v){
-  union prov_msg prov;
+  union prov_elt prov;
   int rc;
   rc = provenance_read_file(path, &prov);
   if(rc<0)
@@ -238,7 +238,7 @@ static inline int __provenance_set_flags_file(const char path[PATH_MAX], uint8_t
 }
 
 static inline int __fprovenance_set_flags_file(int fd, uint8_t bit, bool v){
-  union prov_msg prov;
+  union prov_elt prov;
   int rc;
   rc = fprovenance_read_file(fd, &prov);
   if(rc<0)
@@ -285,7 +285,7 @@ int fprovenance_propagate_file(int fd, bool propagate){
 }
 
 int provenance_label_file(const char path[PATH_MAX], const char *label){
-  union prov_msg prov;
+  union prov_elt prov;
   uint64_t taint = djb2_hash(label);
   int rc;
   rc = provenance_read_file(path, &prov);
@@ -296,7 +296,7 @@ int provenance_label_file(const char path[PATH_MAX], const char *label){
 }
 
 int fprovenance_label_file(int fd, const char *label){
-  union prov_msg prov;
+  union prov_elt prov;
   uint64_t taint = djb2_hash(label);
   int rc;
   rc = fprovenance_read_file(fd, &prov);
@@ -323,7 +323,7 @@ int provenance_label(const char *label){
   return rc;
 }
 
-int provenance_read_process(uint32_t pid, union prov_msg* process_info){
+int provenance_read_process(uint32_t pid, union prov_elt* process_info){
   struct prov_process_config cfg;
   int rc;
   int fd = open(PROV_PROCESS_FILE, O_RDONLY);
@@ -335,7 +335,7 @@ int provenance_read_process(uint32_t pid, union prov_msg* process_info){
 
   rc = read(fd, &cfg, sizeof(struct prov_process_config));
   close(fd);
-  memcpy(process_info, &(cfg.prov), sizeof(union prov_msg));
+  memcpy(process_info, &(cfg.prov), sizeof(union prov_elt));
   return rc;
 }
 
