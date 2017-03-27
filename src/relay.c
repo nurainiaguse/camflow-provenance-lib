@@ -266,7 +266,7 @@ static void callback_job(void* data, const size_t prov_size)
 
   // dealing with filter
   if(prov_ops.filter!=NULL){
-    if(prov_ops.filter(msg)) // message has been fitlered
+    if(prov_ops.filter((prov_entry_t*)msg)) // message has been fitlered
       goto out;
   }
 
@@ -327,8 +327,8 @@ static void long_callback_job(void* data, const size_t prov_size)
   }
 
   // dealing with filter
-  if(prov_ops.long_filter!=NULL){
-    if(prov_ops.long_filter(msg)){ // message has been fitlered
+  if(prov_ops.filter!=NULL){
+    if(prov_ops.filter((prov_entry_t*)msg)){ // message has been fitlered
       goto out;
     }
   }

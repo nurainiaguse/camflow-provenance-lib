@@ -21,8 +21,7 @@
 
 struct provenance_ops{
   void (*init)(void);
-  bool (*filter)(union prov_elt* msg);
-  bool (*long_filter)(union long_prov_elt* msg);
+  bool (*filter)(prov_entry_t* msg);
   /* relation callback */
   void (*log_unknown_relation)(struct relation_struct*);
   void (*log_derived)(struct relation_struct*);

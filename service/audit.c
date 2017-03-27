@@ -136,11 +136,7 @@ void log_packet_content(struct pckcnt_struct* cnt){
   append_entity(pckcnt_to_json(cnt));
 }
 
-bool filter(union prov_elt* msg){
-  return false;
-}
-
-bool long_filter(union long_prov_elt* msg){
+bool filter(prov_entry_t* msg){
   return false;
 }
 
@@ -154,7 +150,6 @@ void log_error(char* err_msg){
 struct provenance_ops ops = {
   .init=&init,
   .filter=&filter,
-  .long_filter=&long_filter,
   .log_unknown_relation=&log_unknown_relation,
   .log_derived=&log_derived,
   .log_generated=&log_generated,
