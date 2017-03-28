@@ -397,7 +397,10 @@ union ipaddr{
 static int __param_to_ipv4_filter(const char* param, struct prov_ipv4_filter* filter){
   int err;
   union ipaddr ip;
-  uint32_t a,b,c,d;
+  uint32_t a;
+  uint32_t b;
+  uint32_t c;
+  uint32_t d;
   uint32_t mask;
   uint32_t port;
 
@@ -500,7 +503,9 @@ bool find_entry(uint32_t secid, char* secctx) {
 
 int provenance_secid_to_secctx( uint32_t secid, char* secctx, uint32_t len){
   struct secinfo info;
-  int rc, fd;
+  int rc;
+  int fd;
+  
   if( find_entry(secid, secctx) )
     return 0;
   fd = open(PROV_SECCTX, O_RDONLY);

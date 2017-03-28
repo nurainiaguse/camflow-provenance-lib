@@ -53,7 +53,10 @@ int base64encode(const void* data_buf, size_t dataLength, char* result, size_t r
    size_t x;
    uint32_t n = 0;
    int padCount = dataLength % 3;
-   uint8_t n0, n1, n2, n3;
+   uint8_t n0;
+   uint8_t n1;
+   uint8_t n2;
+   uint8_t n3;
 
    /* increment over the length of the string, three characters at a time */
    for (x = 0; x < dataLength; x += 3)
@@ -141,7 +144,8 @@ char *ulltoa (uint64_t value, char *string, int radix)
 {
   char *dst;
   char digits[65];
-  int i, n;
+  int i;
+  int n;
 
   dst = string;
   if (radix < 2 || radix > 36)
@@ -166,7 +170,8 @@ char *utoa (uint32_t value, char *string, int radix)
 {
   char *dst;
   char digits[33];
-  int i, n;
+  int i;
+  int n;
 
   dst = string;
   if (radix < 2 || radix > 36)
@@ -196,7 +201,9 @@ char* itoa(int32_t value, char* result, int base) {
 	// check that the base if valid
 	if (base < 2 || base > 36) { *result = '\0'; return result; }
 
-	char* ptr = result, *ptr1 = result, tmp_char;
+	char *ptr = result;
+  char *ptr1 = result;
+  char tmp_char;
 	int32_t tmp_value;
 
 	do {

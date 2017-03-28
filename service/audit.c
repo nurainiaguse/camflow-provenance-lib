@@ -97,8 +97,7 @@ void log_disc(struct disc_node_struct* node){
     case AGT_DISC:
       append_agent(disc_to_json(node));
       break;
-    case ENT_DISC:
-    default:
+    default: // default to entity
       append_entity(disc_to_json(node));
       break;
   }

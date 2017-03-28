@@ -342,7 +342,8 @@ out:
 static void ___read_relay( const int relay_file, const size_t prov_size, void (*callback)(void*, const size_t)){
 	uint8_t *buf;
 	uint8_t* entry;
-  size_t size=0, i=0;
+  size_t size=0;
+  size_t i=0;
   int rc;
 	buf = (uint8_t*)malloc(buffer_size(prov_size));
 	do{
@@ -366,7 +367,6 @@ static void ___read_relay( const int relay_file, const size_t prov_size, void (*
 		callback(entry, prov_size);
 	}
 	free(buf);
-	return;
 }
 
 #define POL_FLAG (POLLIN|POLLRDNORM|POLLERR)
