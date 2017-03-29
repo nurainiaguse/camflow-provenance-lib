@@ -13,8 +13,6 @@
 #ifndef __PROVENANCEPROVJSON_H
 #define __PROVENANCEPROVJSON_H
 
-int add_taint(const uint64_t id, const char* name);
-
 void set_ProvJSON_callback( void (*fcn)(char* json) );
 void flush_json( void );
 void append_activity(char* json_element);

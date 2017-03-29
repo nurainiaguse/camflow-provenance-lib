@@ -26,6 +26,7 @@
 
 ```
 - add support for boot ID.
+- rework the taint/label system.
 ```
 
 ### v0.2.3
