@@ -110,9 +110,8 @@ declare_self_get_flag(provenance_get_propagate, PROPAGATE_BIT);
 int provenance_set_propagate(bool v){
   int err;
   err = __provenance_set_propagate(v);
-  if(err < 0){
+  if(err < 0)
     return err;
-  }
   return provenance_set_tracked(v);
 }
 
@@ -121,14 +120,11 @@ int provenance_set_machine_id(uint32_t v){
   int fd = open(PROV_MACHINE_ID_FILE, O_WRONLY);
 
   if(fd<0)
-  {
     return fd;
-  }
   rc = write(fd, &v, sizeof(uint32_t));
   close(fd);
-  if(rc<0){
+  if(rc<0)
     return rc;
-  }
   return 0;
 }
 
@@ -137,14 +133,37 @@ int provenance_get_machine_id(uint32_t* v){
   int fd = open(PROV_MACHINE_ID_FILE, O_RDONLY);
 
   if(fd<0)
-  {
     return fd;
-  }
   rc = read(fd, v, sizeof(uint32_t));
   close(fd);
-  if(rc<0){
+  if(rc<0)
     return rc;
-  }
+  return 0;
+}
+
+int provenance_set_boot_id(uint32_t v){
+  int rc;
+  int fd = open(PROV_BOOT_ID_FILE, O_WRONLY);
+
+  if(fd<0)
+    return fd;
+  rc = write(fd, &v, sizeof(uint32_t));
+  close(fd);
+  if(rc<0)
+    return rc;
+  return 0;
+}
+
+int provenance_get_boot_id(uint32_t* v){
+  int rc;
+  int fd = open(PROV_BOOT_ID_FILE, O_RDONLY);
+
+  if(fd<0)
+    return fd;
+  rc = read(fd, v, sizeof(uint32_t));
+  close(fd);
+  if(rc<0)
+    return rc;
   return 0;
 }
 
@@ -153,9 +172,7 @@ int provenance_disclose_node(struct disc_node_struct* node){
   int fd = open(PROV_NODE_FILE, O_WRONLY);
 
   if(fd<0)
-  {
     return fd;
-  }
   rc = write(fd, node, sizeof(struct disc_node_struct));
   close(fd);
   return rc;
@@ -166,9 +183,7 @@ int provenance_disclose_relation(struct relation_struct* relation){
   int fd = open(PROV_RELATION_FILE, O_WRONLY);
 
   if(fd<0)
-  {
     return fd;
-  }
   rc = write(fd, relation, sizeof(struct relation_struct));
   close(fd);
   return rc;
@@ -179,18 +194,15 @@ int provenance_self(struct task_prov_struct* self){
   int fd = open(PROV_SELF_FILE, O_RDONLY);
 
   if(fd<0)
-  {
     return fd;
-  }
   rc = read(fd, self, sizeof(struct task_prov_struct));
   close(fd);
   return rc;
 }
 
 bool provenance_is_present(void){
-  if(access(PROV_ENABLE_FILE, F_OK)){ // return 0 if file exists.
+  if(access(PROV_ENABLE_FILE, F_OK)) // return 0 if file exists.
     return false;
-  }
   return true;
 }
 
@@ -200,9 +212,7 @@ int provenance_flush(void){
   int fd = open(PROV_FLUSH_FILE, O_WRONLY);
 
   if(fd<0)
-  {
     return fd;
-  }
   rc = write(fd, &tmp, sizeof(char));
   close(fd);
   return rc;
@@ -269,18 +279,16 @@ declare_fset_file_fcn(__fprovenance_propagate_file, PROPAGATE_BIT);
 int provenance_propagate_file(const char name[PATH_MAX], bool propagate){
   int err;
   err = __provenance_propagate_file(name, propagate);
-  if(err < 0){
+  if(err < 0)
     return err;
-  }
   return provenance_track_file(name, propagate);
 }
 
 int fprovenance_propagate_file(int fd, bool propagate){
   int err;
   err = __fprovenance_propagate_file(fd, propagate);
-  if(err < 0){
+  if(err < 0)
     return err;
-  }
   return fprovenance_track_file(fd, propagate);
 }
 
@@ -311,9 +319,8 @@ int provenance_label(const char *label){
   uint64_t taint = djb2_hash(label);
   int rc;
   int fd = open(PROV_SELF_FILE, O_WRONLY);
-  if( fd < 0 ){
+  if( fd < 0 )
     return fd;
-  }
   memset(&cfg, 0, sizeof(struct prov_process_config));
   cfg.op=PROV_SET_TAINT;
   prov_bloom_add(prov_taint(&(cfg.prov)), taint);
@@ -328,9 +335,8 @@ int provenance_read_process(uint32_t pid, union prov_elt* process_info){
   int rc;
   int fd = open(PROV_PROCESS_FILE, O_RDONLY);
 
-  if( fd < 0 ){
+  if( fd < 0 )
     return fd;
-  }
   cfg.vpid = pid;
 
   rc = read(fd, &cfg, sizeof(struct prov_process_config));
@@ -365,9 +371,8 @@ declare_set_process_fcn(__provenance_propagate_process, PROPAGATE_BIT, PROV_SET_
 int provenance_propagate_process(uint32_t pid, bool propagate){
   int err;
   err = __provenance_propagate_process(pid, propagate);
-  if(err < 0){
+  if(err < 0)
     return err;
-  }
   return provenance_track_process(pid, propagate);
 }
 
@@ -376,9 +381,8 @@ int provenance_label_process(uint32_t pid, const char *label){
   uint64_t taint = djb2_hash(label);
   int rc;
   int fd = open(PROV_PROCESS_FILE, O_WRONLY);
-  if( fd < 0 ){
+  if( fd < 0 )
     return fd;
-  }
   memset(&cfg, 0, sizeof(struct prov_process_config));
   cfg.vpid=pid;
   cfg.op=PROV_SET_TAINT;
@@ -505,7 +509,7 @@ int provenance_secid_to_secctx( uint32_t secid, char* secctx, uint32_t len){
   struct secinfo info;
   int rc;
   int fd;
-  
+
   if( find_entry(secid, secctx) )
     return 0;
   fd = open(PROV_SECCTX, O_RDONLY);
@@ -519,9 +523,8 @@ int provenance_secid_to_secctx( uint32_t secid, char* secctx, uint32_t len){
     secctx[0]='\0';
     return rc;
   }
-  if(len<strlen(info.secctx)){
+  if(len<strlen(info.secctx))
     return -1;
-  }
   strncpy(secctx, info.secctx, len);
   add_entry(secid, secctx);
   return rc;
