@@ -21,7 +21,8 @@ static const char map[16+1] = "0123456789ABCDEF";
 
 size_t hexify(uint8_t *in, size_t in_size, char *out, size_t out_size)
 {
-    if (in_size == 0 || out_size == 0) return 0;
+    if (in_size == 0 || out_size == 0)
+      return 0;
 
     size_t bytes_written = 0;
     size_t i = 0;
@@ -80,9 +81,11 @@ int base64encode(const void* data_buf, size_t dataLength, char* result, size_t r
        * if we have one byte available, then its encoding is spread
        * out over two characters
        */
-      if(resultIndex >= resultSize) return 1;   /* indicate failure: buffer too small */
+      if(resultIndex >= resultSize)
+        return 1;   /* indicate failure: buffer too small */
       result[resultIndex++] = base64chars[n0];
-      if(resultIndex >= resultSize) return 1;   /* indicate failure: buffer too small */
+      if(resultIndex >= resultSize)
+        return 1;   /* indicate failure: buffer too small */
       result[resultIndex++] = base64chars[n1];
 
       /*
@@ -91,7 +94,8 @@ int base64encode(const void* data_buf, size_t dataLength, char* result, size_t r
        */
       if((x+1) < dataLength)
       {
-         if(resultIndex >= resultSize) return 1;   /* indicate failure: buffer too small */
+         if(resultIndex >= resultSize)
+          return 1;   /* indicate failure: buffer too small */
          result[resultIndex++] = base64chars[n2];
       }
 
@@ -101,7 +105,8 @@ int base64encode(const void* data_buf, size_t dataLength, char* result, size_t r
        */
       if((x+2) < dataLength)
       {
-         if(resultIndex >= resultSize) return 1;   /* indicate failure: buffer too small */
+         if(resultIndex >= resultSize)
+          return 1;   /* indicate failure: buffer too small */
          result[resultIndex++] = base64chars[n3];
       }
    }
@@ -114,11 +119,13 @@ int base64encode(const void* data_buf, size_t dataLength, char* result, size_t r
    {
       for (; padCount < 3; padCount++)
       {
-         if(resultIndex >= resultSize) return 1;   /* indicate failure: buffer too small */
+         if(resultIndex >= resultSize)
+          return 1;   /* indicate failure: buffer too small */
          result[resultIndex++] = '=';
       }
    }
-   if(resultIndex >= resultSize) return 1;   /* indicate failure: buffer too small */
+   if(resultIndex >= resultSize)
+    return 1;   /* indicate failure: buffer too small */
    result[resultIndex] = 0;
    return 0;   /* indicate success */
 }
@@ -225,9 +232,14 @@ char* itoa(int32_t value, char* result, int base) {
 
 char* lltoa(int64_t value, char* result, int base) {
 	// check that the base if valid
-	if (base < 2 || base > 36) { *result = '\0'; return result; }
+	if (base < 2 || base > 36) {
+    *result = '\0';
+    return result;
+  }
 
-	char* ptr = result, *ptr1 = result, tmp_char;
+	char *ptr = result;
+  char *ptr1 = result;
+  char tmp_char;
 	int64_t tmp_value;
 
 	do {
