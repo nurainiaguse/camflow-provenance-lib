@@ -332,9 +332,8 @@ static void long_callback_job(void* data, const size_t prov_size)
 
   // dealing with filter
   if(prov_ops.filter!=NULL){
-    if(prov_ops.filter((prov_entry_t*)msg)){ // message has been fitlered
+    if(prov_ops.filter((prov_entry_t*)msg)) // message has been fitlered
       goto out;
-    }
   }
 
   long_prov_record(msg);
@@ -354,10 +353,9 @@ static void ___read_relay( const int relay_file, const size_t prov_size, void (*
 		rc = read(relay_file, buf+size, buffer_size(prov_size)-size);
 		if(rc<0){
 			record_error("Failed while reading (%d).", errno);
-			if(errno==EAGAIN){ // retry
+			if(errno==EAGAIN) // retry
 				continue;
-			}
-			free(entry);
+			free(buf);
 			return;
 		}
 		size += rc;
