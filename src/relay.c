@@ -180,71 +180,78 @@ static void destroy_worker_pool(void)
 /* per worker thread initialised variable */
 static __thread int initialised=0;
 
-void prov_record(union prov_elt* msg){
-  uint64_t w3c_type;
-  if(prov_is_relation(msg)){
-    w3c_type = W3C_TYPE(prov_type(msg));
-    switch(w3c_type){
-      case RL_DERIVED:
-        if(prov_ops.log_derived!=NULL)
-          prov_ops.log_derived(&(msg->relation_info));
-        break;
-      case RL_GENERATED:
-        if(prov_ops.log_generated!=NULL)
-          prov_ops.log_generated(&(msg->relation_info));
-        break;
-      case RL_USED:
-        if(prov_ops.log_used!=NULL)
-          prov_ops.log_used(&(msg->relation_info));
-        break;
-      case RL_INFORMED:
-        if(prov_ops.log_informed!=NULL)
-          prov_ops.log_informed(&(msg->relation_info));
-        break;
-      default:
-        if(prov_ops.log_unknown_relation!=NULL)
-          prov_ops.log_unknown_relation(&(msg->relation_info));
-        break;
-    }
-  }else{
-    switch(prov_type(msg)){
-      case ACT_TASK:
-        if(prov_ops.log_task!=NULL)
-          prov_ops.log_task(&(msg->task_info));
-        break;
-      case ENT_INODE_UNKNOWN:
-      case ENT_INODE_LINK:
-      case ENT_INODE_FILE:
-      case ENT_INODE_DIRECTORY:
-      case ENT_INODE_CHAR:
-      case ENT_INODE_BLOCK:
-      case ENT_INODE_FIFO:
-      case ENT_INODE_SOCKET:
-      case ENT_INODE_MMAP:
-        if(prov_ops.log_inode!=NULL)
-          prov_ops.log_inode(&(msg->inode_info));
-        break;
-      case ENT_MSG:
-        if(prov_ops.log_msg!=NULL)
-          prov_ops.log_msg(&(msg->msg_msg_info));
-        break;
-      case ENT_SHM:
-        if(prov_ops.log_shm!=NULL)
-          prov_ops.log_shm(&(msg->shm_info));
-        break;
-      case ENT_PACKET:
-        if(prov_ops.log_packet!=NULL)
-          prov_ops.log_packet(&(msg->pck_info));
-        break;
-      case ENT_IATTR:
-        if(prov_ops.log_iattr!=NULL)
-          prov_ops.log_iattr(&(msg->iattr_info));
-        break;
-      default:
-        record_error("Error: unknown type %llu\n", prov_type(msg));
-        break;
-    }
+void relation_record(union prov_elt *msg){
+  uint64_t w3c_type = W3C_TYPE(prov_type(msg));
+  switch(w3c_type){
+    case RL_DERIVED:
+      if(prov_ops.log_derived!=NULL)
+        prov_ops.log_derived(&(msg->relation_info));
+      break;
+    case RL_GENERATED:
+      if(prov_ops.log_generated!=NULL)
+        prov_ops.log_generated(&(msg->relation_info));
+      break;
+    case RL_USED:
+      if(prov_ops.log_used!=NULL)
+        prov_ops.log_used(&(msg->relation_info));
+      break;
+    case RL_INFORMED:
+      if(prov_ops.log_informed!=NULL)
+        prov_ops.log_informed(&(msg->relation_info));
+      break;
+    default:
+      if(prov_ops.log_unknown_relation!=NULL)
+        prov_ops.log_unknown_relation(&(msg->relation_info));
+      break;
   }
+}
+
+void node_record(union prov_elt *msg){
+  switch(prov_type(msg)){
+    case ACT_TASK:
+      if(prov_ops.log_task!=NULL)
+        prov_ops.log_task(&(msg->task_info));
+      break;
+    case ENT_INODE_UNKNOWN:
+    case ENT_INODE_LINK:
+    case ENT_INODE_FILE:
+    case ENT_INODE_DIRECTORY:
+    case ENT_INODE_CHAR:
+    case ENT_INODE_BLOCK:
+    case ENT_INODE_FIFO:
+    case ENT_INODE_SOCKET:
+    case ENT_INODE_MMAP:
+      if(prov_ops.log_inode!=NULL)
+        prov_ops.log_inode(&(msg->inode_info));
+      break;
+    case ENT_MSG:
+      if(prov_ops.log_msg!=NULL)
+        prov_ops.log_msg(&(msg->msg_msg_info));
+      break;
+    case ENT_SHM:
+      if(prov_ops.log_shm!=NULL)
+        prov_ops.log_shm(&(msg->shm_info));
+      break;
+    case ENT_PACKET:
+      if(prov_ops.log_packet!=NULL)
+        prov_ops.log_packet(&(msg->pck_info));
+      break;
+    case ENT_IATTR:
+      if(prov_ops.log_iattr!=NULL)
+        prov_ops.log_iattr(&(msg->iattr_info));
+      break;
+    default:
+      record_error("Error: unknown type %llu\n", prov_type(msg));
+      break;
+  }
+}
+
+void prov_record(union prov_elt* msg){
+
+  if(prov_is_relation(msg))
+    relation_record(msg);
+  else
+    node_record(msg);
 }
 
 /* handle application callbacks */
