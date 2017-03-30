@@ -488,9 +488,8 @@ static char* __relation_to_json(struct relation_struct* e, const char* snd, cons
   __add_string_attribute("cf:allowed", bool_str[e->allowed], true);
   __add_string_attribute(snd, sender, true);
   __add_string_attribute(rcv, receiver, true);
-  if(e->set==FILE_INFO_SET){ // if file related info were set
+  if(e->set==FILE_INFO_SET && e->offset>0)
     __add_int64_attribute("cf:offset", e->offset, true); // just offset for now
-  }
   __close_json_entry(buffer);
   return buffer;
 }

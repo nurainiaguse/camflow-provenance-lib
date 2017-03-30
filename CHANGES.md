@@ -25,6 +25,7 @@
 ### v0.3.0
 
 ```
+- offset does not appear in JSON if the value is 0.
 - add support for boot ID.
 - rework the taint/label system.
 ```
