@@ -34,7 +34,7 @@
 #include "provenancePovJSON.h"
 #include "provenanceutils.h"
 
-#define MAX_PROVJSON_BUFFER_EXP     12
+#define MAX_PROVJSON_BUFFER_EXP     13
 #define MAX_PROVJSON_BUFFER_LENGTH  ((1 << MAX_PROVJSON_BUFFER_EXP)*sizeof(uint8_t))
 
 static char date[256];
