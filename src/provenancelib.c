@@ -294,7 +294,7 @@ int fprovenance_propagate_file(int fd, bool propagate){
 
 int provenance_label_file(const char path[PATH_MAX], const char *label){
   union prov_elt prov;
-  uint64_t taint = djb2_hash(label);
+  uint64_t taint = generate_label(label);
   int rc;
   rc = provenance_read_file(path, &prov);
   if(rc<0)
@@ -305,7 +305,7 @@ int provenance_label_file(const char path[PATH_MAX], const char *label){
 
 int fprovenance_label_file(int fd, const char *label){
   union prov_elt prov;
-  uint64_t taint = djb2_hash(label);
+  uint64_t taint = generate_label(label);
   int rc;
   rc = fprovenance_read_file(fd, &prov);
   if(rc<0)
@@ -316,7 +316,7 @@ int fprovenance_label_file(int fd, const char *label){
 
 int provenance_label(const char *label){
   struct prov_process_config cfg;
-  uint64_t taint = djb2_hash(label);
+  uint64_t taint = generate_label(label);
   int rc;
   int fd = open(PROV_SELF_FILE, O_WRONLY);
   if( fd < 0 )
@@ -378,7 +378,7 @@ int provenance_propagate_process(uint32_t pid, bool propagate){
 
 int provenance_label_process(uint32_t pid, const char *label){
   struct prov_process_config cfg;
-  uint64_t taint = djb2_hash(label);
+  uint64_t taint = generate_label(label);
   int rc;
   int fd = open(PROV_PROCESS_FILE, O_WRONLY);
   if( fd < 0 )
