@@ -320,9 +320,9 @@ static __thread char taint[PATH_MAX];
 
 
 static inline void prov_prep_taint(union prov_elt *n){
-  if (prov_bloom_empty(prov_taint(n)))
-    TAINT_ENCODE(prov_taint(n), PROV_N_BYTES, taint, TAINT_STR_LEN);
   taint[0]='\0';
+  if (!prov_bloom_empty(prov_taint(n)))
+    TAINT_ENCODE(prov_taint(n), PROV_N_BYTES, taint, TAINT_STR_LEN);
 }
 
 static inline void __init_json_entry(const char* id)
