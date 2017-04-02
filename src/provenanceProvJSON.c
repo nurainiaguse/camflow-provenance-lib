@@ -451,6 +451,7 @@ static inline void __close_json_entry(char* buffer)
 static inline void __node_identifier(const struct node_identifier* n){
   __add_uint64_attribute("cf:id", n->id, false);
   __add_string_attribute("prov:type", node_str(n->type), true);
+  __add_uint64hex_attribute("cf:type", n->type, true);
   __add_uint32_attribute("cf:boot_id", n->boot_id, true);
   __add_uint32_attribute("cf:machine_id", n->machine_id, true);
   __add_uint32_attribute("cf:version", n->version, true);
@@ -470,6 +471,7 @@ static inline void __node_start(const char* id,
 static inline void __relation_identifier(const struct relation_identifier* e){
   __add_uint64_attribute("cf:id", e->id, false);
   __add_string_attribute("prov:type", relation_str(e->type), true);
+  __add_uint64hex_attribute("cf:type", e->type, true);
   __add_uint32_attribute("cf:boot_id", e->boot_id, true);
   __add_uint32_attribute("cf:machine_id", e->machine_id, true);
 }
@@ -487,7 +489,15 @@ static char* __relation_to_json(struct relation_struct* e, const char* snd, cons
   __add_label_attribute(NULL, relation_str(e->identifier.relation_id.type), true);
   __add_string_attribute("cf:allowed", bool_str[e->allowed], true);
   __add_string_attribute(snd, sender, true);
+  __add_uint64_attribute("cf:snd_id", e->snd.node_id.id, true);
+  __add_uint64hex_attribute("cf:snd_type", e->snd.node_id.type, true);
+  __add_uint32_attribute("cf:snd_boot_id", e->snd.node_id.boot_id, true);
+  __add_uint32_attribute("cf:snd_machine_id", e->snd.node_id.machine_id, true);
   __add_string_attribute(rcv, receiver, true);
+  __add_uint64_attribute("cf:rcv_id", e->rcv.node_id.id, true);
+  __add_uint64hex_attribute("cf:rcv_type", e->rcv.node_id.type, true);
+  __add_uint32_attribute("cf:rcv_boot_id", e->rcv.node_id.boot_id, true);
+  __add_uint32_attribute("cf:rcv_machine_id", e->rcv.node_id.machine_id, true);
   if(e->set==FILE_INFO_SET && e->offset>0)
     __add_int64_attribute("cf:offset", e->offset, true); // just offset for now
   __close_json_entry(buffer);

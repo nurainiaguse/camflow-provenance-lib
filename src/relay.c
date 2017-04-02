@@ -41,7 +41,6 @@ static int long_relay_file[NUMBER_CPUS];
 /* worker pool */
 static threadpool worker_thpool=NULL;
 static uint32_t machine_id=0;
-static uint32_t boot_id=0;
 
 /* internal functions */
 static int open_files(void);
@@ -83,7 +82,6 @@ int provenance_register(struct provenance_ops* ops)
   int err;
 
   provenance_get_machine_id(&machine_id);
-  provenance_get_boot_id(&boot_id);
 
   /* the provenance usher will not appear in trace */
   err = provenance_set_opaque(true);
@@ -265,7 +263,6 @@ static void callback_job(void* data, const size_t prov_size)
   msg = (union prov_elt*)data;
   if(prov_type(msg)!=ENT_PACKET){
     node_identifier(msg).machine_id = machine_id;
-    node_identifier(msg).boot_id = boot_id;
   }
 
   /* initialise per worker thread */
@@ -329,7 +326,6 @@ static void long_callback_job(void* data, const size_t prov_size)
   }
   msg = (union long_prov_elt*)data;
   node_identifier(msg).machine_id = machine_id;
-  node_identifier(msg).boot_id = boot_id;
 
   /* initialise per worker thread */
   if(!initialised && prov_ops.init!=NULL){

@@ -104,6 +104,8 @@ static inline const char* relation_str(uint64_t type){
       return RL_STR_SETXATTR;
     case RL_RMVXATTR:
       return RL_STR_RMVXATTR;
+    case RL_NAMED:
+      return RL_STR_NAMED;
     case RL_NAMED_PROCESS:
       return RL_STR_NAMED_PROCESS;
     case RL_EXEC:
