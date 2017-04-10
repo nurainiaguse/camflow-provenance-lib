@@ -70,6 +70,7 @@ static const char RL_STR_PERM_READ[]              = "perm_read";
 static const char RL_STR_PERM_WRITE[]             = "perm_write";
 static const char RL_STR_PERM_EXEC[]              = "perm_exec";
 static const char RL_STR_TERMINATE_PROCESS[]      = "terminate";
+static const char RL_STR_CLOSED[]						      = "closed";
 
 static inline const char* relation_str(uint64_t type){
   switch(type){
@@ -151,6 +152,8 @@ static inline const char* relation_str(uint64_t type){
       return RL_STR_PERM_EXEC;
 		case RL_TERMINATE_PROCESS:
 			return RL_STR_TERMINATE_PROCESS;
+		case RL_CLOSED:
+			return RL_STR_CLOSED;
     default:
       return RL_STR_UNKNOWN;
   }
@@ -198,6 +201,7 @@ static inline const uint64_t relation_id(char* str){
   MATCH_AND_RETURN(str, RL_STR_SH_READ, RL_SH_READ);
   MATCH_AND_RETURN(str, RL_STR_SH_WRITE, RL_SH_WRITE);
   MATCH_AND_RETURN(str, RL_STR_TERMINATE_PROCESS, RL_TERMINATE_PROCESS);
+  MATCH_AND_RETURN(str, RL_STR_CLOSED, RL_CLOSED);
   return 0;
 }
 
