@@ -23,7 +23,7 @@
 
 #include "provenancelib.h"
 #include "provenanceutils.h"
-#include "libut.h"
+#include "uthash.h"
 
 static inline int __set_boolean(bool value, const char* name){
   int rc;
