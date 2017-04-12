@@ -261,10 +261,8 @@ static void callback_job(void* data, const size_t prov_size)
     return;
   }
   msg = (union prov_elt*)data;
-  if(prov_type(msg)!=ENT_PACKET){
+  if(prov_type(msg)!=ENT_PACKET)
     node_identifier(msg).machine_id = machine_id;
-  }
-
   /* initialise per worker thread */
   if(!initialised && prov_ops.init!=NULL){
     prov_ops.init();
@@ -272,14 +270,10 @@ static void callback_job(void* data, const size_t prov_size)
   }
 
   // dealing with filter
-  if(prov_ops.filter!=NULL){
+  if(prov_ops.filter!=NULL)
     if(prov_ops.filter((prov_entry_t*)msg)) // message has been fitlered
-      goto out;
-  }
-
+      return;
   prov_record(msg);
-out:
-  free(data); /* free the memory allocated in the reader */
 }
 
 void long_prov_record(union long_prov_elt* msg){
@@ -334,14 +328,10 @@ static void long_callback_job(void* data, const size_t prov_size)
   }
 
   // dealing with filter
-  if(prov_ops.filter!=NULL){
+  if(prov_ops.filter!=NULL)
     if(prov_ops.filter((prov_entry_t*)msg)) // message has been fitlered
-      goto out;
-  }
-
+      return;
   long_prov_record(msg);
-out:
-  free(data); /* free the memory allocated in the reader */
 }
 
 #define buffer_size(prov_size) (prov_size*1000)
@@ -365,8 +355,7 @@ static void ___read_relay( const int relay_file, const size_t prov_size, void (*
 	}while(size%prov_size!=0);
 
 	while(size>0){
-		entry = (uint8_t*)malloc(prov_size);
-		memcpy(entry, buf+i, prov_size);
+		entry = buf+i;
 		size-=prov_size;
 		i+=prov_size;
 		callback(entry, prov_size);
