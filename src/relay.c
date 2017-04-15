@@ -40,7 +40,6 @@ static int relay_file[NUMBER_CPUS];
 static int long_relay_file[NUMBER_CPUS];
 /* worker pool */
 static threadpool worker_thpool=NULL;
-/* machine_id */
 static uint32_t machine_id=0;
 
 /* internal functions */
@@ -179,116 +178,106 @@ static void destroy_worker_pool(void)
 /* per worker thread initialised variable */
 static __thread int initialised=0;
 
-void prov_record(union prov_msg* msg){
-  uint64_t w3c_type;
-  if(prov_is_relation(msg)){
-    w3c_type = W3C_TYPE(prov_type(msg));
-    switch(w3c_type){
-      case RL_DERIVED:
-        if(prov_ops.log_derived!=NULL){
-          prov_ops.log_derived(&(msg->relation_info));
-        }
-        break;
-      case RL_GENERATED:
-        if(prov_ops.log_generated!=NULL){
-          prov_ops.log_generated(&(msg->relation_info));
-        }
-        break;
-      case RL_USED:
-        if(prov_ops.log_used!=NULL){
-          prov_ops.log_used(&(msg->relation_info));
-        }
-        break;
-      case RL_INFORMED:
-        if(prov_ops.log_informed!=NULL){
-          prov_ops.log_informed(&(msg->relation_info));
-        }
-        break;
-      default:
-        if(prov_ops.log_unknown_relation!=NULL){
-          prov_ops.log_unknown_relation(&(msg->relation_info));
-        }
-        break;
-    }
-  }else{
-    switch(prov_type(msg)){
-      case ACT_TASK:
-        if(prov_ops.log_task!=NULL){
-          prov_ops.log_task(&(msg->task_info));
-        }
-        break;
-      case ENT_INODE_UNKNOWN:
-      case ENT_INODE_LINK:
-      case ENT_INODE_FILE:
-      case ENT_INODE_DIRECTORY:
-      case ENT_INODE_CHAR:
-      case ENT_INODE_BLOCK:
-      case ENT_INODE_FIFO:
-      case ENT_INODE_SOCKET:
-      case ENT_INODE_MMAP:
-        if(prov_ops.log_inode!=NULL){
-          prov_ops.log_inode(&(msg->inode_info));
-        }
-        break;
-      case ENT_MSG:
-        if(prov_ops.log_msg!=NULL){
-          prov_ops.log_msg(&(msg->msg_msg_info));
-        }
-        break;
-      case ENT_SHM:
-        if(prov_ops.log_shm!=NULL){
-          prov_ops.log_shm(&(msg->shm_info));
-        }
-        break;
-      case ENT_PACKET:
-        if(prov_ops.log_packet!=NULL){
-          prov_ops.log_packet(&(msg->pck_info));
-        }
-        break;
-      case ENT_IATTR:
-        if(prov_ops.log_iattr!=NULL){
-          prov_ops.log_iattr(&(msg->iattr_info));
-        }
-        break;
-      default:
-        record_error("Error: unknown type %llu\n", prov_type(msg));
-        break;
-    }
+void relation_record(union prov_elt *msg){
+  uint64_t w3c_type = W3C_TYPE(prov_type(msg));
+  switch(w3c_type){
+    case RL_DERIVED:
+      if(prov_ops.log_derived!=NULL)
+        prov_ops.log_derived(&(msg->relation_info));
+      break;
+    case RL_GENERATED:
+      if(prov_ops.log_generated!=NULL)
+        prov_ops.log_generated(&(msg->relation_info));
+      break;
+    case RL_USED:
+      if(prov_ops.log_used!=NULL)
+        prov_ops.log_used(&(msg->relation_info));
+      break;
+    case RL_INFORMED:
+      if(prov_ops.log_informed!=NULL)
+        prov_ops.log_informed(&(msg->relation_info));
+      break;
+    default:
+      if(prov_ops.log_unknown_relation!=NULL)
+        prov_ops.log_unknown_relation(&(msg->relation_info));
+      break;
   }
+}
+
+void node_record(union prov_elt *msg){
+  switch(prov_type(msg)){
+    case ACT_TASK:
+      if(prov_ops.log_task!=NULL)
+        prov_ops.log_task(&(msg->task_info));
+      break;
+    case ENT_INODE_UNKNOWN:
+    case ENT_INODE_LINK:
+    case ENT_INODE_FILE:
+    case ENT_INODE_DIRECTORY:
+    case ENT_INODE_CHAR:
+    case ENT_INODE_BLOCK:
+    case ENT_INODE_FIFO:
+    case ENT_INODE_SOCKET:
+    case ENT_INODE_MMAP:
+      if(prov_ops.log_inode!=NULL)
+        prov_ops.log_inode(&(msg->inode_info));
+      break;
+    case ENT_MSG:
+      if(prov_ops.log_msg!=NULL)
+        prov_ops.log_msg(&(msg->msg_msg_info));
+      break;
+    case ENT_SHM:
+      if(prov_ops.log_shm!=NULL)
+        prov_ops.log_shm(&(msg->shm_info));
+      break;
+    case ENT_PACKET:
+      if(prov_ops.log_packet!=NULL)
+        prov_ops.log_packet(&(msg->pck_info));
+      break;
+    case ENT_IATTR:
+      if(prov_ops.log_iattr!=NULL)
+        prov_ops.log_iattr(&(msg->iattr_info));
+      break;
+    default:
+      record_error("Error: unknown type %llu\n", prov_type(msg));
+      break;
+  }
+}
+
+void prov_record(union prov_elt* msg){
+
+  if(prov_is_relation(msg))
+    relation_record(msg);
+  else
+    node_record(msg);
 }
 
 /* handle application callbacks */
 static void callback_job(void* data, const size_t prov_size)
 {
-  union prov_msg* msg;
-  if(prov_size!=sizeof(union prov_msg)){
-    record_error("Wrong size %d expected: %d.", prov_size, sizeof(union prov_msg));
+  union prov_elt* msg;
+  if(prov_size!=sizeof(union prov_elt)){
+    record_error("Wrong size %d expected: %d.", prov_size, sizeof(union prov_elt));
     return;
   }
-  msg = (union prov_msg*)data;
-  if(prov_type(msg)!=ENT_PACKET){
+  msg = (union prov_elt*)data;
+  if(prov_type(msg)!=ENT_PACKET)
     node_identifier(msg).machine_id = machine_id;
-  }
-
   /* initialise per worker thread */
   if(!initialised && prov_ops.init!=NULL){
     prov_ops.init();
     initialised=1;
   }
-
+  if(prov_ops.received_prov!=NULL)
+    prov_ops.received_prov(msg);
   // dealing with filter
-  if(prov_ops.filter!=NULL){
-    if(prov_ops.filter(msg)){ // message has been fitlered
-      goto out;
-    }
-  }
-
+  if(prov_ops.filter!=NULL)
+    if(prov_ops.filter((prov_entry_t*)msg)) // message has been fitlered
+      return;
   prov_record(msg);
-out:
-  free(data); /* free the memory allocated in the reader */
 }
 
-void long_prov_record(union long_prov_msg* msg){
+void long_prov_record(union long_prov_elt* msg){
   switch(prov_type(msg)){
     case ENT_STR:
       if(prov_ops.log_str!=NULL)
@@ -325,12 +314,12 @@ void long_prov_record(union long_prov_msg* msg){
 /* handle application callbacks */
 static void long_callback_job(void* data, const size_t prov_size)
 {
-  union long_prov_msg* msg;
-  if(prov_size!=sizeof(union long_prov_msg)){
-    record_error("Wrong size %d expected: %d.", prov_size, sizeof(union long_prov_msg));
+  union long_prov_elt* msg;
+  if(prov_size!=sizeof(union long_prov_elt)){
+    record_error("Wrong size %d expected: %d.", prov_size, sizeof(union long_prov_elt));
     return;
   }
-  msg = (union long_prov_msg*)data;
+  msg = (union long_prov_elt*)data;
   node_identifier(msg).machine_id = machine_id;
 
   /* initialise per worker thread */
@@ -338,48 +327,42 @@ static void long_callback_job(void* data, const size_t prov_size)
     prov_ops.init();
     initialised=1;
   }
-
+  if(prov_ops.received_long_prov!=NULL)
+    prov_ops.received_long_prov(msg);
   // dealing with filter
-  if(prov_ops.long_filter!=NULL){
-    if(prov_ops.long_filter(msg)){ // message has been fitlered
-      goto out;
-    }
-  }
-
+  if(prov_ops.filter!=NULL)
+    if(prov_ops.filter((prov_entry_t*)msg)) // message has been fitlered
+      return;
   long_prov_record(msg);
-out:
-  free(data); /* free the memory allocated in the reader */
 }
 
 #define buffer_size(prov_size) (prov_size*1000)
 static void ___read_relay( const int relay_file, const size_t prov_size, void (*callback)(void*, const size_t)){
 	uint8_t *buf;
 	uint8_t* entry;
-  size_t size=0, i=0;
+  size_t size=0;
+  size_t i=0;
   int rc;
 	buf = (uint8_t*)malloc(buffer_size(prov_size));
 	do{
 		rc = read(relay_file, buf+size, buffer_size(prov_size)-size);
 		if(rc<0){
 			record_error("Failed while reading (%d).", errno);
-			if(errno==EAGAIN){ // retry
+			if(errno==EAGAIN) // retry
 				continue;
-			}
-			free(entry);
+			free(buf);
 			return;
 		}
 		size += rc;
 	}while(size%prov_size!=0);
 
 	while(size>0){
-		entry = (uint8_t*)malloc(prov_size);
-		memcpy(entry, buf+i, prov_size);
+		entry = buf+i;
 		size-=prov_size;
 		i+=prov_size;
 		callback(entry, prov_size);
 	}
 	free(buf);
-	return;
 }
 
 #define POL_FLAG (POLLIN|POLLRDNORM|POLLERR)
@@ -403,7 +386,7 @@ static void reader_job(void *data)
       record_error("Failed while polling (%d).", rc);
       continue; /* something bad happened */
     }
-    ___read_relay(relay_file[cpu], sizeof(union prov_msg), callback_job);
+    ___read_relay(relay_file[cpu], sizeof(union prov_elt), callback_job);
   }while(1);
 }
 
@@ -431,6 +414,6 @@ static void long_reader_job(void *data)
       record_error("Failed while polling (%d).", rc);
       continue; /* something bad happened */
     }
-    ___read_relay(long_relay_file[cpu], sizeof(union long_prov_msg), long_callback_job);
+    ___read_relay(long_relay_file[cpu], sizeof(union long_prov_elt), long_callback_job);
   }while(1);
 }

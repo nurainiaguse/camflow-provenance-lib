@@ -2,6 +2,7 @@
 
 | Library version | Date       |
 | --------------- | ---------- |
+| 0.3.0           | 15/04/2017 |
 | 0.2.3           | 10/03/2017 |
 | 0.2.2           | 09/03/2017 |
 | 0.2.1           | 14/02/2017 |
@@ -20,6 +21,15 @@
 | 0.1.2           | 26/05/2016 |
 | 0.1.1           | 03/04/2016 |
 | 0.1.0           | 28/03/2016 |
+
+### v0.3.0
+
+```
+- add hooks to help with queries implementation.
+- offset does not appear in JSON if the value is 0.
+- add support for boot ID.
+- rework the taint/label system.
+```
 
 ### v0.2.3
 

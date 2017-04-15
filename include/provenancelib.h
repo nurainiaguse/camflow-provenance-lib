@@ -21,8 +21,9 @@
 
 struct provenance_ops{
   void (*init)(void);
-  bool (*filter)(union prov_msg* msg);
-  bool (*long_filter)(union long_prov_msg* msg);
+  bool (*filter)(prov_entry_t* msg);
+  void (*received_prov)(union prov_elt*);
+  void (*received_long_prov)(union long_prov_elt*);
   /* relation callback */
   void (*log_unknown_relation)(struct relation_struct*);
   void (*log_derived)(struct relation_struct*);
@@ -46,8 +47,8 @@ struct provenance_ops{
   void (*log_error)(char*);
 };
 
-void prov_record(union prov_msg* msg);
-void long_prov_record(union long_prov_msg* msg);
+void prov_record(union prov_elt* msg);
+void long_prov_record(union long_prov_elt* msg);
 
 /*
 * Function return boolean value corresponding to the presence or not of the
@@ -133,6 +134,11 @@ int provenance_set_propagate(bool v);
 bool provenance_get_propagate(void);
 
 /*
+* apply label to current process.
+*/
+int provenance_label(const char *label);
+
+/*
 * @v uint32_t value
 * Assign an ID to the current machine. Will fail if the current process is not
 * root.
@@ -144,6 +150,19 @@ int provenance_set_machine_id(uint32_t v);
 * Read the machine ID corresponding to the current machine.
 */
 int provenance_get_machine_id(uint32_t* v);
+
+/*
+* @v uint32_t value
+* Assign an ID to the current boot. Will fail if the current process is not
+* root.
+*/
+int provenance_set_boot_id(uint32_t v);
+
+/*
+* @v pointer to uint32_t value
+* Read the boot ID corresponding to the current machine.
+*/
+int provenance_get_boot_id(uint32_t* v);
 
 /*
 * @node node data structure to be recorded
@@ -176,7 +195,7 @@ int provenance_flush(void);
 * @inode_info point to an inode_info structure
 * retrieve provenance information of the file associated with name.
 */
-int provenance_read_file(const char name[PATH_MAX], union prov_msg* inode_info);
+int provenance_read_file(const char name[PATH_MAX], union prov_elt* inode_info);
 
 /*
 * @name file name
@@ -222,24 +241,24 @@ int fprovenance_propagate_file(int fd, bool propagate);
 
 /*
 * @name file name
-* @taint taint to be applied to the file
-* add taint to the file corresponding to name
+* @label label to be applied to the file
+* add label to the file corresponding to name
 */
-int provenance_taint_file(const char name[PATH_MAX], uint64_t taint);
+int provenance_label_file(const char name[PATH_MAX], const char *label);
 
 /*
 * @fd file descriptor
-* @taint taint to be applied to the file
-* add taint to the file corresponding to fd
+* @label label to be applied to the file
+* add label to the file corresponding to fd
 */
-int fprovenance_taint_file(int fd, uint64_t taint);
+int fprovenance_label_file(int fd, const char *label);
 
 /*
 * @pid process pid
 * @inode_info point to an inode_info structure
 * retrieve provenance information of the process associated with pid.
 */
-int provenance_read_process(uint32_t pid, union prov_msg* process_info);
+int provenance_read_process(uint32_t pid, union prov_elt* process_info);
 
 /*
 * @pid process pid
@@ -257,7 +276,7 @@ int provenance_opaque_process(uint32_t pid, bool opaque);
 
 int provenance_propagate_process(uint32_t pid, bool propagate);
 
-int provenance_taint_process(uint32_t pid, uint64_t taint);
+int provenance_label_process(uint32_t pid, const char *label);
 
 int provenance_ingress_ipv4_track(const char* param);
 int provenance_ingress_ipv4_propagate(const char* param);
