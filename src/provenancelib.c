@@ -562,22 +562,23 @@ declare_set_secctx_fcn(provenance_secctx_delete, PROV_SEC_DELETE);
 declare_get_secctx_fcn(provenance_secctx);
 
 #define declare_set_cgroup_fcn(fcn_name, operation) int fcn_name (const uint32_t cid){\
-  struct cgroupinfo filter;\
+  struct nsinfo filter;\
+  memset(&filter, 0, sizeof(struct nsinfo));\
   int rc;\
-  int fd = open(PROV_CGROUP_FILTER, O_WRONLY);\
+  int fd = open(PROV_NS_FILTER, O_WRONLY);\
   if( fd < 0 ){\
     return fd;\
   }\
-  filter.cid = cid;\
+  filter.cgroupns = cid;\
   filter.op = operation;\
-  rc = write(fd, &filter, sizeof(struct cgroupinfo));\
+  rc = write(fd, &filter, sizeof(struct nsinfo));\
   close(fd);\
   return rc;\
 }
 
-#define declare_get_cgroup_fcn(fcn_name) int fcn_name ( struct cgroupinfo* filters, size_t length ){\
+#define declare_get_ns_fcn(fcn_name) int fcn_name ( struct nsinfo* filters, size_t length ){\
   int rc;\
-  int fd = open(PROV_CGROUP_FILTER, O_RDONLY);\
+  int fd = open(PROV_NS_FILTER, O_RDONLY);\
   if( fd < 0 ){\
     return fd;\
   }\
@@ -586,7 +587,8 @@ declare_get_secctx_fcn(provenance_secctx);
   return rc;\
 }
 
-declare_set_cgroup_fcn(provenance_cgroup_track, PROV_CGROUP_TRACKED);
-declare_set_cgroup_fcn(provenance_cgroup_propagate, PROV_CGROUP_TRACKED|PROV_CGROUP_PROPAGATE);
-declare_set_cgroup_fcn(provenance_cgroup_delete, PROV_CGROUP_DELETE);
-declare_get_cgroup_fcn(provenance_cgroup);
+declare_set_cgroup_fcn(provenance_cgroup_track, PROV_NS_TRACKED);
+declare_set_cgroup_fcn(provenance_cgroup_propagate, PROV_NS_TRACKED|PROV_NS_PROPAGATE);
+declare_set_cgroup_fcn(provenance_cgroup_delete, PROV_NS_DELETE);
+
+declare_get_ns_fcn(provenance_ns);

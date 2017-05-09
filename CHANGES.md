@@ -26,6 +26,7 @@
 ### v0.3.1
 
 ```
+- Modify API to deal with namespaces.
 - Record all available namespaces.
 ```
 
