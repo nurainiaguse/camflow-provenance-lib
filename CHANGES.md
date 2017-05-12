@@ -26,8 +26,9 @@
 ### v0.3.1
 
 ```
-- Modify API to deal with namespaces.
-- Record all available namespaces.
+- service moved to its own repository (https://github.com/CamFlow/camflow-service).
+- modify API to deal with namespaces.
+- record all available namespaces.
 ```
 
 ### v0.3.0
