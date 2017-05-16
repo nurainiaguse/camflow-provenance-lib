@@ -579,9 +579,8 @@ declare_get_secctx_fcn(provenance_secctx);
 #define declare_get_ns_fcn(fcn_name) int fcn_name ( struct nsinfo* filters, size_t length ){\
   int rc;\
   int fd = open(PROV_NS_FILTER, O_RDONLY);\
-  if( fd < 0 ){\
+  if( fd < 0 )\
     return fd;\
-  }\
   rc = read(fd, filters, length);\
   close(fd);\
   return rc;\
@@ -592,3 +591,13 @@ declare_set_cgroup_fcn(provenance_cgroup_propagate, PROV_NS_TRACKED|PROV_NS_PROP
 declare_set_cgroup_fcn(provenance_cgroup_delete, PROV_NS_DELETE);
 
 declare_get_ns_fcn(provenance_ns);
+
+int provenance_policy_hash(uint8_t* buffer, size_t length){
+  int rc;
+  int fd = open(PROV_POLICY_HASH_FILE, O_RDONLY);
+  if(fd<0)
+    return fd;
+  rc = read(fd, buffer, length);
+  close(fd);
+  return rc;
+}

@@ -26,6 +26,7 @@
 ### v0.3.1
 
 ```
+- add a function to read policy hash.
 - service moved to its own repository (https://github.com/CamFlow/camflow-service).
 - modify API to deal with namespaces.
 - record all available namespaces.
