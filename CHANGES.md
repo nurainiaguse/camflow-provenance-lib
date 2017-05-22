@@ -2,6 +2,7 @@
 
 | Library version | Date       |
 | --------------- | ---------- |
+| 0.3.1           | 22/05/2017 |
 | 0.3.0           | 15/04/2017 |
 | 0.2.3           | 10/03/2017 |
 | 0.2.2           | 09/03/2017 |
@@ -21,6 +22,15 @@
 | 0.1.2           | 26/05/2016 |
 | 0.1.1           | 03/04/2016 |
 | 0.1.0           | 28/03/2016 |
+
+### v0.3.1
+
+```
+- add a function to read policy hash.
+- service moved to its own repository (https://github.com/CamFlow/camflow-service).
+- modify API to deal with namespaces.
+- record all available namespaces.
+```
 
 ### v0.3.0
 

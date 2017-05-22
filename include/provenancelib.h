@@ -300,6 +300,9 @@ int provenance_secctx( struct secinfo* filters, size_t length );
 int provenance_cgroup_track(const uint32_t cid);
 int provenance_cgroup_propagate(const uint32_t cid);
 int provenance_cgroup_delete(const uint32_t cid);
-int provenance_cgroup( struct cgroupinfo* filters, size_t length );
+
+int provenance_ns(struct nsinfo* filters, size_t length);
+
+int provenance_policy_hash(uint8_t* buffer, size_t length);
 
 #endif /* __PROVENANCELIB_H */
