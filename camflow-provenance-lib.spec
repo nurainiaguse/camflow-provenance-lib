@@ -12,10 +12,10 @@ BuildRoot: %{_topdir}/BUILD/%{name}-%{version}-%{release}
 
 %prep
 rm -rf $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT/usr/bin
+mkdir -p $RPM_BUILD_ROOT/usr/local/lib/
 mkdir -p $RPM_BUILD_ROOT/usr/local/include
 cd $RPM_BUILD_ROOT
-cp -f %{SOURCEURL0}/src/provenancelib.a ./usr/bin/provenancelib.a
+cp -f %{SOURCEURL0}/src/provenancelib.a ./usr/local/lib/provenancelib.a
 cp -f %{SOURCEURL0}/include/provenancelib.h ./usr/local/include/provenancelib.h
 cp -f %{SOURCEURL0}/include/provenancefilter.h ./usr/local/include/provenancefilter.h
 cp -f %{SOURCEURL0}/include/provenanceutils.h ./usr/local/include/provenanceutils.h
@@ -26,7 +26,7 @@ rm -r -f "$RPM_BUILD_ROOT"
 
 %files
 %defattr(644,root,root)
-/usr/bin/provenancelib.a
+/usr/local/lib/provenancelib.a
 /usr/local/include/provenancelib.h
 /usr/local/include/provenancefilter.h
 /usr/local/include/provenanceutils.h
