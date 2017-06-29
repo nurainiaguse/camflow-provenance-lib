@@ -27,6 +27,7 @@
 
 ### v0.3.3
 ```
+- reduce amount of duplicated information between edges and vertices.
 - fix issue where allowed/disallowed where reversed in relation.
 - fix issue with packet not having the attribute cf:type.
 ```

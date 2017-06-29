@@ -490,15 +490,7 @@ static char* __relation_to_json(struct relation_struct* e, const char* snd, cons
   else
     __add_string_attribute("cf:allowed", "false", true);
   __add_string_attribute(snd, sender, true);
-  __add_uint64_attribute("cf:snd_id", e->snd.node_id.id, true);
-  __add_uint64hex_attribute("cf:snd_type", e->snd.node_id.type, true);
-  __add_uint32_attribute("cf:snd_boot_id", e->snd.node_id.boot_id, true);
-  __add_uint32_attribute("cf:snd_machine_id", e->snd.node_id.machine_id, true);
   __add_string_attribute(rcv, receiver, true);
-  __add_uint64_attribute("cf:rcv_id", e->rcv.node_id.id, true);
-  __add_uint64hex_attribute("cf:rcv_type", e->rcv.node_id.type, true);
-  __add_uint32_attribute("cf:rcv_boot_id", e->rcv.node_id.boot_id, true);
-  __add_uint32_attribute("cf:rcv_machine_id", e->rcv.node_id.machine_id, true);
   if(e->set==FILE_INFO_SET && e->offset>0)
     __add_int64_attribute("cf:offset", e->offset, true); // just offset for now
   __close_json_entry(buffer);
@@ -666,7 +658,10 @@ char* pckcnt_to_json(struct pckcnt_struct* n){
   __add_string_attribute("cf:content", cntenc, true);
   free(cntenc);
   __add_uint32_attribute("cf:length", n->length, true);
-  __add_string_attribute("cf:truncated", bool_str[n->truncated], true);
+  if(n->truncated==PROV_TRUNCATED)
+    __add_string_attribute("cf:truncated", "true", true);
+  else
+    __add_string_attribute("cf:truncated", "false", true);
   __add_label_attribute("content", NULL, true);
   __close_json_entry(buffer);
   return buffer;
