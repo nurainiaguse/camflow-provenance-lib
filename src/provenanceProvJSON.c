@@ -476,8 +476,6 @@ static inline void __relation_identifier(const struct relation_identifier* e){
   __add_uint32_attribute("cf:machine_id", e->machine_id, true);
 }
 
-static char* bool_str[] = {"false", "true"};
-
 static char* __relation_to_json(struct relation_struct* e, const char* snd, const char* rcv){
   RELATION_PREP_IDs(e);
   prov_prep_taint((union prov_elt*)e);
@@ -487,7 +485,10 @@ static char* __relation_to_json(struct relation_struct* e, const char* snd, cons
   __add_string_attribute("cf:taint", taint, true);
   __add_uint64_attribute("cf:jiffies", e->jiffies, true);
   __add_label_attribute(NULL, relation_str(e->identifier.relation_id.type), true);
-  __add_string_attribute("cf:allowed", bool_str[e->allowed], true);
+  if(e->allowed==FLOW_ALLOWED)
+    __add_string_attribute("cf:allowed", "true", true);
+  else
+    __add_string_attribute("cf:allowed", "false", true);
   __add_string_attribute(snd, sender, true);
   __add_uint64_attribute("cf:snd_id", e->snd.node_id.id, true);
   __add_uint64hex_attribute("cf:snd_type", e->snd.node_id.type, true);
