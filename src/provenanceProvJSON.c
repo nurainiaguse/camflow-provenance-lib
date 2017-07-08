@@ -555,6 +555,7 @@ char* task_to_json(struct task_prov_struct* n){
   __add_uint32_attribute("cf:net_namespace", n->netns, true);
   __add_uint32_attribute("cf:cgroup_namespace", n->cgroupns, true);
   __add_string_attribute("cf:secctx", secctx, true);
+  __add_string_attribute("fromDocker", "true", true);
   __add_label_attribute("task", utoa(n->identifier.node_id.version, tmp, DECIMAL), true);
   __close_json_entry(buffer);
   return buffer;
@@ -615,6 +616,7 @@ char* inode_to_json(struct inode_prov_struct* n){
   __add_uint32_attribute("cf:gid", n->gid, true);
   __add_uint32hex_attribute("cf:mode", n->mode, true);
   __add_string_attribute("cf:secctx", secctx, true);
+  __add_string_attribute("fromDocker", "true", true);
   __add_uint32_attribute("cf:ino", n->ino, true);
   __add_string_attribute("cf:uuid", uuid_to_str(n->sb_uuid, uuid, UUID_STR_SIZE), true);
   __add_label_attribute(node_str(n->identifier.node_id.type), utoa(n->identifier.node_id.version, tmp, DECIMAL), true);
