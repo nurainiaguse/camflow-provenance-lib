@@ -542,6 +542,8 @@ void fromDocker(char* secctx){
     __add_string_attribute("from_docker", "true", true);
   else if (strncmp(secctx, "system_u:system_r:container_t:s0:c355,c409", strlen("system_u:system_r:container_t:s0:c355,c409")) == 0)
     __add_string_attribute("from_docker", "true", true);
+  else
+    __add_string_attribute("from_docker", "false", true);
 }
 
 char* task_to_json(struct task_prov_struct* n){
