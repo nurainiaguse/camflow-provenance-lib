@@ -538,12 +538,18 @@ char* disc_to_json(struct disc_node_struct* n){
 }
 
 void fromDocker(char* secctx){
-  if (strncmp(secctx, "system_u:object_r:container_file_t:s0:c355,c409", strlen("system_u:object_r:container_file_t:s0:c355,c409")) == 0)
-    __add_string_attribute("from_docker", "true", true);
-  else if (strncmp(secctx, "system_u:system_r:container_t:s0:c355,c409", strlen("system_u:system_r:container_t:s0:c355,c409")) == 0)
-    __add_string_attribute("from_docker", "true", true);
-  else
+  int checklen = strlen("system_u:object_r:container_file_t:s0:c355,c409");
+  if (strlen(secctx) < checklen){
     __add_string_attribute("from_docker", "false", true);
+    return;
+  }
+  char* truefalse = "false";
+  else if (strncmp(secctx, "system_u:object_r:container_file_t:s0:c355,c409", checklen) == 0)
+    truefalse = "true";
+  else if (strncmp(secctx, "system_u:system_r:container_t:s0:c355,c409", checklen) == 0)
+    truefalse = "true";
+
+  __add_string_attribute("from_docker", truefalse, true);
 }
 
 char* task_to_json(struct task_prov_struct* n){
