@@ -544,7 +544,7 @@ void fromDocker(char* secctx){
     return;
   }
   char* truefalse = "false";
-  else if (strncmp(secctx, "system_u:object_r:container_file_t:s0:c355,c409", checklen) == 0)
+  if (strncmp(secctx, "system_u:object_r:container_file_t:s0:c355,c409", checklen) == 0)
     truefalse = "true";
   else if (strncmp(secctx, "system_u:system_r:container_t:s0:c355,c409", checklen) == 0)
     truefalse = "true";
