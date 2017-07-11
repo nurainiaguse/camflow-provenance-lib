@@ -538,20 +538,20 @@ char* disc_to_json(struct disc_node_struct* n){
 }
 
 void fromDocker(char* secctx){
-  int checklen = strlen("system_u:object_r:container_file_t:s0:c355,c409");
-  if (secctx == NULL || strlen(secctx) < checklen){
-    __add_string_attribute("from_docker1", "false", true);
-    return;
-  }
+  // int checklen = strlen("system_u:object_r:container_file_t:s0:c355,c409");
+  // if (secctx == NULL || strlen(secctx) < checklen){
+  //   __add_string_attribute("from_docker1", "false", true);
+  //   return;
+  // }
   //char* truefalse = "false";
   if (strncmp(secctx, "system_u:object_r:container_file_t:s0:c355,c409", checklen) == 0)
-    __add_string_attribute("from_docker2", "true", true);
-  else if (strncmp(secctx, "system_u:system_r:container_t:s0:c355,c409", checklen) == 0)
-    __add_string_attribute("from_docker3", "true", true);
-  else
-    __add_string_attribute("from_docker4", "false", true);
+    __add_string_attribute("docker", "b090e972e2fe", true);
+  else if (strncmp(secctx, "system_u:system_r:container_t:s0:c355,c448", checklen) == 0)
+    __add_string_attribute("docker", "2b29a5b17893", true);
+  // else
+  //   __add_string_attribute("from_docker4", "false", true);
 
-  
+
 }
 
 char* task_to_json(struct task_prov_struct* n){
