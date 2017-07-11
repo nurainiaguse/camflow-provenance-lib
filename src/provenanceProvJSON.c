@@ -544,9 +544,9 @@ void fromDocker(char* secctx){
   //   return;
   // }
   //char* truefalse = "false";
-  if (strncmp(secctx, "system_u:object_r:container_file_t:s0:c355,c409", checklen) == 0)
+  if (strcmp(secctx, "system_u:object_r:container_file_t:s0:c355,c409") == 0)
     __add_string_attribute("docker", "b090e972e2fe", true);
-  else if (strncmp(secctx, "system_u:system_r:container_t:s0:c355,c448", checklen) == 0)
+  else if (strcmp(secctx, "system_u:system_r:container_t:s0:c355,c448") == 0)
     __add_string_attribute("docker", "2b29a5b17893", true);
   // else
   //   __add_string_attribute("from_docker4", "false", true);
